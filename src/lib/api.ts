@@ -6,7 +6,7 @@ export const getApiUrl = () => {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return `${window.location.protocol}//${window.location.hostname}:3333/api/v1`;
   }
-  return 'http://127.0.0.1:3333/api/v1';
+  return 'https://api-fisio-production.up.railway.app/api/v1';
 };
 
 export async function fetchApi<T = any>(
