@@ -489,20 +489,26 @@ export function CalendarViews({
                         (other) => startMin < other.endMin && other.startMin < endMin
                       );
 
-                      // Ordena por id para manter colunas estáveis
-                      overlapping.sort((a, b) => String(a.ev.id).localeCompare(String(b.ev.id)));
-                      const colIdx = overlapping.findIndex((o) => String(o.ev.id) === String(ev.id));
-                      const totalCols = Math.max(1, overlapping.length);
+                      // Ordena por horário e id para manter ordem estável
+                      overlapping.sort((a, b) => {
+                        const timeCmp = (a.ev.time || '').localeCompare(b.ev.time || '');
+                        if (timeCmp !== 0) return timeCmp;
+                        return String(a.ev.id).localeCompare(String(b.ev.id));
+                      });
+                      const rowIdx = overlapping.findIndex((o) => String(o.ev.id) === String(ev.id));
+                      const totalRows = Math.max(1, overlapping.length);
 
-                      const topPercentage = (((evHour - 8) * 60 + evMin) / (11 * 60)) * 100;
-                      const heightPercentage = (60 / (11 * 60)) * 100;
+                      const baseTopPercentage = (((evHour - 8) * 60 + evMin) / (11 * 60)) * 100;
+                      const baseHeightPercentage = (60 / (11 * 60)) * 100;
+
+                      // Distribui verticalmente: um abaixo do outro
+                      const rowHeightPercent = baseHeightPercentage / totalRows;
+                      const rowTopPercent = baseTopPercentage + (rowIdx >= 0 ? rowIdx : 0) * rowHeightPercent;
 
                       const statusStyle = getAppointmentStatusStyle(ev.status);
                       const endTime = `${String(evHour + 1).padStart(2, '0')}:${String(evMin).padStart(2, '0')}`;
                       const isBeingDragged = draggedEventId === ev.id;
-
-                      const colWidthPercent = 100 / totalCols;
-                      const colLeftPercent = (colIdx >= 0 ? colIdx : 0) * colWidthPercent;
+                      const isCompact = totalRows > 1;
 
                       return (
                         <div
@@ -531,42 +537,61 @@ export function CalendarViews({
                           title={`${ev.patientName} (${ev.time} - ${endTime})${
                             ev.physioName ? ` • Fisioterapeuta: ${ev.physioName}` : ''
                           } - Clique para ver ou arraste para outro horário`}
-                          className={`absolute rounded-lg border cursor-grab active:cursor-grabbing p-1.5 overflow-hidden transition-all hover:scale-[1.02] hover:z-30 flex flex-col justify-between select-none ${
+                          className={`absolute rounded-lg border cursor-grab active:cursor-grabbing p-1 overflow-hidden transition-all hover:scale-[1.01] hover:z-30 flex flex-col justify-between select-none ${
                             statusStyle.cardClass
                           } ${statusStyle.barClass} ${
                             isBeingDragged ? 'opacity-30 ring-2 ring-blue-500 scale-95' : ''
                           }`}
                           style={{
-                            top: `${topPercentage}%`,
-                            height: `${heightPercentage}%`,
-                            minHeight: '30px',
-                            left: `calc(${colLeftPercent}% + 1px)`,
-                            width: `calc(${colWidthPercent}% - 2px)`,
+                            top: `calc(${rowTopPercent}% + 1px)`,
+                            height: `calc(${rowHeightPercent}% - 2px)`,
+                            minHeight: isCompact ? '24px' : '32px',
+                            left: '2px',
+                            width: 'calc(100% - 4px)',
                           }}
                         >
-                          <div>
-                            <div className="flex items-center justify-between gap-1 pointer-events-none select-none">
-                              <span className="text-[8px] font-black opacity-90 leading-none">
-                                {ev.time} - {endTime}
+                          {isCompact ? (
+                            <div className="flex items-center justify-between gap-1 pointer-events-none select-none min-w-0 h-full">
+                              <div className="flex items-center gap-1 min-w-0 flex-1">
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusStyle.dotClass}`} />
+                                <span className="text-[8px] font-black opacity-90 shrink-0">
+                                  {ev.time}
+                                </span>
+                                <span className="text-[9px] font-bold truncate">
+                                  {ev.patientName}
+                                </span>
+                              </div>
+                              <span className="text-[7px] font-semibold opacity-75 shrink-0 hidden sm:inline">
+                                {statusStyle.label}
                               </span>
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusStyle.dotClass}`}
-                              />
                             </div>
-                            <p className="text-[9px] sm:text-[10px] font-bold leading-tight line-clamp-1 mt-0.5 pointer-events-none select-none">
-                              {ev.patientName}
-                            </p>
-                            {ev.physioName && (
-                              <p className="text-[8px] font-semibold text-blue-700 dark:text-blue-300 opacity-90 truncate leading-none mt-0.5 pointer-events-none select-none">
-                                👨‍⚕️ {ev.physioName.split(' ')[0]}
-                              </p>
-                            )}
-                          </div>
-                          <div className="pointer-events-none select-none flex items-center justify-between">
-                            <span className="text-[8px] font-semibold opacity-80 truncate">
-                              {statusStyle.label}
-                            </span>
-                          </div>
+                          ) : (
+                            <>
+                              <div>
+                                <div className="flex items-center justify-between gap-1 pointer-events-none select-none">
+                                  <span className="text-[8px] font-black opacity-90 leading-none">
+                                    {ev.time} - {endTime}
+                                  </span>
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusStyle.dotClass}`}
+                                  />
+                                </div>
+                                <p className="text-[9px] sm:text-[10px] font-bold leading-tight line-clamp-1 mt-0.5 pointer-events-none select-none">
+                                  {ev.patientName}
+                                </p>
+                                {ev.physioName && (
+                                  <p className="text-[8px] font-semibold text-blue-700 dark:text-blue-300 opacity-90 truncate leading-none mt-0.5 pointer-events-none select-none">
+                                    👨‍⚕️ {ev.physioName.split(' ')[0]}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="pointer-events-none select-none flex items-center justify-between">
+                                <span className="text-[8px] font-semibold opacity-80 truncate">
+                                  {statusStyle.label}
+                                </span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       );
                     });

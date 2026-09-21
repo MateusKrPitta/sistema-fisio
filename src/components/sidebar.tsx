@@ -69,6 +69,7 @@ export function Sidebar() {
           groupName: 'Clínica & Avaliação',
           items: [
             { label: 'Avaliações', href: '/custom-forms/modules', icon: Layers },
+            { label: 'Evoluções', href: '/evolutions', icon: Activity },
             { label: 'Relatórios', href: '/reports', icon: BarChart3 },
           ],
         },
@@ -116,6 +117,7 @@ export function Sidebar() {
         groupName: 'Clínica & Avaliação',
         items: [
           { label: 'Avaliações', href: '/custom-forms/modules', icon: Layers },
+          { label: 'Evoluções', href: '/evolutions', icon: Activity },
           { label: 'Relatórios', href: '/reports', icon: BarChart3 },
         ],
       },
@@ -194,12 +196,16 @@ export function Sidebar() {
             </p>
             {group.items.map((item) => {
               const Icon = item.icon;
-              const isEvolutionRoute = pathname.includes('/evolution');
-              const isActive = item.href === '/patients'
-                ? (pathname === '/patients' || (pathname.startsWith('/patients/') && !isEvolutionRoute))
+              const isEvolutionRoute = pathname.startsWith('/evolutions') || pathname.includes('/evolution');
+              const isActive = item.href === '/'
+                ? pathname === '/'
+                : item.href === '/evolutions'
+                ? isEvolutionRoute
                 : item.href === '/custom-forms/modules'
-                ? (pathname.startsWith('/custom-forms') || isEvolutionRoute)
-                : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                ? pathname.startsWith('/custom-forms')
+                : item.href === '/patients'
+                ? (pathname === '/patients' || (pathname.startsWith('/patients/') && !isEvolutionRoute))
+                : pathname === item.href || pathname.startsWith(item.href);
 
               return (
                 <motion.div key={item.href} whileHover={{ x: 3 }} whileTap={{ scale: 0.98 }}>

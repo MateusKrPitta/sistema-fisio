@@ -131,7 +131,7 @@ export default function CustomModulesPage() {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
 
   // Specialty & Search Filter State
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
@@ -1014,15 +1014,10 @@ export default function CustomModulesPage() {
   }, [createEvaluationFor, patients, showModal, router]);
 
   useEffect(() => {
-    if (viewEvolutionsFor && !evolutionsModalOpen) {
-      openEvolutionsModal(viewEvolutionsFor, expandEvolution ? Number(expandEvolution) : undefined);
-      
-      const url = new URL(window.location.href);
-      url.searchParams.delete('viewEvolutionsFor');
-      url.searchParams.delete('expandEvolution');
-      router.replace(url.pathname + url.search);
+    if (viewEvolutionsFor) {
+      router.push(`/evolutions?patientId=${viewEvolutionsFor}${expandEvolution ? `&expandEvolution=${expandEvolution}` : ''}`);
     }
-  }, [viewEvolutionsFor, expandEvolution, evolutionsModalOpen, router]);
+  }, [viewEvolutionsFor, expandEvolution, router]);
 
   const openCreateModal = () => {
     setEditingModule(null);
@@ -1297,14 +1292,7 @@ export default function CustomModulesPage() {
                       <td className="p-4 pr-6">
                         <div className="flex items-center justify-end space-x-2">
                           <button
-                            onClick={() => openEvolutionsModal(patient.id)}
-                            className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                            title="Ver Evoluções (Histórico)"
-                          >
-                            <ClipboardList className="w-5 h-5" />
-                          </button>
-
-                          <button
+                            type="button"
                             onClick={() => {
                               setFillingPatient(patient);
                               setShowFillModal(true);
@@ -1316,6 +1304,7 @@ export default function CustomModulesPage() {
                           </button>
 
                           <button
+                            type="button"
                             onClick={() => handleDeleteModule(patient)}
                             className="p-2 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                             title="Excluir Avaliação"

@@ -484,7 +484,7 @@ export default function PatientsListPage() {
     setLoading(true);
     const params = new URLSearchParams({
       page: page.toString(),
-      limit: '20',
+      limit: '5',
       ...(debouncedSearch ? { q: debouncedSearch } : {})
     });
 

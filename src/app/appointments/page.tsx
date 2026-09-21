@@ -272,6 +272,22 @@ export default function AppointmentsPage() {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('week');
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('fisio_appointments_view_mode') as 'month' | 'week' | 'day' | null;
+      if (savedMode && ['month', 'week', 'day'].includes(savedMode)) {
+        setViewMode(savedMode);
+      }
+    }
+  }, []);
+
+  const handleSetViewMode = (mode: 'month' | 'week' | 'day') => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('fisio_appointments_view_mode', mode);
+    }
+  };
+
   // Selected appointment details modal state
   const [selectedApp, setSelectedApp] = useState<Appointment | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -802,7 +818,7 @@ export default function AppointmentsPage() {
                 <button
                   key={mode.id}
                   type="button"
-                  onClick={() => setViewMode(mode.id as any)}
+                  onClick={() => handleSetViewMode(mode.id as any)}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     viewMode === mode.id
                       ? 'bg-white text-blue-600 shadow-sm'
@@ -827,6 +843,7 @@ export default function AppointmentsPage() {
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
               >
@@ -836,6 +853,7 @@ export default function AppointmentsPage() {
           </div>
 
           <button
+            type="button"
             onClick={openNewAppointmentModal}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-2 rounded-xl font-semibold text-xs sm:text-sm shadow-sm transition-all shrink-0"
           >
@@ -1007,6 +1025,7 @@ export default function AppointmentsPage() {
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => setSelectedApp(null)}
                     className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
                   >
@@ -1212,13 +1231,11 @@ export default function AppointmentsPage() {
                       </div>
 
                       <Link
-                        href={hasEvolution 
-                          ? `/custom-forms/modules?viewEvolutionsFor=${pId}&expandEvolution=${selectedApp.id}` 
-                          : `/patients/${pId}/evolution/new?appointmentId=${selectedApp.id}`}
-                        className={`${hasEvolution ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-purple-600 hover:bg-purple-700'} text-white px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 shadow-sm transition-all cursor-pointer flex items-center space-x-1`}
+                        href={`/evolutions?patientId=${pId}&expandEvolution=${selectedApp.id}`}
+                        className={`${hasEvolution ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-600 hover:bg-amber-700'} text-white px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 shadow-sm transition-all cursor-pointer flex items-center space-x-1`}
                       >
                         {hasEvolution ? <Search className="w-3.5 h-3.5" /> : <PlusCircle className="w-3.5 h-3.5" />}
-                        <span>{hasEvolution ? 'Ver Evolução' : 'Criar Evolução'}</span>
+                        <span>{hasEvolution ? 'Ver Evolução' : 'Inserir Evolução'}</span>
                       </Link>
                     </div>
                   );
