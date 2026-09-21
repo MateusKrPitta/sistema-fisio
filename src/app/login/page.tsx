@@ -64,13 +64,8 @@ function LoginForm() {
         companyName ? `Conectado com sucesso à ${companyName}.` : 'Acesso autenticado com sucesso.'
       );
 
-      setTimeout(() => {
-        if (user.role === 'superadmin') {
-          router.push('/admin');
-        } else {
-          router.push('/');
-        }
-      }, 700);
+      const targetUrl = user.role === 'superadmin' ? '/admin' : '/';
+      window.location.href = targetUrl;
     } catch (err: any) {
       const apiMessage = err.response?.data?.message || err.message || 'Credenciais inválidas. Verifique seu e-mail e senha.';
       setError(apiMessage);
