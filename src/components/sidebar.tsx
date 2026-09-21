@@ -284,7 +284,7 @@ export function Sidebar() {
 
         {/* Dynamic App Version */}
         <div className="pt-2 px-1 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-          <span>FisMovie Cloud</span>
+          <span>FisMovie</span>
           <span className="bg-slate-800/80 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700/60 font-semibold">{APP_VERSION}</span>
         </div>
       </div>
