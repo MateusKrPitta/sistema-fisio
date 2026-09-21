@@ -128,20 +128,6 @@ function EvolutionsContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const PATIENTS_PER_PAGE = 5;
 
-  if (user?.role === 'secretary') {
-    return (
-      <div className="flex-1 p-8 flex flex-col items-center justify-center text-center space-y-4 min-h-[60vh]">
-        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center shadow-xs">
-          <AlertTriangle className="w-8 h-8" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Acesso Restrito</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
-          O módulo de evoluções clínicas é reservado exclusivamente para fisioterapeutas e administradores da clínica.
-        </p>
-      </div>
-    );
-  }
-
   // Evolutions History Modal State (Server-side paginated & filtered)
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -453,11 +439,24 @@ function EvolutionsContent() {
   });
 
   const totalPatients = filteredPatients.length;
-  const totalPatientPages = Math.ceil(totalPatients / PATIENTS_PER_PAGE) || 1;
   const paginatedPatients = filteredPatients.slice(
     (currentPage - 1) * PATIENTS_PER_PAGE,
     currentPage * PATIENTS_PER_PAGE
   );
+
+  if (user?.role === 'secretary') {
+    return (
+      <div className="flex-1 p-8 flex flex-col items-center justify-center text-center space-y-4 min-h-[60vh]">
+        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center shadow-xs">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Acesso Restrito</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
+          O módulo de evoluções clínicas é reservado exclusivamente para fisioterapeutas e administradores da clínica.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
