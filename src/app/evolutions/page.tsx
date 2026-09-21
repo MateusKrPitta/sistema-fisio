@@ -439,6 +439,7 @@ function EvolutionsContent() {
   });
 
   const totalPatients = filteredPatients.length;
+  const totalPatientPages = Math.ceil(totalPatients / PATIENTS_PER_PAGE) || 1;
   const paginatedPatients = filteredPatients.slice(
     (currentPage - 1) * PATIENTS_PER_PAGE,
     currentPage * PATIENTS_PER_PAGE
