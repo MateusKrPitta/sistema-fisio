@@ -9,21 +9,18 @@ import {
   Users,
   Calendar,
   Activity,
-  LogOut,
   X,
   Layers,
   Gift,
   DollarSign,
   Building2,
   ShieldCheck,
-  UserCheck,
   BarChart3,
   Smartphone,
   Download
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useLayout } from './layout-shell';
-import { APP_VERSION } from '@/lib/version';
 
 interface NavItem {
   label: string;
@@ -38,7 +35,7 @@ interface NavGroup {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { logout, user } = useAuth();
+  const { user } = useAuth();
   const { isMobileMenuOpen, closeMobileMenu } = useLayout();
 
   const userRole = user?.role || 'clinic_admin';
@@ -247,46 +244,6 @@ export function Sidebar() {
           </div>
           <Download className="w-3.5 h-3.5 text-blue-400/70 group-hover:translate-y-0.5 transition-transform" />
         </button>
-      </div>
-
-      {/* User Footer Profile */}
-      <div className="p-3.5 border-t border-slate-800 bg-slate-950/50 shrink-0">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center space-x-2.5 overflow-hidden min-w-0">
-            {user?.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt="Avatar"
-                className="w-8 h-8 rounded-lg object-cover shrink-0 shadow-xs border border-slate-700"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                {(user?.name || user?.fullName || user?.email || 'P').charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="truncate min-w-0">
-              <p className="text-xs font-bold text-white truncate leading-tight">
-                {user?.fullName || user?.name || user?.email?.split('@')[0] || 'Profissional'}
-              </p>
-              <p className="text-[10px] text-slate-400 font-medium truncate leading-tight">
-                {getRoleBadgeLabel()}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            title="Sair da Conta"
-            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors shrink-0 cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Dynamic App Version */}
-        <div className="pt-2 px-1 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-          <span>FisMovie</span>
-          <span className="bg-slate-800/80 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700/60 font-semibold">{APP_VERSION}</span>
-        </div>
       </div>
     </aside>
   );
