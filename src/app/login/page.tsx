@@ -7,6 +7,7 @@ import { Activity, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2, Loader2, C
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/components/toast-context';
+import { APP_VERSION } from '@/lib/version';
 
 function LoginForm() {
   const router = useRouter();
@@ -205,9 +206,15 @@ function LoginForm() {
         </button>
       </form>
 
-      {/* System Access Notice */}
-      <div className="text-center pt-2 border-t border-slate-800/80 text-[11px] text-slate-500">
-        Acesso restrito a profissionais e clínicas cadastradas.
+      {/* System Access Notice & Version */}
+      <div className="text-center pt-2 border-t border-slate-800/80 flex flex-col items-center space-y-1.5">
+        <p className="text-[11px] text-slate-500">
+          Acesso restrito a profissionais e clínicas cadastradas.
+        </p>
+        <span className="inline-flex items-center space-x-1.5 text-[10px] font-mono text-slate-400 bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-slate-800 shadow-2xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>FisMovie {APP_VERSION}</span>
+        </span>
       </div>
     </div>
   );
