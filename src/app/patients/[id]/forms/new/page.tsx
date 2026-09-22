@@ -28,6 +28,7 @@ import { FormTemplate } from '../../../../custom-forms/templates/page';
 import { AnamneseEvaluation } from '@/components/evaluations/anamnese-evaluation';
 import { PainMapEvaluation } from '@/components/evaluations/pain-map-evaluation';
 import { PostureEvaluation } from '@/components/evaluations/posture-evaluation';
+import { PhotoAttachmentManager } from '@/components/photo-attachment-manager';
 
 export default function NewPatientFormRecordPage() {
   const params = useParams();
@@ -49,6 +50,7 @@ export default function NewPatientFormRecordPage() {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [recordDate, setRecordDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
+  const [images, setImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (!patientId) return;
@@ -134,6 +136,7 @@ export default function NewPatientFormRecordPage() {
       recordDate,
       answers,
       notes,
+      images,
     };
 
     api.post(`/patients/${patientId}/form-records`, payload)
@@ -630,6 +633,14 @@ export default function NewPatientFormRecordPage() {
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
+
+                {/* Photo and Image Attachments */}
+                <PhotoAttachmentManager
+                  images={images}
+                  onChange={setImages}
+                  title="Fotos e Evidências da Avaliação"
+                  subtitle="Anexe registros visuais, fotos de testes funcionais, exames ou fotos da sessão"
+                />
 
                 {/* Submit Button */}
                 <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">

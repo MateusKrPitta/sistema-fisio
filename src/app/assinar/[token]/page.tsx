@@ -16,10 +16,13 @@ import {
   Clock,
   Printer,
   Sparkles,
-  Info
+  Info,
+  Image as ImageIcon,
+  Maximize2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getApiUrl } from '@/lib/api';
+import { ImageLightbox } from '@/components/image-lightbox';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -66,6 +69,7 @@ export default function SignEvaluationPublicPage() {
   const [hasDrawn, setHasDrawn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [signedSuccess, setSignedSuccess] = useState(false);
+  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
 
   // Fetch evaluation data
   useEffect(() => {
@@ -427,6 +431,48 @@ export default function SignEvaluationPublicPage() {
               <p className="text-slate-800 whitespace-pre-wrap leading-relaxed font-medium">{notes}</p>
             </div>
           )}
+
+          {/* Attached Evaluation Photos & Evidence */}
+          {(() => {
+            const evalImages: string[] = Array.isArray(evaluation?.images) && evaluation.images.length > 0
+              ? evaluation.images
+              : evaluation?.answers?.photoData
+              ? [evaluation.answers.photoData]
+              : [];
+
+            if (evalImages.length === 0) return null;
+
+            return (
+              <div className="space-y-3 pt-3 border-t border-slate-100">
+                <div className="flex items-center space-x-2 text-xs font-bold text-slate-800">
+                  <ImageIcon className="w-4 h-4 text-blue-600" />
+                  <span>Fotos e Evidências da Avaliação ({evalImages.length})</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {evalImages.map((imgUrl, imgIdx) => (
+                    <div
+                      key={imgIdx}
+                      onClick={() => setPreviewImageIndex(imgIdx)}
+                      className="group relative aspect-square rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs hover:shadow-md transition-all cursor-pointer"
+                      title="Clique para visualizar em tela cheia"
+                    >
+                      <img
+                        src={imgUrl}
+                        alt={`Foto da avaliação ${imgIdx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+                        <Maximize2 className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                        #{imgIdx + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Digital Signature Box */}
@@ -461,15 +507,15 @@ export default function SignEvaluationPublicPage() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="inline-flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center space-x-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>Imprimir / Salvar PDF</span>
+                  <span>Imprimir / Salvar Comprovante (PDF)</span>
                 </button>
               </div>
             </div>
           ) : (
-            /* Signature Form & Canvas */
+            /* Pending signature view with canvas */
             <div className="space-y-5">
               <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
                 <PenTool className="w-4 h-4 text-blue-600" />
@@ -601,6 +647,23 @@ export default function SignEvaluationPublicPage() {
           FisMovie Clinic • Plataforma de Avaliações Fisioterapêuticas &copy; {new Date().getFullYear()}
         </footer>
       </div>
+
+      {/* Lightbox for public evaluation photos */}
+      {previewImageIndex !== null && (
+        <ImageLightbox
+          images={
+            Array.isArray(evaluation?.images) && evaluation.images.length > 0
+              ? evaluation.images
+              : evaluation?.answers?.photoData
+              ? [evaluation.answers.photoData]
+              : []
+          }
+          currentIndex={previewImageIndex}
+          title={`Fotos da Avaliação - ${template?.title || 'Ficha Clínica'}`}
+          onClose={() => setPreviewImageIndex(null)}
+          onNavigate={(newIdx) => setPreviewImageIndex(newIdx)}
+        />
+      )}
     </div>
   );
 }

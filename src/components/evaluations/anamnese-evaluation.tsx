@@ -19,6 +19,7 @@ import {
   ClipboardList
 } from 'lucide-react';
 import { useToast } from '@/components/toast-context';
+import { PhotoAttachmentManager } from '@/components/photo-attachment-manager';
 
 // Rich Text Editor component
 const RichTextEditor = ({ value, onChange, label, placeholder }: { value: string, onChange: (val: string) => void, label: string, placeholder?: string }) => {
@@ -82,6 +83,7 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
   const { toast } = useToast();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     qp: '',
     hda: '',
@@ -113,6 +115,7 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
         recordDate: recordDate || new Date().toISOString().split('T')[0],
         answers,
         notes: `Anamnese Fisioterapêutica realizada`,
+        images,
       };
 
       await api.post(`/patients/${patientId}/form-records`, payload);
@@ -187,6 +190,14 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
             onChange={(val) => handleChange('obs', val)} 
           />
         </div>
+
+        {/* Photos & Visual Evidence */}
+        <PhotoAttachmentManager
+          images={images}
+          onChange={setImages}
+          title="Fotos, Laudos e Registros Visuais"
+          subtitle="Anexe fotos de exames de imagem, fotos corporais de referência ou laudos médicos"
+        />
 
         <div className="flex justify-end pt-4 border-t border-slate-100">
           <button

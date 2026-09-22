@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { Save, Loader2, Upload, Camera, Trash2, UserCheck, Check } from 'lucide-react';
+import { Save, Loader2, UserCheck, Check } from 'lucide-react';
 import { useToast } from '@/components/toast-context';
+import { PhotoAttachmentManager } from '@/components/photo-attachment-manager';
 
 const POSTURAL_SECTIONS = [
   {
@@ -52,32 +53,12 @@ export function PostureEvaluation({ patientId, recordDate, onSuccess }: { patien
   const [saving, setSaving] = useState(false);
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [postureNotes, setPostureNotes] = useState<string>('');
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [images, setImages] = useState<string[]>([]);
 
   const handleToggle = (item: string) => {
     setCheckedItems(prev => 
       prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
     );
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removePhoto = () => {
-    setPhotoPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const handleSave = async () => {
@@ -88,8 +69,8 @@ export function PostureEvaluation({ patientId, recordDate, onSuccess }: { patien
         deviations: checkedItems,
         totalDeviations: checkedItems.length,
         notes: postureNotes,
-        hasPhoto: !!photoPreview,
-        photoData: photoPreview || null,
+        hasPhoto: images.length > 0,
+        photoData: images[0] || null,
       };
 
       const payload = {
@@ -97,6 +78,7 @@ export function PostureEvaluation({ patientId, recordDate, onSuccess }: { patien
         recordDate: recordDate || new Date().toISOString().split('T')[0],
         answers,
         notes: `Avaliação Postural: ${checkedItems.length} alteração(ões) postural(is) identificada(s)`,
+        images,
       };
 
       await api.post(`/patients/${patientId}/form-records`, payload);
@@ -171,63 +153,12 @@ export function PostureEvaluation({ patientId, recordDate, onSuccess }: { patien
         </div>
 
         {/* Photo / Camera Capture Section */}
-        <div className="pt-4 border-t border-slate-100 space-y-3">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-            Registro Fotográfico / Fotometria Postural (Opcional)
-          </label>
-
-          <input 
-            type="file" 
-            accept="image/*" 
-            className="hidden" 
-            ref={fileInputRef} 
-            onChange={handleFileChange}
-          />
-          <input 
-            type="file" 
-            accept="image/*" 
-            capture="environment" 
-            className="hidden" 
-            ref={cameraInputRef} 
-            onChange={handleFileChange}
-          />
-
-          {!photoPreview ? (
-            <div className="flex flex-wrap gap-3">
-              <button 
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-4 py-3 rounded-xl transition-colors text-xs font-semibold text-slate-700 cursor-pointer"
-              >
-                <Upload className="w-4 h-4 text-slate-500" />
-                <span>Carregar Foto da Galeria</span>
-              </button>
-
-              <button 
-                type="button"
-                onClick={() => cameraInputRef.current?.click()}
-                className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-4 py-3 rounded-xl transition-colors text-xs font-semibold text-slate-700 cursor-pointer"
-              >
-                <Camera className="w-4 h-4 text-purple-600" />
-                <span>Tirar Foto com a Câmera</span>
-              </button>
-            </div>
-          ) : (
-            <div className="relative inline-block border-2 border-purple-200 shadow-md rounded-2xl overflow-hidden group">
-              <img src={photoPreview} alt="Foto Postural" className="max-h-72 object-contain bg-slate-900" />
-              <div className="absolute top-2 right-2 flex items-center gap-2">
-                <button 
-                  type="button"
-                  onClick={removePhoto}
-                  className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-xl shadow-lg transition-all"
-                  title="Remover Foto"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <PhotoAttachmentManager
+          images={images}
+          onChange={setImages}
+          title="Registro Fotográfico / Fotometria Postural"
+          subtitle="Anexe fotos dos planos anterior, posterior, perfis e simetria postural (suporte a múltiplas fotos)"
+        />
 
         {/* Notes */}
         <div className="space-y-1.5">

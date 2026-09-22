@@ -18,10 +18,13 @@ import {
   FileSpreadsheet,
   Award,
   Sparkles,
-  Loader2
+  Loader2,
+  Image as ImageIcon,
+  Maximize2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
+import { ImageLightbox } from '@/components/image-lightbox';
 
 export default function PatientReportsPage() {
   const { user } = useAuth();
@@ -33,6 +36,7 @@ export default function PatientReportsPage() {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [fieldMap, setFieldMap] = useState<Record<string, string>>({});
+  const [lightboxState, setLightboxState] = useState<{ images: string[]; index: number; title?: string } | null>(null);
 
   useEffect(() => {
     if (!patientId) return;
@@ -314,39 +318,88 @@ export default function PatientReportsPage() {
               </h3>
 
               <div className="space-y-4">
-                {records.map((r, idx) => (
-                  <div key={r.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4 text-blue-600" />
-                        <span className="font-bold text-slate-800 text-xs">
-                          Atendimento em {r.record_date || r.recordDate ? String(r.record_date || r.recordDate).split('T')[0].split('-').reverse().join('/') : ''}
+                {records.map((r, idx) => {
+                  const recordImages: string[] = Array.isArray(r.images) && r.images.length > 0
+                    ? r.images
+                    : r.answers?.photoData
+                    ? [r.answers.photoData]
+                    : [];
+
+                  const formattedDate = r.record_date || r.recordDate
+                    ? String(r.record_date || r.recordDate).split('T')[0].split('-').reverse().join('/')
+                    : '';
+
+                  return (
+                    <div key={r.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="w-4 h-4 text-blue-600" />
+                          <span className="font-bold text-slate-800 text-xs">
+                            Atendimento em {formattedDate}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-slate-500">
+                          {r.template?.title || 'Avaliação'}
                         </span>
                       </div>
-                      <span className="text-[11px] font-semibold text-slate-500">
-                        {r.template?.title || 'Avaliação'}
-                      </span>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                      {Object.entries(r.answers || {}).map(([key, val]) => (
-                        <div key={key} className="bg-white p-2.5 rounded-lg border border-slate-200">
-                          <p className="text-slate-500 font-semibold text-[10px] uppercase truncate" title={fieldMap[key] || key}>
-                            {fieldMap[key] || key}
-                          </p>
-                          <p className="font-bold text-slate-800 mt-0.5 truncate">{String(val)}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                        {Object.entries(r.answers || {})
+                          .filter(([key]) => key !== 'photoData' && key !== 'deviations' && key !== 'markers')
+                          .map(([key, val]) => (
+                            <div key={key} className="bg-white p-2.5 rounded-lg border border-slate-200">
+                              <p className="text-slate-500 font-semibold text-[10px] uppercase truncate" title={fieldMap[key] || key}>
+                                {fieldMap[key] || key}
+                              </p>
+                              <p className="font-bold text-slate-800 mt-0.5 truncate">{String(val)}</p>
+                            </div>
+                          ))}
+                      </div>
+
+                      {/* Attached Evaluation Photos Gallery */}
+                      {recordImages.length > 0 && (
+                        <div className="space-y-2 pt-1 border-t border-slate-200/60">
+                          <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700">
+                            <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Fotos e Evidências Anexadas ({recordImages.length}):</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2.5">
+                            {recordImages.map((imgUrl, imgIdx) => (
+                              <div
+                                key={imgIdx}
+                                onClick={() =>
+                                  setLightboxState({
+                                    images: recordImages,
+                                    index: imgIdx,
+                                    title: `Avaliação em ${formattedDate} - ${r.template?.title || 'Ficha Clínica'}`,
+                                  })
+                                }
+                                className="group relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs hover:shadow-md transition-all cursor-pointer"
+                                title="Clique para expandir"
+                              >
+                                <img
+                                  src={imgUrl}
+                                  alt={`Foto ${imgIdx + 1}`}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+                                  <Maximize2 className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      )}
 
-                    {r.notes && (
-                      <p className="text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200">
-                        <span className="font-bold text-slate-800">Parecer do Fisioterapeuta: </span>
-                        {r.notes}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                      {r.notes && (
+                        <p className="text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200">
+                          <span className="font-bold text-slate-800">Parecer do Fisioterapeuta: </span>
+                          {r.notes}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -359,6 +412,19 @@ export default function PatientReportsPage() {
           </div>
         )}
       </main>
+
+      {/* Lightbox Modal */}
+      {lightboxState && (
+        <ImageLightbox
+          images={lightboxState.images}
+          currentIndex={lightboxState.index}
+          title={lightboxState.title}
+          onClose={() => setLightboxState(null)}
+          onNavigate={(newIndex) =>
+            setLightboxState((prev) => (prev ? { ...prev, index: newIndex } : null))
+          }
+        />
+      )}
     </>
   );
 }

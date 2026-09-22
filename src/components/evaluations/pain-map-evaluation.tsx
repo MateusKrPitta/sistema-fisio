@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Save, Loader2, MousePointerClick, Activity, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/toast-context';
+import { PhotoAttachmentManager } from '@/components/photo-attachment-manager';
 
 type Marker = {
   id: string;
@@ -19,6 +20,7 @@ export function PainMapEvaluation({ patientId, recordDate, onSuccess }: { patien
   const { toast } = useToast();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
   const [markers, setMarkers] = useState<Marker[]>([]);
   const [painScale, setPainScale] = useState<number>(5);
   const [painCharacteristics, setPainCharacteristics] = useState<string>('');
@@ -69,6 +71,7 @@ export function PainMapEvaluation({ patientId, recordDate, onSuccess }: { patien
         recordDate: recordDate || new Date().toISOString().split('T')[0],
         answers,
         notes: `Mapeamento de Dor: EVA ${painScale}/10 com ${markers.length} ponto(s) marcado(s)`,
+        images,
       };
 
       await api.post(`/patients/${patientId}/form-records`, payload);
@@ -210,6 +213,14 @@ export function PainMapEvaluation({ patientId, recordDate, onSuccess }: { patien
             className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
           />
         </div>
+
+        {/* Photos & Visual Evidence */}
+        <PhotoAttachmentManager
+          images={images}
+          onChange={setImages}
+          title="Fotos e Evidências dos Pontos de Dor"
+          subtitle="Anexe fotos de hematomas, edemas, postura antálgica ou pontos dolorosos"
+        />
 
         <div className="flex justify-end pt-4 border-t border-slate-100">
           <button

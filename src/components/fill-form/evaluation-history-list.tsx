@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar,
@@ -14,8 +14,11 @@ import {
   ChevronUp,
   Award,
   Zap,
+  Camera,
+  Eye,
 } from 'lucide-react';
 import { CustomField } from '@/lib/clinical-presets';
+import { ImageLightbox } from '@/components/image-lightbox';
 
 export interface ScaleGroup {
   id: string | number;
@@ -132,6 +135,9 @@ export function EvaluationHistoryList({
   onStartEdit,
   onRequestDelete,
 }: EvaluationHistoryListProps) {
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
   const getSignUrl = (token?: string) => {
     if (!token) return '';
     if (typeof window !== 'undefined') {
@@ -226,6 +232,26 @@ export function EvaluationHistoryList({
         const answersCount = Object.keys(recAnswers).length;
         const badgeScore = calculateRecordBadge(record);
 
+        let recordImages: string[] = [];
+        if (Array.isArray(record.images)) {
+          recordImages = record.images;
+        } else if (typeof record.images === 'string') {
+          try {
+            const parsed = JSON.parse(record.images);
+            if (Array.isArray(parsed)) recordImages = parsed;
+          } catch {
+            if (record.images.startsWith('data:') || record.images.startsWith('http')) {
+              recordImages = [record.images];
+            }
+          }
+        }
+        if (recordImages.length === 0 && recAnswers?.images && Array.isArray(recAnswers.images)) {
+          recordImages = recAnswers.images;
+        }
+        if (recordImages.length === 0 && recAnswers?.photoData && typeof recAnswers.photoData === 'string') {
+          recordImages = [recAnswers.photoData];
+        }
+
         return (
           <div
             key={record.id}
@@ -268,6 +294,15 @@ export function EvaluationHistoryList({
 
                     <span>•</span>
                     <span>{answersCount} item(ns)</span>
+                    {recordImages.length > 0 && (
+                      <>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1 font-semibold text-blue-600">
+                          <Camera className="w-3 h-3" />
+                          {recordImages.length} foto(s)
+                        </span>
+                      </>
+                    )}
                     {record.template?.title && (
                       <>
                         <span>•</span>
@@ -318,7 +353,7 @@ export function EvaluationHistoryList({
                     onStartEdit(record);
                   }}
                   className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
-                  title="Editar esta avaliação"
+                  title="Editar Avaliação"
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
@@ -331,52 +366,52 @@ export function EvaluationHistoryList({
                       onRequestDelete(record);
                     }}
                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
-                    title="Excluir esta avaliação (Apenas Administrador)"
+                    title="Excluir Avaliação"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
 
                 <div className="p-2 text-slate-400">
-                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                  {isExpanded ? <ChevronUp className="w-5 h-5 text-blue-600" /> : <ChevronDown className="w-5 h-5" />}
                 </div>
               </div>
             </div>
 
-            {/* Expanded Details */}
+            {/* Accordion Body */}
             <AnimatePresence>
               {isExpanded && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="border-t border-slate-100 p-6 bg-slate-50/50 space-y-6"
+                  className="px-5 pb-6 sm:px-6 space-y-5 border-t border-slate-100 pt-5 bg-slate-50/40"
                 >
-                  {/* Signature Proof Banner */}
+                  {/* Status Banner */}
                   <div
-                    className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    className={`p-4 rounded-2xl border flex items-center justify-between gap-3 ${
                       isSigned
-                        ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-                        : 'bg-amber-50/80 border-amber-200 text-amber-950'
+                        ? 'bg-emerald-50/60 border-emerald-200/80 text-emerald-900'
+                        : 'bg-amber-50/60 border-amber-200/80 text-amber-900'
                     }`}
                   >
-                    <div className="flex items-center space-x-3 min-w-0">
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0 ${
-                          isSigned ? 'bg-emerald-600 text-white shadow-xs' : 'bg-amber-500 text-white shadow-xs'
-                        }`}
-                      >
-                        {isSigned ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
-                      </div>
-                      <div className="min-w-0">
+                    <div className="flex items-center space-x-3">
+                      {isSigned ? (
+                        <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+                          <Clock className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div>
                         <h5 className="font-extrabold text-xs sm:text-sm">
-                          {isSigned
-                            ? 'Avaliação Assinada Digitalmente pelo Paciente'
-                            : 'Assinatura Pendente do Paciente'}
+                          {isSigned ? 'Avaliação Assinada pelo Paciente' : 'Aguardando Assinatura do Paciente'}
                         </h5>
-                        <p className="text-[11px] opacity-80 mt-0.5">
+                        <p className="text-[11px] opacity-80">
                           {isSigned
-                            ? `Assinado por ${record.signedByName || record.signed_by_name || patient?.name} em ${formatDateTimeSafe(
+                            ? `Documento validado com assinatura em ${formatDateTimeSafe(
                                 record.signedAt || record.signed_at
                               )}`
                             : 'Envie o link para o paciente visualizar a prévia da avaliação e assinar digitalmente.'}
@@ -397,6 +432,53 @@ export function EvaluationHistoryList({
                           alt="Assinatura do Paciente"
                           className="max-h-24 object-contain"
                         />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Attached Photos / Evidences */}
+                  {recordImages.length > 0 && (
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                          <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <Camera className="w-3.5 h-3.5 text-blue-600" />
+                            Fotos e Evidências ({recordImages.length})
+                          </h5>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          Clique na foto para ampliar
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {recordImages.map((imgUrl, imgIdx) => (
+                          <div
+                            key={imgIdx}
+                            onClick={() => {
+                              setLightboxImages(recordImages);
+                              setLightboxIndex(imgIdx);
+                            }}
+                            className="group relative aspect-4/3 rounded-xl overflow-hidden bg-slate-950/5 border border-slate-200 cursor-pointer hover:shadow-md hover:border-blue-400 transition-all"
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`Evidência ${imgIdx + 1}`}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/30 flex items-center justify-center transition-colors">
+                              <span className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-xs text-slate-900 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 shadow-sm transition-opacity">
+                                <Eye className="w-3 h-3 text-blue-600" />
+                                Ampliar
+                              </span>
+                            </div>
+                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-xs">
+                              #{imgIdx + 1}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -470,6 +552,14 @@ export function EvaluationHistoryList({
           </div>
         );
       })}
+
+      {/* Lightbox for History Photos */}
+      <ImageLightbox
+        images={lightboxImages}
+        currentIndex={lightboxIndex}
+        onNavigate={setLightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+      />
     </div>
   );
 }

@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CLINICAL_PRESETS, ClinicalPreset, CustomField } from '@/lib/clinical-presets';
 import { FieldRenderer } from './fill-form/field-renderer';
 import { ScaleBuilderDeck } from './fill-form/scale-builder-deck';
+import { PhotoAttachmentManager } from '@/components/photo-attachment-manager';
 import {
   EvaluationHistoryList,
   formatDateSafe,
@@ -62,14 +63,21 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
   const [recordDate, setRecordDate] = useState(new Date().toISOString().split('T')[0]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [notes, setNotes] = useState('');
+  const [images, setImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen && patient) {
       setAnswers({});
       setNotes('');
+      setImages([]);
       setEditingRecord(null);
       setRecordDate(new Date().toISOString().split('T')[0]);
       setExpandedRecordIds([]);
+      setActiveFields([]);
+      setLoadedPresets([]);
+      setSelectedPresetToLoad('');
+      setModuleTitle('');
+      setModuleDescription('');
       loadData();
     }
   }, [isOpen, patient]);
@@ -87,53 +95,15 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
         setFormRecords([]);
       }
 
-      // 2. Fetch linked template if present
-      const linkedId = Number(patient.templateId || patient.template_id || patient.template?.id);
-      let foundTemplate: any = null;
-
-      if (linkedId) {
-        try {
-          const res: any = await api.get(`/form-templates/${linkedId}`);
-          foundTemplate = res?.data || res;
-        } catch {
-          // fallback
-        }
-      }
-
-      if (foundTemplate) {
-        setSelectedTemplate(foundTemplate);
-        setModuleTitle(foundTemplate.title || '');
-        setModuleDescription(foundTemplate.description || '');
-        const cat =
-          foundTemplate.category ||
-          (foundTemplate.modules && foundTemplate.modules[0]?.category) ||
-          'Controle de Tronco';
-        setModuleCategory(cat);
-
-        const rawFields =
-          foundTemplate.modules && foundTemplate.modules[0]?.fields
-            ? foundTemplate.modules[0].fields
-            : foundTemplate.fields || [];
-        const parsed: CustomField[] = (rawFields || []).map((f: any) => ({
-          ...f,
-          options: typeof f.options === 'string' ? JSON.parse(f.options) : f.options || [],
-          group: f.group || foundTemplate.title || 'Escala Principal',
-        }));
-        setActiveFields(parsed);
-
-        const distinctGroups: string[] = Array.from(
-          new Set(parsed.map((f) => f.group || foundTemplate.title || 'Escala Principal'))
-        );
-        setLoadedPresets(distinctGroups);
-        setSelectedPresetToLoad('');
-      } else {
-        setModuleCategory('Controle de Tronco');
-        setModuleTitle('');
-        setModuleDescription('');
-        setActiveFields([]);
-        setLoadedPresets([]);
-        setSelectedPresetToLoad('');
-      }
+      // Start fresh with no forced pre-selected scale for new evaluation
+      setModuleCategory('Controle de Tronco');
+      setModuleTitle('');
+      setModuleDescription('');
+      setActiveFields([]);
+      setLoadedPresets([]);
+      setSelectedPresetToLoad('');
+      setSelectedTemplate(null);
+      setImages([]);
 
       if (records.length > 0) {
         setViewMode('history');
@@ -220,14 +190,14 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
     setEditingRecord(null);
     setAnswers({});
     setNotes('');
+    setImages([]);
     setRecordDate(new Date().toISOString().split('T')[0]);
-    if (!selectedTemplate) {
-      setActiveFields([]);
-      setLoadedPresets([]);
-      setSelectedPresetToLoad('');
-      setModuleTitle('');
-      setModuleDescription('');
-    }
+    setActiveFields([]);
+    setLoadedPresets([]);
+    setSelectedPresetToLoad('');
+    setModuleTitle('');
+    setModuleDescription('');
+    setSelectedTemplate(null);
     setViewMode('fill');
   };
 
@@ -236,6 +206,13 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
     const recAnswers = parseAnswers(record.answers);
     setAnswers(recAnswers);
     setNotes(record.notes || '');
+    setImages(
+      Array.isArray(record.images) && record.images.length > 0
+        ? record.images
+        : record.answers?.photoData
+        ? [record.answers.photoData]
+        : []
+    );
 
     if (record.template) {
       setSelectedTemplate(record.template);
@@ -259,6 +236,9 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
         new Set(parsed.map((f) => f.group || record.template.title || 'Escala Principal'))
       );
       setLoadedPresets(distinctGroups);
+    } else {
+      setActiveFields([]);
+      setLoadedPresets([]);
     }
 
     const rDateStr = record.recordDate
@@ -368,6 +348,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
           recordDate,
           answers: normalizedAnswers,
           notes,
+          images,
         });
 
         toast({
@@ -381,6 +362,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
           recordDate,
           answers: normalizedAnswers,
           notes,
+          images,
           signatureStatus: 'pendente',
         });
 
@@ -696,6 +678,14 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                           className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-medium text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none transition-all resize-none shadow-2xs"
                         />
                       </div>
+
+                      {/* Photo Evidences / Attachments */}
+                      <PhotoAttachmentManager
+                        images={images}
+                        onChange={setImages}
+                        title="Fotos e Evidências da Avaliação"
+                        subtitle="Anexe fotos de testes funcionais, postura, exames ou registros visuais desta avaliação"
+                      />
                     </div>
                   )}
                 </form>
