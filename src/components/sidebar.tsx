@@ -153,17 +153,29 @@ export function Sidebar() {
         <div className="flex items-center space-x-3 min-w-0">
           <motion.div
             whileHover={{ scale: 1.05, rotate: 5 }}
-            className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-blue-500/10 shrink-0 overflow-hidden border border-slate-700/60"
+            className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0 overflow-hidden"
           >
-            <img
-              src="/icons/icon-192x192.png"
-              alt="FisMovie Logo"
-              className="w-full h-full object-cover rounded-xl"
-            />
+            {user?.company?.logoUrl ? (
+              <img
+                src={user.company.logoUrl}
+                alt="Logo da Clínica"
+                className="w-full h-full object-cover rounded-xl"
+              />
+            ) : (
+              <span className="font-bold text-xs text-white tracking-wide">
+                {(user?.company?.name || 'Clinica Milene Salmazo')
+                  .split(' ')
+                  .filter(Boolean)
+                  .map((w: string) => w[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase()}
+              </span>
+            )}
           </motion.div>
           <div className="min-w-0">
             <h1 className="font-bold text-sm sm:text-base leading-tight tracking-tight text-white truncate">
-              {user?.company?.name || 'FisMovie'}
+              {user?.company?.name || 'Clinica Milene Salmazo'}
             </h1>
             <p className="text-[10px] text-blue-400 font-bold uppercase tracking-wider truncate">
               {userRole === 'superadmin' ? 'Painel Master' : 'FisMovie'}

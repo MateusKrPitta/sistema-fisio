@@ -38,7 +38,11 @@ export const metadata: Metadata = {
     title: "FisMovie",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/icons/icon-192x192.png",
     apple: "/icons/apple-touch-icon.png",
   },
 };
