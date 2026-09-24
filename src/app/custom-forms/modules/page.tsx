@@ -406,8 +406,8 @@ export default function CustomModulesPage() {
 
   const loadAnamnesePreset = () => {
     return [
-      { id: Date.now() + 1, label: 'Queixa Principal (QP) / Motivo da Consulta', fieldType: 'long_text', isRequired: true, helpText: 'Motivo principal da procura pelo atendimento fisioterapêutico' },
-      { id: Date.now() + 2, label: 'História da Doença Atual (HDA)', fieldType: 'long_text', isRequired: true, helpText: 'Início dos sintomas, evolução, mecanismo de lesão, fatores de piora e melhora' },
+      { id: Date.now() + 1, label: 'Queixa Principal (QP) / Motivo da Consulta', fieldType: 'long_text', isRequired: false, helpText: 'Motivo principal da procura pelo atendimento fisioterapêutico' },
+      { id: Date.now() + 2, label: 'História da Doença Atual (HDA)', fieldType: 'long_text', isRequired: false, helpText: 'Início dos sintomas, evolução, mecanismo de lesão, fatores de piora e melhora' },
       { id: Date.now() + 3, label: 'História Médica Pregressa (HMP)', fieldType: 'long_text', isRequired: false, helpText: 'Cirurgias, comorbidades (HAS, DM), medicamentos em uso e internações' },
       { id: Date.now() + 4, label: 'Histórico Familiar (HF)', fieldType: 'long_text', isRequired: false, helpText: 'Histórico de doenças crônicas ou hereditárias na família' },
       { id: Date.now() + 5, label: 'Observações Gerais & Diagnóstico Funcional', fieldType: 'long_text', isRequired: false, helpText: 'Parecer clínico inicial e objetivos terapêuticos' }
@@ -416,9 +416,9 @@ export default function CustomModulesPage() {
 
   const loadPainMapPreset = () => {
     return [
-      { id: Date.now() + 1, label: 'Intensidade da Dor (Escala EVA)', fieldType: 'scale_0_10', isRequired: true, helpText: '0 = sem dor, 5 = moderada, 10 = insuportável' },
-      { id: Date.now() + 2, label: 'Localização Anatômica da Dor', fieldType: 'text', isRequired: true, helpText: 'Ex: Coluna lombar L4-L5, ombro direito' },
-      { id: Date.now() + 3, label: 'Tipo / Característica da Dor', fieldType: 'single_select', options: ['Queimação', 'Pontada / Agulhada', 'Latejante / Pulsátil', 'Em Peso / Cansaço', 'Choque / Irradiada', 'Contínua / Profunda'], isRequired: true, helpText: 'Selecione o padrão predominante da dor' },
+      { id: Date.now() + 1, label: 'Intensidade da Dor (Escala EVA)', fieldType: 'scale_0_10', isRequired: false, helpText: '0 = sem dor, 5 = moderada, 10 = insuportável' },
+      { id: Date.now() + 2, label: 'Localização Anatômica da Dor', fieldType: 'text', isRequired: false, helpText: 'Ex: Coluna lombar L4-L5, ombro direito' },
+      { id: Date.now() + 3, label: 'Tipo / Característica da Dor', fieldType: 'single_select', options: ['Queimação', 'Pontada / Agulhada', 'Latejante / Pulsátil', 'Em Peso / Cansaço', 'Choque / Irradiada', 'Contínua / Profunda'], isRequired: false, helpText: 'Selecione o padrão predominante da dor' },
       { id: Date.now() + 4, label: 'Fatores de Piora e Melhora', fieldType: 'long_text', isRequired: false, helpText: 'Movimentos ou posições que agravam ou aliviam o sintoma' }
     ];
   };
@@ -446,7 +446,7 @@ export default function CustomModulesPage() {
         fieldType: 'single_select',
         options: trunkOptionsList,
         helpText: 'Pontuação: 0 (Incapaz), 12 (Ajuda/Anormal), 25 (Normal)',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 2,
@@ -454,7 +454,7 @@ export default function CustomModulesPage() {
         fieldType: 'single_select',
         options: trunkOptionsList,
         helpText: 'Pontuação: 0 (Incapaz), 12 (Ajuda/Anormal), 25 (Normal)',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 3,
@@ -462,7 +462,7 @@ export default function CustomModulesPage() {
         fieldType: 'single_select',
         options: trunkOptionsList,
         helpText: 'Pontuação: 0 (Incapaz), 12 (Ajuda/Anormal), 25 (Normal)',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 4,
@@ -470,7 +470,7 @@ export default function CustomModulesPage() {
         fieldType: 'single_select',
         options: trunkOptionsList,
         helpText: 'Pontuação: 0 (Incapaz), 12 (Ajuda/Anormal), 25 (Normal)',
-        isRequired: true,
+        isRequired: false,
       },]
   };
 
@@ -482,7 +482,7 @@ export default function CustomModulesPage() {
         fieldType: 'single_select',
         options: ['4 - Espontânea', '3 - Ao chamado', '2 - À dor', '1 - Ausente'],
         helpText: 'Pontuação de 1 a 4',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 2,
@@ -490,7 +490,7 @@ export default function CustomModulesPage() {
         fieldType: 'single_select',
         options: ['5 - Orientado', '4 - Confuso', '3 - Palavras', '2 - Sons', '1 - Ausente'],
         helpText: 'Pontuação de 1 a 5',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 3,
@@ -498,7 +498,7 @@ export default function CustomModulesPage() {
         fieldType: 'single_select',
         options: ['6 - Obedece', '5 - Localiza', '4 - Flete', '3 - Flexão Anormal', '2 - Extensão', '1 - Ausente'],
         helpText: 'Pontuação de 1 a 6',
-        isRequired: true,
+        isRequired: false,
       },]
   };
 
@@ -517,14 +517,14 @@ export default function CustomModulesPage() {
           '4 - Parte afetada rígida'
         ],
         helpText: 'Selecione o grau de tônus muscular (0 a 4)',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 2,
         label: 'Grupo Muscular / Segmento Avaliado',
         fieldType: 'text',
         helpText: 'Ex: Bíceps braquial direito, Isquiotibiais',
-        isRequired: true,
+        isRequired: false,
       }]
   };
 
@@ -539,18 +539,18 @@ export default function CustomModulesPage() {
       '0 - Sem contração detectável'
     ];
 
-    return [{ id: Date.now() + 1, label: 'Flexão do Braço (Bíceps)', fieldType: 'single_select', isRequired: true, helpText: 'Teste de flexão do braço contra gravidade', options: mrcOptions },
-      { id: Date.now() + 2, label: 'Extensão do Braço (Tríceps)', fieldType: 'single_select', isRequired: true, helpText: 'Teste de extensão do braço contra gravidade', options: mrcOptions },
-      { id: Date.now() + 3, label: 'Elevação de Ombro', fieldType: 'single_select', isRequired: true, helpText: 'Teste de elevação do ombro contra gravidade', options: mrcOptions },
-      { id: Date.now() + 4, label: 'Rotação Externa do Ombro', fieldType: 'single_select', isRequired: true, helpText: 'Teste de rotação externa do ombro contra gravidade', options: mrcOptions },
-      { id: Date.now() + 5, label: 'Flexão do Punho', fieldType: 'single_select', isRequired: true, helpText: 'Teste de flexão do punho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 6, label: 'Extensão do Punho', fieldType: 'single_select', isRequired: true, helpText: 'Teste de extensão do punho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 7, label: 'Flexão do Quadril', fieldType: 'single_select', isRequired: true, helpText: 'Teste de flexão do quadril contra gravidade', options: mrcOptions },
-      { id: Date.now() + 8, label: 'Extensão do Quadril', fieldType: 'single_select', isRequired: true, helpText: 'Teste de extensão do quadril contra gravidade', options: mrcOptions },
-      { id: Date.now() + 9, label: 'Flexão do Joelho', fieldType: 'single_select', isRequired: true, helpText: 'Teste de flexão do joelho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 10, label: 'Extensão do Joelho', fieldType: 'single_select', isRequired: true, helpText: 'Teste de extensão do joelho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 11, label: 'Flexão do Tornozelo', fieldType: 'single_select', isRequired: true, helpText: 'Teste de flexão do tornozelo contra gravidade', options: mrcOptions },
-      { id: Date.now() + 12, label: 'Extensão do Tornozelo', fieldType: 'single_select', isRequired: true, helpText: 'Teste de extensão do tornozelo contra gravidade', options: mrcOptions }]
+    return [{ id: Date.now() + 1, label: 'Flexão do Braço (Bíceps)', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do braço contra gravidade', options: mrcOptions },
+      { id: Date.now() + 2, label: 'Extensão do Braço (Tríceps)', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do braço contra gravidade', options: mrcOptions },
+      { id: Date.now() + 3, label: 'Elevação de Ombro', fieldType: 'single_select', isRequired: false, helpText: 'Teste de elevação do ombro contra gravidade', options: mrcOptions },
+      { id: Date.now() + 4, label: 'Rotação Externa do Ombro', fieldType: 'single_select', isRequired: false, helpText: 'Teste de rotação externa do ombro contra gravidade', options: mrcOptions },
+      { id: Date.now() + 5, label: 'Flexão do Punho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do punho contra gravidade', options: mrcOptions },
+      { id: Date.now() + 6, label: 'Extensão do Punho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do punho contra gravidade', options: mrcOptions },
+      { id: Date.now() + 7, label: 'Flexão do Quadril', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do quadril contra gravidade', options: mrcOptions },
+      { id: Date.now() + 8, label: 'Extensão do Quadril', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do quadril contra gravidade', options: mrcOptions },
+      { id: Date.now() + 9, label: 'Flexão do Joelho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do joelho contra gravidade', options: mrcOptions },
+      { id: Date.now() + 10, label: 'Extensão do Joelho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do joelho contra gravidade', options: mrcOptions },
+      { id: Date.now() + 11, label: 'Flexão do Tornozelo', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do tornozelo contra gravidade', options: mrcOptions },
+      { id: Date.now() + 12, label: 'Extensão do Tornozelo', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do tornozelo contra gravidade', options: mrcOptions }]
   };
 
   const loadTUGScalePreset = () => {
@@ -561,7 +561,7 @@ export default function CustomModulesPage() {
         fieldType: 'number',
         unit: 'segundos',
         helpText: 'Tempo para levantar, andar 3 metros, virar, voltar e sentar. Referências: 60-69 anos (até 8.1s), 70-79 anos (até 9.2s), 80-99 anos (até 11.3s)',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 2,
@@ -574,7 +574,7 @@ export default function CustomModulesPage() {
           '> 30 s - Dependência funcional significativa'
         ],
         helpText: 'Classifique o risco com base no tempo de execução medido',
-        isRequired: true,
+        isRequired: false,
       },
       {
         id: Date.now() + 3,
@@ -614,7 +614,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 1,
         label: '1. Higiene Pessoal',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Lavar as mãos/face, escovar dentes, barbear, pentear ou maquiar-se.',
         options: [
           '0 - Incapaz de realizar higiene pessoal sendo dependente em todos os aspectos',
@@ -628,7 +628,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 2,
         label: '2. Banho',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Capacidade de lavar-se, transferir-se e secar-se.',
         options: [
           '0 - Totalmente dependente para banhar-se',
@@ -642,7 +642,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 3,
         label: '3. Alimentação',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Manipulação de talheres, mastigação, cortar alimentos e beber.',
         options: [
           '0 - Dependente em todos os aspectos e necessita ser alimentado',
@@ -656,7 +656,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 4,
         label: '4. Toalete (Uso do Vaso Sanitário)',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Despir-se/vestir-se, transferir-se, higiene íntima e lavar as mãos.',
         options: [
           '0 - Totalmente dependente no uso do vaso sanitário',
@@ -670,7 +670,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 5,
         label: '5. Subir e Descer Escadas',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Capacidade de subir e descer lances de escada.',
         options: [
           '0 - Incapaz de subir escadas',
@@ -684,7 +684,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 6,
         label: '6. Vestuário',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Vestir-se, despir-se, abotoar, fechar zíper, calçar e amarrar sapatos.',
         options: [
           '0 - Dependente em todos os aspectos do vestir e incapaz de participar',
@@ -698,7 +698,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 7,
         label: '7. Controle Esfincteriano (Bexiga)',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Controle da micção e continência urinária.',
         options: [
           '0 - Apresenta incontinência urinária total',
@@ -712,7 +712,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 8,
         label: '8. Controle Esfincteriano (Intestino)',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Controle da evacuação e continência fecal.',
         options: [
           '0 - Não tem controle de esfíncteres ou utiliza cateterismo',
@@ -726,7 +726,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 9,
         label: '9. Deambulação / Mobilidade',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Capacidade de caminhar 50 metros com ou sem dispositivos (ou condução de cadeira de rodas).',
         options: [
           '0 - Totalmente dependente para deambular / conduzir cadeira de rodas',
@@ -743,7 +743,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 10,
         label: '10. Transferências (Cadeira / Cama)',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Transferir-se da cama para a cadeira de rodas/poltrona e retornar.',
         options: [
           '0 - Incapaz de participar da transferência (necessita de 2 pessoas / auxílio mecânico)',
@@ -771,30 +771,30 @@ export default function CustomModulesPage() {
       '10 - Máxima'
     ];
 
-    return [{ id: Date.now() + 1, label: 'SpO2 Basal', fieldType: 'number', unit: '%', isRequired: true, helpText: 'Saturação de oxigênio antes de iniciar o teste' },
-      { id: Date.now() + 2, label: 'FC Basal', fieldType: 'number', unit: 'bpm', isRequired: true, helpText: 'Frequência cardíaca em repouso' },
-      { id: Date.now() + 3, label: 'Dispneia Basal (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: true, helpText: 'Escala de percepção de falta de ar' },
-      { id: Date.now() + 4, label: 'Fadiga Basal (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: true, helpText: 'Escala de percepção de fadiga (pernas)' },
+    return [{ id: Date.now() + 1, label: 'SpO2 Basal', fieldType: 'number', unit: '%', isRequired: false, helpText: 'Saturação de oxigênio antes de iniciar o teste' },
+      { id: Date.now() + 2, label: 'FC Basal', fieldType: 'number', unit: 'bpm', isRequired: false, helpText: 'Frequência cardíaca em repouso' },
+      { id: Date.now() + 3, label: 'Dispneia Basal (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: false, helpText: 'Escala de percepção de falta de ar' },
+      { id: Date.now() + 4, label: 'Fadiga Basal (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: false, helpText: 'Escala de percepção de fadiga (pernas)' },
       
-      { id: Date.now() + 5, label: 'Distância Total Percorrida', fieldType: 'number', unit: 'metros', isRequired: true, helpText: 'Metragem total após os 6 minutos' },
+      { id: Date.now() + 5, label: 'Distância Total Percorrida', fieldType: 'number', unit: 'metros', isRequired: false, helpText: 'Metragem total após os 6 minutos' },
       { id: Date.now() + 6, label: 'Número de Paradas', fieldType: 'number', isRequired: false, helpText: 'Quantas vezes o paciente precisou parar' },
       { id: Date.now() + 7, label: 'Duração das Paradas', fieldType: 'text', isRequired: false, helpText: 'Ex: 1 minuto' },
 
-      { id: Date.now() + 8, label: 'SpO2 Final', fieldType: 'number', unit: '%', isRequired: true, helpText: 'Saturação de oxigênio imediatamente após o término' },
-      { id: Date.now() + 9, label: 'FC Final', fieldType: 'number', unit: 'bpm', isRequired: true, helpText: 'Frequência cardíaca imediatamente após o término' },
-      { id: Date.now() + 10, label: 'Dispneia Final (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: true },
-      { id: Date.now() + 11, label: 'Fadiga Final (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: true },
+      { id: Date.now() + 8, label: 'SpO2 Final', fieldType: 'number', unit: '%', isRequired: false, helpText: 'Saturação de oxigênio imediatamente após o término' },
+      { id: Date.now() + 9, label: 'FC Final', fieldType: 'number', unit: 'bpm', isRequired: false, helpText: 'Frequência cardíaca imediatamente após o término' },
+      { id: Date.now() + 10, label: 'Dispneia Final (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: false },
+      { id: Date.now() + 11, label: 'Fadiga Final (Borg)', fieldType: 'single_select', options: borgOptions, isRequired: false },
       
       { id: Date.now() + 12, label: 'Observações / Intercorrências', fieldType: 'long_text', isRequired: false, helpText: 'Anotar queixas de dor, desequilíbrio, etc.' }]
   };
 
   const loadManovacuometriaPreset = () => {
 
-    return [{ id: Date.now() + 1, label: 'PImáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: true, helpText: 'Pressão Inspiratória Máxima alcançada' },
+    return [{ id: Date.now() + 1, label: 'PImáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: false, helpText: 'Pressão Inspiratória Máxima alcançada' },
       { id: Date.now() + 2, label: 'PImáx Prevista', fieldType: 'number', unit: 'cmH2O', isRequired: false, helpText: 'Valor previsto (referência baseada em sexo e idade)' },
       { id: Date.now() + 3, label: '% do Previsto (PImáx)', fieldType: 'number', unit: '%', isRequired: false, helpText: '(PImáx Medida / PImáx Prevista) x 100' },
       
-      { id: Date.now() + 4, label: 'PEmáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: true, helpText: 'Pressão Expiratória Máxima alcançada' },
+      { id: Date.now() + 4, label: 'PEmáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: false, helpText: 'Pressão Expiratória Máxima alcançada' },
       { id: Date.now() + 5, label: 'PEmáx Prevista', fieldType: 'number', unit: 'cmH2O', isRequired: false, helpText: 'Valor previsto (referência baseada em sexo e idade)' },
       { id: Date.now() + 6, label: '% do Previsto (PEmáx)', fieldType: 'number', unit: '%', isRequired: false, helpText: '(PEmáx Medida / PEmáx Prevista) x 100' },
       
@@ -809,9 +809,9 @@ export default function CustomModulesPage() {
         'Zona Amarela (50-79%) - Sinal de alerta',
         'Zona Vermelha (< 50%) - Obstrução grave'
       ] },
-      { id: Date.now() + 3, label: 'PCF - Pico de Fluxo de Tosse (Bocal/Sem Máscara)', fieldType: 'number', unit: 'L/min', isRequired: true, helpText: 'Pico de fluxo durante manobra de tosse voluntária' },
+      { id: Date.now() + 3, label: 'PCF - Pico de Fluxo de Tosse (Bocal/Sem Máscara)', fieldType: 'number', unit: 'L/min', isRequired: false, helpText: 'Pico de fluxo durante manobra de tosse voluntária' },
       { id: Date.now() + 4, label: 'PCF - Pico de Fluxo de Tosse (Com Máscara)', fieldType: 'number', unit: 'L/min', isRequired: false, helpText: 'Em caso de fraqueza orofacial ou vazamento no bocal' },
-      { id: Date.now() + 5, label: 'Interpretação do PCF (Tosse)', fieldType: 'single_select', isRequired: true, helpText: 'Com base no maior valor alcançado de PCF', options: [
+      { id: Date.now() + 5, label: 'Interpretação do PCF (Tosse)', fieldType: 'single_select', isRequired: false, helpText: 'Com base no maior valor alcançado de PCF', options: [
         '> 270 L/min - Tosse eficaz',
         '160 a 270 L/min - Tosse potencialmente insuficiente',
         '< 160 L/min - Tosse ineficaz (considerar assistência)'
@@ -825,7 +825,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 1,
         label: 'Grau de Dispnéia (MRC)',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Selecione o grau que melhor descreve a falta de ar do paciente',
         options: [
           '0 - Sem dispnéia, a não ser com exercício extenuante',
@@ -843,7 +843,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 1,
         label: 'Classe Funcional (NYHA)',
         fieldType: 'single_select',
-        isRequired: true,
+        isRequired: false,
         helpText: 'Selecione a classe de sintomas de insuficiência cardíaca',
         options: [
           'CLASSE I - Ausência de sintomas durante atividades cotidianas.',
@@ -856,7 +856,7 @@ export default function CustomModulesPage() {
 
   const loadBioimpedanciaPreset = () => {
 
-    return [{ id: Date.now() + 1, label: 'Peso', fieldType: 'number', unit: 'kg', isRequired: true },
+    return [{ id: Date.now() + 1, label: 'Peso', fieldType: 'number', unit: 'kg', isRequired: false },
       { id: Date.now() + 2, label: 'IMC (Índice de Massa Corporal)', fieldType: 'number', unit: 'kg/m²', isRequired: false },
       { id: Date.now() + 3, label: 'Gordura Corporal', fieldType: 'number', unit: '%', isRequired: false },
       { id: Date.now() + 4, label: 'Massa Gorda', fieldType: 'number', unit: 'kg', isRequired: false },
@@ -943,39 +943,39 @@ export default function CustomModulesPage() {
       '0 - Incapaz de realizar a tarefa'
     ];
 
-    return [{ id: Date.now() + 1, label: '1. Posição sentada para posição em pé', fieldType: 'single_select', isRequired: true,
+    return [{ id: Date.now() + 1, label: '1. Posição sentada para posição em pé', fieldType: 'single_select', isRequired: false,
         helpText: 'Instruções: Por favor, levante-se. Tente não usar suas mãos para se apoiar.',
         options: ['4 - Capaz de levantar-se sem utilizar as mãos e estabilizar-se independentemente', '3 - Capaz de levantar-se independentemente e estabilizar-se independentemente', '2 - Capaz de levantar-se utilizando as mãos após diversas tentativas', '1 - Necessita de ajuda mínima para levantar-se ou estabilizar-se', '0 - Necessita de ajuda moderada ou máxima para levantar-se'] },
-      { id: Date.now() + 2, label: '2. Permanecer em pé sem apoio', fieldType: 'single_select', isRequired: true,
+      { id: Date.now() + 2, label: '2. Permanecer em pé sem apoio', fieldType: 'single_select', isRequired: false,
         helpText: 'Instruções: Por favor, fique em pé por 2 minutos sem se apoiar.',
         options: ['4 - Capaz de permanecer em pé com segurança por 2 minutos', '3 - Capaz de permanecer em pé por 2 minutos com supervisão', '2 - Capaz de permanecer em pé por 30 segundos sem apoio', '1 - Necessita de várias tentativas para permanecer em pé por 30 segundos', '0 - Incapaz de permanecer em pé por 30 segundos sem apoio'] },
-      { id: Date.now() + 3, label: '3. Permanecer sentado sem apoio nas costas', fieldType: 'single_select', isRequired: true,
+      { id: Date.now() + 3, label: '3. Permanecer sentado sem apoio nas costas', fieldType: 'single_select', isRequired: false,
         helpText: 'Instruções: Por favor, fique sentado sem apoiar as costas, com os braços cruzados, por 2 minutos.',
         options: ['4 - Capaz de permanecer sentado com segurança e com firmeza por 2 minutos', '3 - Capaz de permanecer sentado por 2 minutos com supervisão', '2 - Capaz de permanecer sentado por 30 segundos', '1 - Capaz de permanecer sentado por 10 segundos', '0 - Incapaz de permanecer sentado sem apoio por 10 segundos'] },
-      { id: Date.now() + 4, label: '4. Posição em pé para posição sentada', fieldType: 'single_select', isRequired: true,
+      { id: Date.now() + 4, label: '4. Posição em pé para posição sentada', fieldType: 'single_select', isRequired: false,
         helpText: 'Instruções: Por favor, sente-se.',
         options: ['4 - Senta-se com segurança, com uso mínimo das mãos', '3 - Controla a descida utilizando as mãos', '2 - Utiliza a parte posterior das pernas contra a cadeira para controlar a descida', '1 - Senta-se independentemente, mas tem descida sem controle', '0 - Necessita de ajuda para sentar-se'] },
-      { id: Date.now() + 5, label: '5. Transferências', fieldType: 'single_select', isRequired: true,
+      { id: Date.now() + 5, label: '5. Transferências', fieldType: 'single_select', isRequired: false,
         helpText: 'Instruções: Arrume as cadeiras perpendicularmente ou uma de frente para a outra. Peça para transferir-se de uma cadeira com apoio para uma sem apoio e vice-versa.',
         options: ['4 - Capaz de transferir-se com segurança com uso mínimo das mãos', '3 - Capaz de transferir-se com segurança com o uso das mãos', '2 - Capaz de transferir-se seguindo orientações verbais e/ou supervisão', '1 - Necessita de uma pessoa para ajudar', '0 - Necessita de duas pessoas para ajudar ou supervisionar a tarefa com segurança'] },
-      { id: Date.now() + 6, label: '6. Permanecer em pé sem apoio com os olhos fechados', fieldType: 'single_select', isRequired: true,
+      { id: Date.now() + 6, label: '6. Permanecer em pé sem apoio com os olhos fechados', fieldType: 'single_select', isRequired: false,
         helpText: 'Instruções: Por favor, fique em pé e feche os olhos por 10 segundos.',
         options: ['4 - Capaz de permanecer em pé por 10 segundos com segurança', '3 - Capaz de permanecer em pé por 10 segundos com supervisão', '2 - Capaz de permanecer em pé por 3 segundos', '1 - Incapaz de manter os olhos fechados 3 segundos, mas se mantém em pé', '0 - Necessita de ajuda para não cair'] },
-      { id: Date.now() + 7, label: '7. Permanecer em pé sem apoio com os pés juntos', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 7, label: '7. Permanecer em pé sem apoio com os pés juntos', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Junte os pés e fique em pé sem se apoiar.', options: genericOptions },
-      { id: Date.now() + 8, label: '8. Alcançar a frente com o braço estendido', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 8, label: '8. Alcançar a frente com o braço estendido', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Levante o braço a 90 graus. Estique os dedos e alcance o mais longe possível.', options: genericOptions },
-      { id: Date.now() + 9, label: '9. Pegar um objeto do chão', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 9, label: '9. Pegar um objeto do chão', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Pegue o objeto que está na frente dos seus pés.', options: genericOptions },
-      { id: Date.now() + 10, label: '10. Virar-se para olhar para trás', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 10, label: '10. Virar-se para olhar para trás', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Vire-se para olhar diretamente atrás de você por cima do ombro esquerdo. Repita para o direito.', options: genericOptions },
-      { id: Date.now() + 11, label: '11. Girar 360 graus', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 11, label: '11. Girar 360 graus', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Dê uma volta completa em um círculo. Em seguida, dê uma volta completa na outra direção.', options: genericOptions },
-      { id: Date.now() + 12, label: '12. Posicionar os pés alternadamente no degrau', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 12, label: '12. Posicionar os pés alternadamente no degrau', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Coloque cada pé alternadamente no degrau. Continue até que cada pé tenha tocado o degrau 4 vezes.', options: genericOptions },
-      { id: Date.now() + 13, label: '13. Permanecer em pé com um pé à frente', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 13, label: '13. Permanecer em pé com um pé à frente', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Coloque um pé diretamente à frente do outro na mesma linha.', options: genericOptions },
-      { id: Date.now() + 14, label: '14. Permanecer em pé sobre um pé só', fieldType: 'single_select', isRequired: true, 
+      { id: Date.now() + 14, label: '14. Permanecer em pé sobre um pé só', fieldType: 'single_select', isRequired: false, 
         helpText: 'Instruções: Fique em pé sobre uma perna só o máximo que conseguir sem se apoiar.', options: genericOptions },]
   };
 
@@ -985,7 +985,7 @@ export default function CustomModulesPage() {
         id: Date.now() + 1,
         label: 'Intensidade da Dor (EVA)',
         fieldType: 'scale_0_10',
-        isRequired: true,
+        isRequired: false,
         helpText: '0 (Sem dor), 1-2 (Dor suave), 3-4 (Dor moderada), 5-6 (Dor forte), 7-8 (Dor muito forte), 9-10 (Dor máxima)',
       },
       {
@@ -1017,28 +1017,28 @@ export default function CustomModulesPage() {
     const opts3 = ['1 - Sim, dificulta muito', '2 - Sim, dificulta um pouco', '3 - Não, não dificulta de modo algum'];
     const opts4 = ['1 - Sim', '2 - Não'];
 
-    return [{ id: Date.now() + 1, label: '1 - Em geral você diria que sua saúde é:', fieldType: 'single_select', isRequired: true, options: opts1 },
-      { id: Date.now() + 2, label: '2 - Comparada há um ano atrás, como você classificaria sua saúde em geral, agora?', fieldType: 'single_select', isRequired: true, options: opts2 },
+    return [{ id: Date.now() + 1, label: '1 - Em geral você diria que sua saúde é:', fieldType: 'single_select', isRequired: false, options: opts1 },
+      { id: Date.now() + 2, label: '2 - Comparada há um ano atrás, como você classificaria sua saúde em geral, agora?', fieldType: 'single_select', isRequired: false, options: opts2 },
       
-      { id: Date.now() + 3, label: '3a - Atividades Rigorosas (correr, levantar peso)', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 4, label: '3b - Atividades Moderadas (mover mesa, aspirador)', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 5, label: '3c - Levantar ou carregar mantimentos', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 6, label: '3d - Subir vários lances de escada', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 7, label: '3e - Subir um lance de escada', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 8, label: '3f - Curvar-se, ajoelhar-se ou dobrar-se', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 9, label: '3g - Andar mais de 1 quilômetro', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 10, label: '3h - Andar vários quarteirões', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 11, label: '3i - Andar um quarteirão', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
-      { id: Date.now() + 12, label: '3j - Tomar banho ou vestir-se', fieldType: 'single_select', isRequired: true, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 3, label: '3a - Atividades Rigorosas (correr, levantar peso)', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 4, label: '3b - Atividades Moderadas (mover mesa, aspirador)', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 5, label: '3c - Levantar ou carregar mantimentos', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 6, label: '3d - Subir vários lances de escada', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 7, label: '3e - Subir um lance de escada', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 8, label: '3f - Curvar-se, ajoelhar-se ou dobrar-se', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 9, label: '3g - Andar mais de 1 quilômetro', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 10, label: '3h - Andar vários quarteirões', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 11, label: '3i - Andar um quarteirão', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
+      { id: Date.now() + 12, label: '3j - Tomar banho ou vestir-se', fieldType: 'single_select', isRequired: false, options: opts3, helpText: 'Dificuldade atual devido à saúde' },
       
-      { id: Date.now() + 13, label: '4a - Diminuiu o tempo no trabalho ou outras atividades?', fieldType: 'single_select', isRequired: true, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
-      { id: Date.now() + 14, label: '4b - Realizou menos tarefas do que gostaria?', fieldType: 'single_select', isRequired: true, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
-      { id: Date.now() + 15, label: '4c - Esteve limitado no seu tipo de trabalho/atividades?', fieldType: 'single_select', isRequired: true, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
-      { id: Date.now() + 16, label: '4d - Teve dificuldade de fazer seu trabalho (esforço extra)?', fieldType: 'single_select', isRequired: true, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
+      { id: Date.now() + 13, label: '4a - Diminuiu o tempo no trabalho ou outras atividades?', fieldType: 'single_select', isRequired: false, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
+      { id: Date.now() + 14, label: '4b - Realizou menos tarefas do que gostaria?', fieldType: 'single_select', isRequired: false, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
+      { id: Date.now() + 15, label: '4c - Esteve limitado no seu tipo de trabalho/atividades?', fieldType: 'single_select', isRequired: false, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
+      { id: Date.now() + 16, label: '4d - Teve dificuldade de fazer seu trabalho (esforço extra)?', fieldType: 'single_select', isRequired: false, options: opts4, helpText: 'Consequência de saúde física nas últimas 4 semanas' },
       
-      { id: Date.now() + 17, label: '5a - Diminuiu o tempo no trabalho/atividades (Problema emocional)?', fieldType: 'single_select', isRequired: true, options: opts4, helpText: 'Consequência de problema emocional nas últimas 4 semanas' },
-      { id: Date.now() + 18, label: '5b - Realizou menos tarefas do que gostaria (Problema emocional)?', fieldType: 'single_select', isRequired: true, options: opts4, helpText: 'Consequência de problema emocional nas últimas 4 semanas' },
-      { id: Date.now() + 19, label: '5c - Não realizou atividades com tanto cuidado (Problema emocional)?', fieldType: 'single_select', isRequired: true, options: opts4, helpText: 'Consequência de problema emocional nas últimas 4 semanas' }]
+      { id: Date.now() + 17, label: '5a - Diminuiu o tempo no trabalho/atividades (Problema emocional)?', fieldType: 'single_select', isRequired: false, options: opts4, helpText: 'Consequência de problema emocional nas últimas 4 semanas' },
+      { id: Date.now() + 18, label: '5b - Realizou menos tarefas do que gostaria (Problema emocional)?', fieldType: 'single_select', isRequired: false, options: opts4, helpText: 'Consequência de problema emocional nas últimas 4 semanas' },
+      { id: Date.now() + 19, label: '5c - Não realizou atividades com tanto cuidado (Problema emocional)?', fieldType: 'single_select', isRequired: false, options: opts4, helpText: 'Consequência de problema emocional nas últimas 4 semanas' }]
   };
 
   const loadPSQIPreset = () => {
@@ -1050,34 +1050,34 @@ export default function CustomModulesPage() {
       '3 - Três ou mais vezes na semana'
     ];
 
-    return [{ id: Date.now() + 1, label: '1. Hora usual de deitar', fieldType: 'text', isRequired: true, helpText: 'Ex: 22:30' },
-      { id: Date.now() + 2, label: '2. Número de minutos para adormecer', fieldType: 'number', isRequired: true, unit: 'min' },
-      { id: Date.now() + 3, label: '3. Hora usual de levantar', fieldType: 'text', isRequired: true, helpText: 'Ex: 06:30' },
-      { id: Date.now() + 4, label: '4. Horas de sono por noite', fieldType: 'number', isRequired: true, unit: 'horas' },
+    return [{ id: Date.now() + 1, label: '1. Hora usual de deitar', fieldType: 'text', isRequired: false, helpText: 'Ex: 22:30' },
+      { id: Date.now() + 2, label: '2. Número de minutos para adormecer', fieldType: 'number', isRequired: false, unit: 'min' },
+      { id: Date.now() + 3, label: '3. Hora usual de levantar', fieldType: 'text', isRequired: false, helpText: 'Ex: 06:30' },
+      { id: Date.now() + 4, label: '4. Horas de sono por noite', fieldType: 'number', isRequired: false, unit: 'horas' },
       
-      { id: Date.now() + 5, label: '5A. Não conseguiu adormecer em até 30 minutos', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 6, label: '5B. Acordou no meio da noite ou de manhã cedo', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 7, label: '5C. Precisou levantar para ir ao banheiro', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 8, label: '5D. Não conseguiu respirar confortavelmente', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 9, label: '5E. Tossiu ou roncou forte', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 10, label: '5F. Sentiu muito frio', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 11, label: '5G. Sentiu muito calor', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 12, label: '5H. Teve sonhos ruins', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 13, label: '5I. Teve dor', fieldType: 'single_select', isRequired: true, options: freqOptions },
+      { id: Date.now() + 5, label: '5A. Não conseguiu adormecer em até 30 minutos', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 6, label: '5B. Acordou no meio da noite ou de manhã cedo', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 7, label: '5C. Precisou levantar para ir ao banheiro', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 8, label: '5D. Não conseguiu respirar confortavelmente', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 9, label: '5E. Tossiu ou roncou forte', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 10, label: '5F. Sentiu muito frio', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 11, label: '5G. Sentiu muito calor', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 12, label: '5H. Teve sonhos ruins', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 13, label: '5I. Teve dor', fieldType: 'single_select', isRequired: false, options: freqOptions },
       { id: Date.now() + 14, label: '5J. Outra razão (descreva e informe a frequência)', fieldType: 'text', isRequired: false },
       
-      { id: Date.now() + 15, label: '6. Qualidade do sono de maneira geral', fieldType: 'single_select', isRequired: true, options: [
+      { id: Date.now() + 15, label: '6. Qualidade do sono de maneira geral', fieldType: 'single_select', isRequired: false, options: [
         '0 - Muito boa', '1 - Boa', '2 - Ruim', '3 - Muito Ruim'
       ]},
       
-      { id: Date.now() + 16, label: '7. Frequência que tomou medicamento para dormir', fieldType: 'single_select', isRequired: true, options: freqOptions },
-      { id: Date.now() + 17, label: '8. Dificuldade para ficar acordado (dirigindo, socialmente)', fieldType: 'single_select', isRequired: true, options: freqOptions },
+      { id: Date.now() + 16, label: '7. Frequência que tomou medicamento para dormir', fieldType: 'single_select', isRequired: false, options: freqOptions },
+      { id: Date.now() + 17, label: '8. Dificuldade para ficar acordado (dirigindo, socialmente)', fieldType: 'single_select', isRequired: false, options: freqOptions },
       
-      { id: Date.now() + 18, label: '9. Problema para manter o entusiasmo/ânimo', fieldType: 'single_select', isRequired: true, options: [
+      { id: Date.now() + 18, label: '9. Problema para manter o entusiasmo/ânimo', fieldType: 'single_select', isRequired: false, options: [
         '0 - Nenhuma dificuldade', '1 - Um problema leve', '2 - Um problema razoável', '3 - Um grande problema'
       ]},
       
-      { id: Date.now() + 19, label: '10. Você tem parceiro ou colega de quarto?', fieldType: 'single_select', isRequired: true, options: [
+      { id: Date.now() + 19, label: '10. Você tem parceiro ou colega de quarto?', fieldType: 'single_select', isRequired: false, options: [
         '0 - Não',
         '1 - Parceiro ou colega, mas em outro quarto',
         '2 - Parceiro no mesmo quarto, mas em outra cama',
