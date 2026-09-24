@@ -5,7 +5,7 @@ import { useAuth } from '@/context/auth-context';
 import { Sidebar } from './sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2, Activity } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LayoutContextType {
   isMobileMenuOpen: boolean;
@@ -127,15 +127,18 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen max-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-hidden transition-colors duration-300">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0 max-w-full h-full overflow-hidden">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
-          >
-            {children}
-          </motion.div>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 10, scale: 0.995 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.998 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </LayoutContext.Provider>

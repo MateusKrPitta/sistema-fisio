@@ -39,8 +39,6 @@ export function ClinicalReportModal({
 }: ClinicalReportModalProps) {
   const [selectedScaleKey, setSelectedScaleKey] = useState<string>('all');
 
-  if (!patient) return null;
-
   const activeScaleGroup =
     selectedScaleKey === 'all'
       ? null
@@ -48,15 +46,16 @@ export function ClinicalReportModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 overflow-hidden">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm transition-all"
-          onClick={onClose}
-        />
+      {patient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 overflow-hidden">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm transition-all"
+            onClick={onClose}
+          />
 
         {/* Modal Box */}
         <motion.div
@@ -368,6 +367,7 @@ export function ClinicalReportModal({
           </div>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 }

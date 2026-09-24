@@ -423,15 +423,16 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 overflow-hidden">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm transition-all"
-          onClick={onClose}
-        />
+      {isOpen && patient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 overflow-hidden">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm transition-all"
+            onClick={onClose}
+          />
 
         {/* Modal Window */}
         <motion.div
@@ -837,6 +838,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
           )}
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 }
