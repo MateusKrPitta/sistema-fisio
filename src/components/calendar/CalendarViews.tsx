@@ -54,28 +54,28 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
     if (hasEvolution) {
       return {
         label: 'Atendido (Evoluído)',
-        bg: 'bg-emerald-50',
-        text: 'text-emerald-950',
-        border: 'border-emerald-300',
-        cardClass: 'bg-emerald-50/95 text-emerald-950 border-emerald-300 hover:border-emerald-400 hover:bg-emerald-100/90 shadow-xs',
-        badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        bg: 'bg-emerald-50 dark:bg-emerald-950/80',
+        text: 'text-emerald-950 dark:text-emerald-100',
+        border: 'border-emerald-300 dark:border-emerald-700',
+        cardClass: 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-100 border-emerald-300 dark:border-emerald-700/80 hover:border-emerald-400 dark:hover:border-emerald-500 hover:bg-emerald-100/90 dark:hover:bg-emerald-900/80 shadow-xs',
+        badgeClass: 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700',
         dotClass: 'bg-emerald-500',
         barClass: 'border-l-4 border-l-emerald-500',
-        iconBg: 'bg-emerald-100 text-emerald-700',
+        iconBg: 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300',
       };
     }
 
     // Atendido mas com Evolução Pendente (Âmbar / Laranja)
     return {
       label: 'Evolução Pendente',
-      bg: 'bg-amber-50',
-      text: 'text-amber-950',
-      border: 'border-amber-400',
-      cardClass: 'bg-amber-50/95 text-amber-950 border-amber-300 hover:border-amber-400 hover:bg-amber-100/90 shadow-xs',
-      badgeClass: 'bg-amber-100 text-amber-900 border-amber-400 font-bold',
+      bg: 'bg-amber-50 dark:bg-amber-950/80',
+      text: 'text-amber-950 dark:text-amber-100',
+      border: 'border-amber-400 dark:border-amber-700',
+      cardClass: 'bg-amber-50 dark:bg-amber-950/80 text-amber-950 dark:text-amber-100 border-amber-300 dark:border-amber-700/80 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-100/90 dark:hover:bg-amber-900/80 shadow-xs',
+      badgeClass: 'bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-200 border-amber-400 dark:border-amber-700 font-bold',
       dotClass: 'bg-amber-500',
       barClass: 'border-l-4 border-l-amber-500',
-      iconBg: 'bg-amber-100 text-amber-700',
+      iconBg: 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
     };
   }
 
@@ -87,14 +87,14 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Presença Confirmada',
-      bg: 'bg-blue-50',
-      text: 'text-blue-950',
-      border: 'border-blue-300',
-      cardClass: 'bg-blue-50/95 text-blue-950 border-blue-300 hover:border-blue-400 hover:bg-blue-100/90 shadow-xs',
-      badgeClass: 'bg-blue-100 text-blue-800 border-blue-300',
+      bg: 'bg-blue-50 dark:bg-blue-950/80',
+      text: 'text-blue-950 dark:text-blue-100',
+      border: 'border-blue-300 dark:border-blue-700',
+      cardClass: 'bg-blue-50 dark:bg-blue-950/80 text-blue-950 dark:text-blue-100 border-blue-300 dark:border-blue-700/80 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-100/90 dark:hover:bg-blue-900/80 shadow-xs',
+      badgeClass: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700',
       dotClass: 'bg-blue-600',
       barClass: 'border-l-4 border-l-blue-600',
-      iconBg: 'bg-blue-100 text-blue-700',
+      iconBg: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
     };
   }
 
@@ -108,14 +108,14 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Faltou (Ausente)',
-      bg: 'bg-rose-50',
-      text: 'text-rose-950',
-      border: 'border-rose-300',
-      cardClass: 'bg-rose-50/95 text-rose-950 border-rose-300 hover:border-rose-400 hover:bg-rose-100/90 shadow-xs',
-      badgeClass: 'bg-rose-100 text-rose-800 border-rose-300',
+      bg: 'bg-rose-50 dark:bg-rose-950/80',
+      text: 'text-rose-950 dark:text-rose-100',
+      border: 'border-rose-300 dark:border-rose-700',
+      cardClass: 'bg-rose-50 dark:bg-rose-950/80 text-rose-950 dark:text-rose-100 border-rose-300 dark:border-rose-700/80 hover:border-rose-400 dark:hover:border-rose-500 hover:bg-rose-100/90 dark:hover:bg-rose-900/80 shadow-xs',
+      badgeClass: 'bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-700',
       dotClass: 'bg-rose-500',
       barClass: 'border-l-4 border-l-rose-500',
-      iconBg: 'bg-rose-100 text-rose-700',
+      iconBg: 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300',
     };
   }
 
@@ -129,14 +129,14 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Faltou c/ aviso / Remarcar',
-      bg: 'bg-orange-50',
-      text: 'text-orange-950',
-      border: 'border-orange-300',
-      cardClass: 'bg-orange-50/95 text-orange-950 border-orange-300 hover:border-orange-400 hover:bg-orange-100/90 shadow-xs',
-      badgeClass: 'bg-orange-100 text-orange-800 border-orange-300',
+      bg: 'bg-orange-50 dark:bg-orange-950/80',
+      text: 'text-orange-950 dark:text-orange-100',
+      border: 'border-orange-300 dark:border-orange-700',
+      cardClass: 'bg-orange-50 dark:bg-orange-950/80 text-orange-950 dark:text-orange-100 border-orange-300 dark:border-orange-700/80 hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-100/90 dark:hover:bg-orange-900/80 shadow-xs',
+      badgeClass: 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-700',
       dotClass: 'bg-orange-500',
       barClass: 'border-l-4 border-l-orange-500',
-      iconBg: 'bg-orange-100 text-orange-700',
+      iconBg: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
     };
   }
 
@@ -150,28 +150,28 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Cancelado / Não Atendido',
-      bg: 'bg-slate-100',
-      text: 'text-slate-700',
-      border: 'border-slate-300',
-      cardClass: 'bg-slate-100 text-slate-700 border-slate-300 hover:border-slate-400 hover:bg-slate-200/80 shadow-xs line-through opacity-85',
-      badgeClass: 'bg-slate-200 text-slate-700 border-slate-300',
+      bg: 'bg-slate-100 dark:bg-slate-900/90',
+      text: 'text-slate-700 dark:text-slate-300',
+      border: 'border-slate-300 dark:border-slate-700',
+      cardClass: 'bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400 hover:bg-slate-200/80 shadow-xs line-through opacity-85',
+      badgeClass: 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700',
       dotClass: 'bg-slate-500',
       barClass: 'border-l-4 border-l-slate-400',
-      iconBg: 'bg-slate-200 text-slate-600',
+      iconBg: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
     };
   }
 
   // 6. Default: Agendado / Pendente -> Ciano / Sky
   return {
     label: 'Agendado',
-    bg: 'bg-sky-50',
-    text: 'text-sky-950',
-    border: 'border-sky-300',
-    cardClass: 'bg-sky-50/95 text-sky-950 border-sky-300 hover:border-sky-400 hover:bg-sky-100/90 shadow-xs',
-    badgeClass: 'bg-sky-100 text-sky-800 border-sky-300',
+    bg: 'bg-sky-50 dark:bg-sky-950/80',
+    text: 'text-sky-950 dark:text-sky-100',
+    border: 'border-sky-300 dark:border-sky-700',
+    cardClass: 'bg-sky-50 dark:bg-sky-950/80 text-sky-950 dark:text-sky-100 border-sky-300 dark:border-sky-700/80 hover:border-sky-400 dark:hover:border-sky-500 hover:bg-sky-100/90 dark:hover:bg-sky-900/80 shadow-xs',
+    badgeClass: 'bg-sky-100 dark:bg-sky-900 text-sky-800 dark:text-sky-200 border-sky-300 dark:border-sky-700',
     dotClass: 'bg-sky-500',
     barClass: 'border-l-4 border-l-sky-400',
-    iconBg: 'bg-sky-100 text-sky-700',
+    iconBg: 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300',
   };
 }
 
@@ -540,22 +540,22 @@ export function CalendarViews({
                               >
                                 <div className="pointer-events-none select-none min-w-0">
                                   <div className="flex items-center justify-between gap-1">
-                                    <span className="text-[10px] font-black opacity-90 leading-none">
+                                    <span className="text-[10px] font-black text-slate-800 dark:text-slate-200 leading-none">
                                       {ev.time} - {endTime}
                                     </span>
                                     <span className={`w-2 h-2 rounded-full shrink-0 ${statusStyle.dotClass}`} />
                                   </div>
-                                  <p className="text-[11px] font-bold leading-tight truncate mt-1 text-slate-900 dark:text-slate-100">
+                                  <p className="text-[11px] font-extrabold leading-tight truncate mt-1 text-slate-900 dark:text-white">
                                     {ev.patientName}
                                   </p>
                                   {ev.physioName && (
-                                    <p className="text-[9.5px] font-semibold text-blue-700 dark:text-blue-300 opacity-90 truncate leading-tight mt-0.5">
+                                    <p className="text-[9.5px] font-bold text-blue-700 dark:text-blue-300 opacity-95 truncate leading-tight mt-0.5">
                                       👤 {formatShortPhysioName(ev.physioName)}
                                     </p>
                                   )}
                                 </div>
                                 <div className="pointer-events-none select-none flex items-center justify-between pt-0.5">
-                                  <span className="text-[9px] font-semibold opacity-75 truncate">
+                                  <span className="text-[9px] font-bold text-slate-700 dark:text-slate-200 opacity-90 truncate">
                                     {statusStyle.label}
                                   </span>
                                 </div>
@@ -602,17 +602,17 @@ export function CalendarViews({
                                     <div className="min-w-0 flex-1 pointer-events-none select-none">
                                       <div className="flex items-center gap-1.5 truncate">
                                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusStyle.dotClass}`} />
-                                        <span className="text-[10px] font-bold truncate leading-tight text-slate-900 dark:text-slate-100">
+                                        <span className="text-[10px] font-extrabold truncate leading-tight text-slate-900 dark:text-white">
                                           {ev.patientName}
                                         </span>
                                       </div>
                                       {ev.physioName && (
-                                        <p className="text-[8.5px] font-semibold text-blue-700 dark:text-blue-300 opacity-90 truncate leading-none mt-0.5 pl-3">
+                                        <p className="text-[8.5px] font-bold text-blue-700 dark:text-blue-300 opacity-95 truncate leading-none mt-0.5 pl-3">
                                           👤 {formatShortPhysioName(ev.physioName)}
                                         </p>
                                       )}
                                     </div>
-                                    <span className="text-[9px] font-black opacity-80 shrink-0 pointer-events-none select-none">
+                                    <span className="text-[9px] font-black text-slate-800 dark:text-slate-200 shrink-0 pointer-events-none select-none">
                                       {ev.time}
                                     </span>
                                   </div>
@@ -706,18 +706,18 @@ export function CalendarViews({
                   onClick={() => onEventClick(ev)}
                   className={`flex items-center space-x-4 p-4 rounded-2xl border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md ${statusStyle.cardClass} ${statusStyle.barClass}`}
                 >
-                  <div className="text-xl font-black shrink-0 w-16 text-center">{ev.time}</div>
+                  <div className="text-xl font-black shrink-0 w-16 text-center text-slate-900 dark:text-white">{ev.time}</div>
                   <div className="w-1 h-12 bg-current opacity-20 rounded-full shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h4 className="font-bold text-lg text-slate-900 truncate">{ev.patientName}</h4>
+                      <h4 className="font-extrabold text-lg text-slate-900 dark:text-white truncate">{ev.patientName}</h4>
                       <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${statusStyle.badgeClass}`}>
                         {statusStyle.label}
                       </span>
                     </div>
-                    <p className="text-xs font-semibold opacity-80 mt-0.5">{ev.type || 'Atendimento Fisioterapêutico'}</p>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">{ev.type || 'Atendimento Fisioterapêutico'}</p>
                     {ev.physioName && (
-                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mt-1 flex items-center gap-1">
+                      <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mt-1 flex items-center gap-1">
                         <User className="w-3.5 h-3.5" />
                         <span>{formatShortPhysioName(ev.physioName)}</span>
                       </p>
@@ -766,32 +766,32 @@ export function CalendarViews({
       {/* Calendar Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
             <button
               onClick={handlePrev}
-              className="p-1.5 rounded-lg hover:bg-white hover:shadow-xs text-slate-600 transition-all cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => onDateChange(new Date())}
-              className="px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-xs rounded-lg transition-all cursor-pointer"
+              className="px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs rounded-lg transition-all cursor-pointer"
             >
               Hoje
             </button>
             <button
               onClick={handleNext}
-              className="p-1.5 rounded-lg hover:bg-white hover:shadow-xs text-slate-600 transition-all cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          <h2 className="text-lg font-black text-slate-800 hidden md:block">
+          <h2 className="text-lg font-black text-slate-800 dark:text-white hidden md:block">
             {getHeaderTitle()}
           </h2>
         </div>
 
-        <h2 className="text-base font-black text-slate-800 md:hidden text-center">
+        <h2 className="text-base font-black text-slate-800 dark:text-white md:hidden text-center">
           {getHeaderTitle()}
         </h2>
       </div>
@@ -802,27 +802,27 @@ export function CalendarViews({
       {viewMode === 'day' && renderDayView()}
 
       {/* Visual Status Legend */}
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/80 text-[11px] text-slate-600 font-medium">
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">Legenda:</span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 font-bold">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200 font-bold">
           <span className="w-2 h-2 rounded-full bg-sky-500" /> Agendado
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 font-bold">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200 font-bold">
           <span className="w-2 h-2 rounded-full bg-blue-600" /> Presença Confirmada
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 font-bold">
           <span className="w-2 h-2 rounded-full bg-emerald-500" /> Atendido (Evoluído)
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-300 text-amber-950 font-bold">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-200 font-bold">
           <span className="w-2 h-2 rounded-full bg-amber-500" /> 📝 Evolução Pendente
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-200 text-orange-900 font-bold">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/80 border border-orange-200 dark:border-orange-800 text-orange-900 dark:text-orange-200 font-bold">
           <span className="w-2 h-2 rounded-full bg-orange-500" /> Faltou c/ aviso / Remarcar
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 font-bold">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200 font-bold">
           <span className="w-2 h-2 rounded-full bg-rose-500" /> Faltou (Ausente)
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-bold">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold">
           <span className="w-2 h-2 rounded-full bg-slate-500" /> Cancelado
         </span>
       </div>
