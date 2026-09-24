@@ -153,24 +153,20 @@ export function Sidebar() {
         <div className="flex items-center space-x-3 min-w-0">
           <motion.div
             whileHover={{ scale: 1.05, rotate: 5 }}
-            className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0 overflow-hidden"
+            className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-blue-500/10 shrink-0 overflow-hidden border border-slate-700/60"
           >
-            {user?.company?.logoUrl ? (
-              <img
-                src={user.company.logoUrl}
-                alt="Logo"
-                className="w-full h-full object-cover rounded-xl"
-              />
-            ) : (
-              <Activity className="w-5 h-5 text-white" />
-            )}
+            <img
+              src="/icons/icon-192x192.png"
+              alt="FisMovie Logo"
+              className="w-full h-full object-cover rounded-xl"
+            />
           </motion.div>
           <div className="min-w-0">
             <h1 className="font-bold text-sm sm:text-base leading-tight tracking-tight text-white truncate">
               {user?.company?.name || 'FisMovie'}
             </h1>
-            <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider truncate">
-              {userRole === 'superadmin' ? 'Painel Master' : 'Gestão Clínica'}
+            <p className="text-[10px] text-blue-400 font-bold uppercase tracking-wider truncate">
+              {userRole === 'superadmin' ? 'Painel Master' : 'FisMovie'}
             </p>
           </div>
         </div>
