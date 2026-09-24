@@ -77,16 +77,38 @@ export const formatDateTimeSafe = (dateStr?: string) => {
 
 export const getAnswerForField = (field: CustomField | any, answersMap: Record<string, any>, index?: number) => {
   if (!answersMap || typeof answersMap !== 'object') return undefined;
-  if (field.id && answersMap[field.id] !== undefined) return answersMap[field.id];
-  if (field.label && answersMap[field.label] !== undefined) return answersMap[field.label];
-  if (field.id && answersMap[String(field.id)] !== undefined) return answersMap[String(field.id)];
 
-  const foundKey = Object.keys(answersMap).find(
-    (k) =>
-      k.toLowerCase() === (field.label || '').toLowerCase() ||
-      (index !== undefined && (k.endsWith(`_${index + 1}`) || k.endsWith(`_${index}`)))
-  );
-  if (foundKey) return answersMap[foundKey];
+  // 1. Direct ID match
+  if (field.id !== undefined && field.id !== null) {
+    if (answersMap[field.id] !== undefined && answersMap[field.id] !== null && answersMap[field.id] !== '') {
+      return answersMap[field.id];
+    }
+    const strId = String(field.id);
+    if (answersMap[strId] !== undefined && answersMap[strId] !== null && answersMap[strId] !== '') {
+      return answersMap[strId];
+    }
+  }
+
+  // 2. Direct label match
+  if (field.label) {
+    if (answersMap[field.label] !== undefined && answersMap[field.label] !== null && answersMap[field.label] !== '') {
+      return answersMap[field.label];
+    }
+    const strLabel = String(field.label);
+    if (answersMap[strLabel] !== undefined && answersMap[strLabel] !== null && answersMap[strLabel] !== '') {
+      return answersMap[strLabel];
+    }
+
+    // 3. Case-insensitive exact label match
+    const targetLabelLower = strLabel.trim().toLowerCase();
+    const foundKey = Object.keys(answersMap).find(
+      (k) => k.trim().toLowerCase() === targetLabelLower
+    );
+    if (foundKey && answersMap[foundKey] !== undefined && answersMap[foundKey] !== null && answersMap[foundKey] !== '') {
+      return answersMap[foundKey];
+    }
+  }
+
   return undefined;
 };
 
@@ -1155,7 +1177,13 @@ export function EvaluationHistoryList({
                                     )}
                                   </div>
                                   <span className="text-[11px] text-slate-400 font-medium">
-                                    {scale.fields.length} item(ns) avaliado(s)
+                                    {(() => {
+                                      const ansCount = scale.fields.filter((f: any) => {
+                                        const ans = getAnswerForField(f, activeAnswersForScale);
+                                        return ans !== undefined && ans !== null && ans !== '';
+                                      }).length;
+                                      return `${ansCount} de ${scale.fields.length} item(ns) preenchido(s)`;
+                                    })()}
                                   </span>
                                 </div>
                               </div>

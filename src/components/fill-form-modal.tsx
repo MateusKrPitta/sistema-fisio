@@ -320,9 +320,9 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
     setSaving(true);
     const finalTitle = moduleTitle.trim() || loadedPresets.join(' + ') || `${moduleCategory} - ${patient?.fullName || patient?.name}`;
 
-    const normalizedAnswers: Record<string, any> = { ...answers };
-    activeFields.forEach((f, idx) => {
-      const val = getAnswerForField(f, answers, idx);
+    const normalizedAnswers: Record<string, any> = {};
+    activeFields.forEach((f) => {
+      const val = getAnswerForField(f, answers);
       if (val !== undefined && val !== null && val !== '') {
         if (f.label) normalizedAnswers[String(f.label)] = val;
         if (f.id) normalizedAnswers[String(f.id)] = val;
