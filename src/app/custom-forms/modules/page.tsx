@@ -575,7 +575,185 @@ export default function CustomModulesPage() {
         ],
         helpText: 'Classifique o risco com base no tempo de execução medido',
         isRequired: true,
+      },
+      {
+        id: Date.now() + 3,
+        label: 'Utilização de dispositivo de marcha',
+        fieldType: 'single_select',
+        options: [
+          'Não utiliza',
+          'Bengala',
+          'Andador',
+          'Muletas',
+          'Cadeira de rodas',
+          'Outro'
+        ],
+        helpText: 'Dispositivo auxiliar de locomoção utilizado durante o teste',
+        isRequired: false,
+      },
+      {
+        id: Date.now() + 4,
+        label: 'Utilização de O2',
+        fieldType: 'boolean',
+        helpText: 'Paciente utilizou oxigênio suplementar durante o teste',
+        isRequired: false,
+      },
+      {
+        id: Date.now() + 5,
+        label: 'Qual a quantidade de O2?',
+        fieldType: 'number',
+        unit: 'L/min',
+        helpText: 'Fluxo de oxigênio suplementar em L/min',
+        isRequired: false,
       }]
+  };
+
+  const loadBarthelScalePreset = () => {
+    return [
+      {
+        id: Date.now() + 1,
+        label: '1. Higiene Pessoal',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Lavar as mãos/face, escovar dentes, barbear, pentear ou maquiar-se.',
+        options: [
+          '0 - Incapaz de realizar higiene pessoal sendo dependente em todos os aspectos',
+          '1 - Necessita de assistência em todos os passos da higiene pessoal',
+          '3 - Alguma assistência é necessária em um ou mais passos da higiene pessoal',
+          '4 - Capaz de conduzir a própria higiene, mas requer mínima assistência antes/depois',
+          '5 - Totalmente independente (lava mãos/face, limpa dentes, penteia, barbeia/maquia-se)',
+        ],
+      },
+      {
+        id: Date.now() + 2,
+        label: '2. Banho',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Capacidade de lavar-se, transferir-se e secar-se.',
+        options: [
+          '0 - Totalmente dependente para banhar-se',
+          '1 - Requer assistência em todos os aspectos do banho',
+          '3 - Requer assistência para transferir-se, lavar-se e/ou secar-se',
+          '4 - Requer supervisão por segurança no ajuste da temperatura ou na transferência',
+          '5 - Totalmente independente (realiza todas as etapas do banho com ou sem equipamentos)',
+        ],
+      },
+      {
+        id: Date.now() + 3,
+        label: '3. Alimentação',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Manipulação de talheres, mastigação, cortar alimentos e beber.',
+        options: [
+          '0 - Dependente em todos os aspectos e necessita ser alimentado',
+          '2 - Manipula utensílios (colher), porém necessita de assistência constante na refeição',
+          '5 - Come com supervisão; requer assistência em tarefas associadas (açúcar, tempero, cortar)',
+          '8 - Independência em prato pronto; assistência apenas para cortar carne, abrir potes/garrafas',
+          '10 - Totalmente independente (alimenta-se de prato/bandeja, corta carne, passa manteiga)',
+        ],
+      },
+      {
+        id: Date.now() + 4,
+        label: '4. Toalete (Uso do Vaso Sanitário)',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Despir-se/vestir-se, transferir-se, higiene íntima e lavar as mãos.',
+        options: [
+          '0 - Totalmente dependente no uso do vaso sanitário',
+          '2 - Necessita de assistência no uso do vaso sanitário',
+          '5 - Necessita de assistência para se despir/vestir, transferir-se ou lavar as mãos',
+          '8 - Requer supervisão por segurança ou auxílio para esvaziar/limpar comadre/penico',
+          '10 - Totalmente independente (vai ao sanitário, despe/veste-se, limpa-se sem ajuda)',
+        ],
+      },
+      {
+        id: Date.now() + 5,
+        label: '5. Subir e Descer Escadas',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Capacidade de subir e descer lances de escada.',
+        options: [
+          '0 - Incapaz de subir escadas',
+          '2 - Requer assistência em todos os aspectos ao subir escadas (inclusive com dispositivos)',
+          '5 - Sobe e desce, porém não carrega dispositivos, necessitando supervisão e assistência',
+          '8 - Geralmente não necessita de assistência; requer supervisão eventual por segurança',
+          '10 - Totalmente independente (sobe e desce com segurança um lance de escadas com/sem dispositivos)',
+        ],
+      },
+      {
+        id: Date.now() + 6,
+        label: '6. Vestuário',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Vestir-se, despir-se, abotoar, fechar zíper, calçar e amarrar sapatos.',
+        options: [
+          '0 - Dependente em todos os aspectos do vestir e incapaz de participar',
+          '2 - Apresenta algum grau de participação, mas é dependente em todos os aspectos',
+          '5 - Necessita de assistência para se vestir ou se despir',
+          '8 - Necessita de assistência mínima (abotoar, fechar zíper, amarrar sapatos)',
+          '10 - Totalmente independente (veste-se, despe-se, amarra sapatos, coloca colete/órtese)',
+        ],
+      },
+      {
+        id: Date.now() + 7,
+        label: '7. Controle Esfincteriano (Bexiga)',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Controle da micção e continência urinária.',
+        options: [
+          '0 - Apresenta incontinência urinária total',
+          '2 - Necessita de auxílio para posição apropriada e manobras de esvaziamento',
+          '5 - Acidentes frequentes, necessita de assistência com fraldas e manobras',
+          '8 - Acidentes ocasionais ou necessita de supervisão',
+          '10 - Controle urinário total, sem acidentes',
+        ],
+      },
+      {
+        id: Date.now() + 8,
+        label: '8. Controle Esfincteriano (Intestino)',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Controle da evacuação e continência fecal.',
+        options: [
+          '0 - Não tem controle de esfíncteres ou utiliza cateterismo',
+          '2 - Incontinência, mas é capaz de assistir na aplicação de auxílios externos/internos',
+          '5 - Geralmente seco ao dia, porém não à noite; necessita equipamentos para esvaziamento',
+          '8 - Geralmente seco durante dia/noite; acidentes ocasionais ou auxílio com equipamentos',
+          '10 - Controle esfincteriano total durante o dia e a noite (independente)',
+        ],
+      },
+      {
+        id: Date.now() + 9,
+        label: '9. Deambulação / Mobilidade',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Capacidade de caminhar 50 metros com ou sem dispositivos (ou condução de cadeira de rodas).',
+        options: [
+          '0 - Totalmente dependente para deambular / conduzir cadeira de rodas',
+          '1 - Cadeira de Rodas: Conduz em pequenas distâncias/piso liso, necessita auxílio geral',
+          '3 - Deambulação: Presença constante de 1+ pessoas | Cadeira: Requer assistência contínua',
+          '4 - Cadeira de Rodas: Conduz por tempo razoável em solo regular, mínima ajuda',
+          '5 - Cadeira de Rodas: Totalmente independente em longos percursos e transferências',
+          '8 - Deambulação: Requer assistência de 1 pessoa para manipular dispositivos auxiliares',
+          '12 - Deambulação: Independente para andar 50m com auxílio/supervisão em situações de risco',
+          '15 - Deambulação: Totalmente independente (anda 50m sem auxílio ou supervisão)',
+        ],
+      },
+      {
+        id: Date.now() + 10,
+        label: '10. Transferências (Cadeira / Cama)',
+        fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Transferir-se da cama para a cadeira de rodas/poltrona e retornar.',
+        options: [
+          '0 - Incapaz de participar da transferência (necessita de 2 pessoas / auxílio mecânico)',
+          '3 - Participa, porém necessita de máxima assistência de outra pessoa',
+          '8 - Requer assistência de outra pessoa para transferir-se',
+          '12 - Requer presença de outra pessoa supervisionando como medida de segurança',
+          '15 - Totalmente independente em todas as fases da transferência (cama/cadeira)',
+        ],
+      },
+    ];
   };
 
   const loadTC6Preset = () => {
@@ -799,67 +977,6 @@ export default function CustomModulesPage() {
         helpText: 'Instruções: Coloque um pé diretamente à frente do outro na mesma linha.', options: genericOptions },
       { id: Date.now() + 14, label: '14. Permanecer em pé sobre um pé só', fieldType: 'single_select', isRequired: true, 
         helpText: 'Instruções: Fique em pé sobre uma perna só o máximo que conseguir sem se apoiar.', options: genericOptions },]
-  };
-
-  const loadBarthelScalePreset = () => {
-
-    return [{ id: Date.now() + 1, label: 'Alimentação', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Incapacitado',
-        '5 - Precisa de ajuda para cortar, passar manteiga, etc, ou dieta modificada',
-        '10 - Independente'
-      ]},
-      { id: Date.now() + 2, label: 'Banho', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Dependente',
-        '5 - Independente (ou no chuveiro)'
-      ]},
-      { id: Date.now() + 3, label: 'Atividades Rotineiras (Higiene Pessoal)', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Precisa de ajuda com a higiene pessoal',
-        '5 - Independente rosto/cabelo/dentes/barbear'
-      ]},
-      { id: Date.now() + 4, label: 'Vestir-se', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Dependente',
-        '5 - Precisa de ajuda mas consegue fazer uma parte sozinho',
-        '10 - Independente (incluindo botões, zípers, laços, etc.)'
-      ]},
-      { id: Date.now() + 5, label: 'Intestino', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Incontinente (necessidade de enemas)',
-        '5 - Acidente ocasional',
-        '10 - Continente'
-      ]},
-      { id: Date.now() + 6, label: 'Sistema Urinário', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Incontinente, ou cateterizado e incapaz de manejo',
-        '5 - Acidente ocasional',
-        '10 - Continente'
-      ]},
-      { id: Date.now() + 7, label: 'Uso do Toilet', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Dependente',
-        '5 - Precisa de alguma ajuda parcial',
-        '10 - Independente (pentear-se, limpar-se)'
-      ]},
-      { id: Date.now() + 8, label: 'Transferência (Cama para Cadeira e vice-versa)', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Incapacitado, sem equilíbrio para ficar sentado',
-        '5 - Muita ajuda (uma ou duas pessoas, física), pode sentar',
-        '10 - Pouca ajuda (verbal ou física)',
-        '15 - Independente'
-      ]},
-      { id: Date.now() + 9, label: 'Mobilidade (Em superfícies planas)', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Imóvel ou < 50 metros',
-        '5 - Cadeira de rodas independente, incluindo esquinas, > 50 metros',
-        '10 - Caminha com a ajuda de uma pessoa (verbal ou física) > 50 metros',
-        '15 - Independente (mas pode precisar de alguma ajuda; como exemplo, bengala) > 50 metros'
-      ]},
-      { id: Date.now() + 10, label: 'Escadas', fieldType: 'single_select', isRequired: true, options: [
-        '0 - Incapacitado',
-        '5 - Precisa de ajuda (verbal, física, ou ser carregado)',
-        '10 - Independente'
-      ]},
-      { id: Date.now() + 11, label: 'Interpretação do Resultado (Opcional)', fieldType: 'single_select', isRequired: false, options: [
-        '100 pontos - Totalmente independente',
-        '99 a 76 pontos - Dependência leve',
-        '75 a 51 pontos - Dependência moderada',
-        '50 a 26 pontos - Dependência severa',
-        '25 e menos pontos - Dependência total'
-      ]}]
   };
 
   const loadEVAPreset = () => {

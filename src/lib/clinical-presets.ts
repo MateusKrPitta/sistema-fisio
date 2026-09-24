@@ -18,13 +18,14 @@ export interface ClinicalPreset {
 }
 
 export const CATEGORIES_LIST = [
-  'Controle de Tronco',
-  'Neurologia',
-  'Postura & Biomecânica',
-  'Geriatria & Equilíbrio',
+  'Neurológica',
   'Cardiorrespiratória',
-  'Composição Corporal',
-  'Membros Superiores e Inferiores',
+  'Equilíbrio',
+  'Qualidade de Vida e Autonomia',
+  'Dor',
+  'Força Muscular',
+  'Postural',
+  'Composição Corporal / Bioimpedância',
   'Goniometria',
   'Geral',
 ];
@@ -43,7 +44,7 @@ const genericBergOptions = [
   '0 - Incapaz de realizar a tarefa',
 ];
 
-const mrcMuscleOptions = [
+export const mrcMuscleOptions = [
   '5 - Contração normal contra resistência plena',
   '4 - Contração contra resistência parcial',
   '3 - Contração contra gravidade apenas',
@@ -125,12 +126,13 @@ const makeGoniometriaFields = (joint: string): CustomField[] => {
 };
 
 export const CLINICAL_PRESETS: Record<string, ClinicalPreset[]> = {
-  'Controle de Tronco': [
+  // 1. NEUROLÓGICA
+  'Neurológica': [
     {
-      label: 'Módulo do Controle de Tronco',
+      label: 'Módulo do Controle de Tronco (TCT)',
       title: 'Módulo do Controle de Tronco (TCT)',
       description: 'Teste de Controle de Tronco com pontuações 0, 12 e 25 pts (Total: 100 pts)',
-      category: 'Controle de Tronco',
+      category: 'Neurológica',
       getFields: () => [
         { id: 1, label: 'Rolar para o lado afetado', fieldType: 'single_select', options: trunkOptionsList, helpText: 'Pontuação: 0 (Incapaz), 12 (Ajuda/Anormal), 25 (Normal)', isRequired: true },
         { id: 2, label: 'Rolar para o lado sadio', fieldType: 'single_select', options: trunkOptionsList, helpText: 'Pontuação: 0 (Incapaz), 12 (Ajuda/Anormal), 25 (Normal)', isRequired: true },
@@ -138,53 +140,129 @@ export const CLINICAL_PRESETS: Record<string, ClinicalPreset[]> = {
         { id: 4, label: 'Sentar-se a partir de deitado', fieldType: 'single_select', options: trunkOptionsList, helpText: 'Pontuação: 0 (Incapaz), 12 (Ajuda/Anormal), 25 (Normal)', isRequired: true },
       ],
     },
-  ],
-
-  'Neurologia': [
     {
-      label: 'Escala de Glasgow',
+      label: 'Escala de Coma de Glasgow',
       title: 'Escala de Coma de Glasgow',
-      description: 'Avaliação do nível de consciência e resposta neurológica',
-      category: 'Neurologia',
+      description: 'Avaliação do nível de consciência e resposta neurológica (3 a 15 pts)',
+      category: 'Neurológica',
       getFields: () => [
         { id: 1, label: 'Abertura Ocular', fieldType: 'single_select', options: ['4 - Espontânea', '3 - Ao chamado', '2 - À dor', '1 - Ausente'], helpText: 'Pontuação de 1 a 4', isRequired: true },
-        { id: 2, label: 'Resposta Verbal', fieldType: 'single_select', options: ['5 - Orientado', '4 - Confuso', '3 - Palavras', '2 - Sons', '1 - Ausente'], helpText: 'Pontuação de 1 a 5', isRequired: true },
-        { id: 3, label: 'Resposta Motora', fieldType: 'single_select', options: ['6 - Obedece', '5 - Localiza', '4 - Flete', '3 - Flexão Anormal', '2 - Extensão', '1 - Ausente'], helpText: 'Pontuação de 1 a 6', isRequired: true },
+        { id: 2, label: 'Resposta Verbal', fieldType: 'single_select', options: ['5 - Orientado', '4 - Confuso', '3 - Palavras inapropriadas', '2 - Sons incompreensíveis', '1 - Ausente'], helpText: 'Pontuação de 1 a 5', isRequired: true },
+        { id: 3, label: 'Resposta Motora', fieldType: 'single_select', options: ['6 - Obedece a comandos', '5 - Localiza estímulo doloroso', '4 - Flexão inespecífica / Flete', '3 - Flexão anormal (Decorticação)', '2 - Extensão anormal (Descerebração)', '1 - Ausente'], helpText: 'Pontuação de 1 a 6', isRequired: true },
       ],
     },
     {
-      label: 'Escala de Ashworth',
+      label: 'Escala de Ashworth Modificada',
       title: 'Escala de Ashworth Modificada (Espasticidade)',
-      description: 'Graduação de tônus muscular e espasticidade',
-      category: 'Neurologia',
+      description: 'Graduação de tônus muscular e espasticidade (Graus 0 a 4)',
+      category: 'Neurológica',
       getFields: () => [
         { id: 1, label: 'Grau de Espasticidade (Membro Avaliado)', fieldType: 'single_select', options: ['0 - Nenhum aumento no tônus', '1 - Leve aumento no final da ADM', '1+ - Leve aumento em menos da metade da ADM', '2 - Aumento marcante na maior parte da ADM', '3 - Aumento considerável, movimento difícil', '4 - Parte afetada rígida'], helpText: 'Selecione o grau de tônus muscular (0 a 4)', isRequired: true },
-        { id: 2, label: 'Grupo Muscular / Segmento Avaliado', fieldType: 'text', helpText: 'Ex: Bíceps braquial direito, Isquiotibiais', isRequired: true },
+        { id: 2, label: 'Grupo Muscular / Segmento Avaliado', fieldType: 'text', helpText: 'Ex: Bíceps braquial direito, Isquiotibiais, Tríceps sural', isRequired: true },
       ],
     },
   ],
 
-  'Postura & Biomecânica': [
+  // 2. CARDIORRESPIRATÓRIA
+  'Cardiorrespiratória': [
     {
-      label: 'Avaliação Postural (Anterior, Posterior e Lateral)',
-      title: 'Avaliação Postural Global',
-      description: 'Checklist anatômico nos planos anterior, posterior e lateral',
-      category: 'Postura & Biomecânica',
+      label: 'Teste TC6 (6 Minutos)',
+      title: 'Teste de Caminhada de 6 Minutos (TC6)',
+      description: 'Capacidade funcional submáxima cardiorrespiratória',
+      category: 'Cardiorrespiratória',
       getFields: () => [
-        { id: 1, label: 'Desvios Posturais - Visão Anterior (De Frente)', fieldType: 'multi_select', options: ['Inclinação cervical', 'Rotação cervical', 'Elevação/Desalinhamento de ombros', 'Triângulo de Tales assimétrico', 'Desalinhamento de quadril', 'Geno Valgo', 'Genu Varo', 'Pé Pronado', 'Pé Supinado'], isRequired: false, helpText: 'Alterações posturais observadas de frente' },
-        { id: 2, label: 'Desvios Posturais - Visão Posterior (De Costas)', fieldType: 'multi_select', options: ['Escoliose / Desvio lateral de coluna', 'Escápula alada / protusa', 'Assimetria de pregas glúteas', 'Tendão calcâneo valgo/varo'], isRequired: false, helpText: 'Alterações posturais observadas de costas' },
-        { id: 3, label: 'Desvios Posturais - Visão Lateral (Perfil)', fieldType: 'multi_select', options: ['Projeção anterior da cabeça', 'Hipercifose Torácica', 'Hiperlordose Lombar', 'Retificação Lombar', 'Anteversão Pélvica', 'Retroversão Pélvica', 'Genu Recurvatum', 'Genu Flexo'], isRequired: false, helpText: 'Alterações posturais observadas de perfil' },
-        { id: 4, label: 'Conclusão e Conduta Postural', fieldType: 'long_text', isRequired: false, helpText: 'Orientações ergonômicas e alinhamento biomecânico' },
+        { id: 1, label: 'SpO2 Basal', fieldType: 'number', unit: '%', isRequired: true, helpText: 'Saturação de oxigênio em repouso' },
+        { id: 2, label: 'FC Basal', fieldType: 'number', unit: 'bpm', isRequired: true, helpText: 'Frequência cardíaca em repouso' },
+        { id: 3, label: 'PA Basal', fieldType: 'text', helpText: 'Ex: 120x80 mmHg', isRequired: false },
+        { id: 4, label: 'Dispneia Basal (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
+        { id: 5, label: 'Fadiga Basal (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
+        { id: 6, label: 'Distância Total Percorrida', fieldType: 'number', unit: 'metros', isRequired: true },
+        { id: 7, label: 'SpO2 Final', fieldType: 'number', unit: '%', isRequired: true },
+        { id: 8, label: 'FC Final', fieldType: 'number', unit: 'bpm', isRequired: true },
+        { id: 9, label: 'PA Final', fieldType: 'text', helpText: 'Ex: 130x85 mmHg', isRequired: false },
+        { id: 10, label: 'Dispneia Final (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
+        { id: 11, label: 'Fadiga Final (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
+        { id: 12, label: 'Observações / Intercorrências', fieldType: 'long_text', isRequired: false },
+      ],
+    },
+    {
+      label: 'Manovacuometria (PImáx/PEmáx)',
+      title: 'Manovacuometria (Força Muscular Respiratória)',
+      description: 'Pressões respiratórias estáticas máximas (PImáx e PEmáx)',
+      category: 'Cardiorrespiratória',
+      getFields: () => [
+        { id: 1, label: 'PImáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: true, helpText: 'Pressão Inspiratória Máxima medida' },
+        { id: 2, label: 'PImáx Prevista', fieldType: 'number', unit: 'cmH2O', isRequired: false },
+        { id: 3, label: 'PEmáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: true, helpText: 'Pressão Expiratória Máxima medida' },
+        { id: 4, label: 'PEmáx Prevista', fieldType: 'number', unit: 'cmH2O', isRequired: false },
+        { id: 5, label: '% do Previsto (PImáx)', fieldType: 'number', unit: '%', isRequired: false },
+        { id: 6, label: '% do Previsto (PEmáx)', fieldType: 'number', unit: '%', isRequired: false },
+        { id: 7, label: 'Observações / Conclusão Respiratória', fieldType: 'long_text', isRequired: false },
+      ],
+    },
+    {
+      label: 'Peak Flow (PFE) e Pico de Fluxo de Tosse (PFT)',
+      title: 'Pico de Fluxo Expiratório (PFE) e Tosse (PFT)',
+      description: 'Fluxo expiratório forçado e eficácia do mecanismo de tosse',
+      category: 'Cardiorrespiratória',
+      getFields: () => [
+        { id: 1, label: 'PFE - Pico de Fluxo Expiratório (Peak Flow)', fieldType: 'number', unit: 'L/min', isRequired: false },
+        { id: 2, label: 'PFE Previsto', fieldType: 'number', unit: 'L/min', isRequired: false },
+        { id: 3, label: 'PFT - Pico de Fluxo de Tosse', fieldType: 'number', unit: 'L/min', isRequired: true, helpText: 'Pico de fluxo durante tosse voluntária máxima' },
+        { id: 4, label: 'Interpretação do PFT (Tosse)', fieldType: 'single_select', isRequired: true, options: ['> 270 L/min - Tosse eficaz', '160 a 270 L/min - Tosse potencialmente insuficiente', '< 160 L/min - Tosse ineficaz'] },
+        { id: 5, label: 'Observações', fieldType: 'long_text', isRequired: false },
+      ],
+    },
+    {
+      label: 'Escala de Dispneia - mMRC',
+      title: 'Escala de Dispneia do Medical Research Council (mMRC)',
+      description: 'Grau de falta de ar no cotidiano (Graus 0 a 4)',
+      category: 'Cardiorrespiratória',
+      getFields: () => [
+        {
+          id: 1,
+          label: 'Grau de Dispneia (mMRC)',
+          fieldType: 'single_select',
+          isRequired: true,
+          options: [
+            'Grau 0 - Falta de ar apenas durante exercícios intensos',
+            'Grau 1 - Falta de ar ao andar rápido no plano ou subir uma ladeira leve',
+            'Grau 2 - Anda mais devagar que pessoas da mesma idade no plano ou precisa parar para respirar ao andar no próprio passo',
+            'Grau 3 - Para para respirar após andar cerca de 100 metros ou após alguns minutos no plano',
+            'Grau 4 - Falta de ar que impede de sair de casa ou ao se vestir/despir',
+          ],
+        },
+      ],
+    },
+    {
+      label: 'Classificação Funcional - NYHA',
+      title: 'Classificação Funcional Cardíaca (NYHA)',
+      description: 'Limitação funcional por insuficiência cardíaca e sintomas',
+      category: 'Cardiorrespiratória',
+      getFields: () => [
+        {
+          id: 1,
+          label: 'Classe Funcional (NYHA)',
+          fieldType: 'single_select',
+          isRequired: true,
+          options: [
+            'Classe I - Sem limitação: atividade física habitual não causa fadiga excessiva, palpitação ou dispneia',
+            'Classe II - Limitação leve: confortável em repouso, mas atividade habitual resulta em fadiga, palpitação ou dispneia',
+            'Classe III - Limitação acentuada: confortável em repouso, mas atividades menores que as habituais causam sintomas',
+            'Classe IV - Incapacidade: sintomas de insuficiência cardíaca mesmo em repouso, piora ao menor esforço',
+          ],
+        },
       ],
     },
   ],
 
-  'Geriatria & Equilíbrio': [
+  // 3. EQUILÍBRIO
+  'Equilíbrio': [
     {
-      label: 'Escala de Berg',
+      label: 'Escala de Berg (BBS)',
       title: 'Escala de Equilíbrio Funcional de Berg (BBS)',
       description: '14 testes funcionais de equilíbrio estático e dinâmico (0 a 56 pts)',
-      category: 'Geriatria & Equilíbrio',
+      category: 'Equilíbrio',
       getFields: () => [
         { id: 1, label: '1. Posição sentada para posição em pé', fieldType: 'single_select', isRequired: true, helpText: 'Instruções: Por favor, levante-se.', options: ['4 - Capaz de levantar-se sem utilizar as mãos', '3 - Capaz de levantar-se independentemente', '2 - Capaz de levantar-se utilizando as mãos após diversas tentativas', '1 - Necessita de ajuda mínima', '0 - Necessita de ajuda moderada ou máxima'] },
         { id: 2, label: '2. Permanecer em pé sem apoio', fieldType: 'single_select', isRequired: true, helpText: 'Fique em pé por 2 minutos sem apoio.', options: ['4 - Capaz por 2 minutos com segurança', '3 - Capaz por 2 minutos com supervisão', '2 - Capaz por 30 segundos sem apoio', '1 - Várias tentativas para 30s', '0 - Incapaz por 30s'] },
@@ -206,197 +284,180 @@ export const CLINICAL_PRESETS: Record<string, ClinicalPreset[]> = {
       label: 'Teste TUG (Timed Up and Go)',
       title: 'Timed Up and Go (TUG)',
       description: 'Mobilidade básica, velocidade e risco de quedas',
-      category: 'Geriatria & Equilíbrio',
+      category: 'Equilíbrio',
       getFields: () => [
         { id: 1, label: 'Tempo de Execução (TUG)', fieldType: 'number', unit: 'segundos', helpText: 'Tempo para levantar, andar 3m, virar e sentar.', isRequired: true },
-        { id: 2, label: 'Risco de Quedas / Dependência', fieldType: 'single_select', options: ['< 10 s - Baixo risco de quedas', '11 a 20 s - Risco moderado de quedas', '> 20 s - Alto risco de quedas', '> 30 s - Dependência funcional significativa'], isRequired: true },
+        { id: 2, label: 'Risco de Quedas / Dependência', fieldType: 'single_select', options: ['< 10 s - Baixo risco de quedas (Independente)', '11 a 20 s - Risco moderado de quedas (Idosos frágeis)', '> 20 s - Alto risco de quedas (Necessita supervisão/ajuda)', '> 30 s - Dependência funcional significativa'], isRequired: true },
+        { id: 3, label: 'Utilização de dispositivo de marcha', fieldType: 'single_select', options: ['Não utiliza', 'Bengala', 'Andador', 'Muletas', 'Cadeira de rodas', 'Outro'], isRequired: false, helpText: 'Dispositivo auxiliar de locomoção utilizado durante o teste' },
+        { id: 4, label: 'Utilização de O2', fieldType: 'boolean', isRequired: false, helpText: 'Paciente utilizou oxigênio suplementar durante o teste' },
+        { id: 5, label: 'Qual a quantidade de O2?', fieldType: 'number', unit: 'L/min', isRequired: false, helpText: 'Fluxo de oxigênio suplementar em L/min' },
       ],
     },
+  ],
+
+  // 4. QUALIDADE DE VIDA E AUTONOMIA
+  'Qualidade de Vida e Autonomia': [
     {
       label: 'Índice de Barthel',
       title: 'Índice de Barthel (AVDs)',
       description: 'Grau de independência nas Atividades de Vida Diária (0 a 100 pts)',
-      category: 'Geriatria & Equilíbrio',
+      category: 'Qualidade de Vida e Autonomia',
       getFields: () => [
-        { id: 1, label: 'Alimentação', fieldType: 'single_select', isRequired: true, options: ['0 - Incapacitado', '5 - Precisa de ajuda', '10 - Independente'] },
-        { id: 2, label: 'Banho', fieldType: 'single_select', isRequired: true, options: ['0 - Dependente', '5 - Independente'] },
-        { id: 3, label: 'Higiene Pessoal', fieldType: 'single_select', isRequired: true, options: ['0 - Precisa de ajuda', '5 - Independente'] },
-        { id: 4, label: 'Vestir-se', fieldType: 'single_select', isRequired: true, options: ['0 - Dependente', '5 - Ajuda parcial', '10 - Independente'] },
-        { id: 5, label: 'Intestino', fieldType: 'single_select', isRequired: true, options: ['0 - Incontinente', '5 - Acidente ocasional', '10 - Continente'] },
-        { id: 6, label: 'Sistema Urinário', fieldType: 'single_select', isRequired: true, options: ['0 - Incontinente', '5 - Acidente ocasional', '10 - Continente'] },
-        { id: 7, label: 'Uso do Vaso Sanitário', fieldType: 'single_select', isRequired: true, options: ['0 - Dependente', '5 - Ajuda parcial', '10 - Independente'] },
-        { id: 8, label: 'Transferências (Cama/Cadeira)', fieldType: 'single_select', isRequired: true, options: ['0 - Incapacitado', '5 - Muita ajuda', '10 - Pouca ajuda', '15 - Independente'] },
-        { id: 9, label: 'Mobilidade (Superfícies Planas)', fieldType: 'single_select', isRequired: true, options: ['0 - Imóvel', '5 - Cadeira de rodas independente', '10 - Caminha com ajuda', '15 - Independente'] },
-        { id: 10, label: 'Escadas', fieldType: 'single_select', isRequired: true, options: ['0 - Incapacitado', '5 - Precisa de ajuda', '10 - Independente'] },
-      ],
-    },
-  ],
-
-  'Cardiorrespiratória': [
-    {
-      label: 'Teste TC6 (6 Minutos)',
-      title: 'Teste de Caminhada de 6 Minutos (TC6)',
-      description: 'Capacidade funcional submáxima cardiorrespiratória',
-      category: 'Cardiorrespiratória',
-      getFields: () => [
-        { id: 1, label: 'SpO2 Basal', fieldType: 'number', unit: '%', isRequired: true, helpText: 'Saturação de oxigênio em repouso' },
-        { id: 2, label: 'FC Basal', fieldType: 'number', unit: 'bpm', isRequired: true, helpText: 'Frequência cardíaca em repouso' },
-        { id: 3, label: 'Dispneia Basal (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
-        { id: 4, label: 'Fadiga Basal (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
-        { id: 5, label: 'Distância Total Percorrida', fieldType: 'number', unit: 'metros', isRequired: true },
-        { id: 6, label: 'SpO2 Final', fieldType: 'number', unit: '%', isRequired: true },
-        { id: 7, label: 'FC Final', fieldType: 'number', unit: 'bpm', isRequired: true },
-        { id: 8, label: 'Dispneia Final (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
-        { id: 9, label: 'Fadiga Final (Borg)', fieldType: 'single_select', options: borgScaleOptions, isRequired: true },
-        { id: 10, label: 'Observações / Intercorrências', fieldType: 'long_text', isRequired: false },
-      ],
-    },
-    {
-      label: 'Manovacuometria (PImáx/PEmáx)',
-      title: 'Manovacuometria (Força Muscular Respiratória)',
-      description: 'Pressões respiratórias estáticas máximas',
-      category: 'Cardiorrespiratória',
-      getFields: () => [
-        { id: 1, label: 'PImáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: true },
-        { id: 2, label: 'PImáx Prevista', fieldType: 'number', unit: 'cmH2O', isRequired: false },
-        { id: 3, label: 'PEmáx Medida', fieldType: 'number', unit: 'cmH2O', isRequired: true },
-        { id: 4, label: 'PEmáx Prevista', fieldType: 'number', unit: 'cmH2O', isRequired: false },
-        { id: 5, label: 'Observações', fieldType: 'long_text', isRequired: false },
-      ],
-    },
-    {
-      label: 'Peak Flow e PCF',
-      title: 'Pico de Fluxo Expiratório (PEF) e Tosse (PCF)',
-      description: 'Eficácia da tosse e fluxo expiratório',
-      category: 'Cardiorrespiratória',
-      getFields: () => [
-        { id: 1, label: 'PEF - Pico de Fluxo Expiratório', fieldType: 'number', unit: 'L/min', isRequired: false },
-        { id: 2, label: 'PCF - Pico de Fluxo de Tosse', fieldType: 'number', unit: 'L/min', isRequired: true, helpText: 'Pico de fluxo durante tosse voluntária' },
-        { id: 3, label: 'Interpretação do PCF (Tosse)', fieldType: 'single_select', isRequired: true, options: ['> 270 L/min - Tosse eficaz', '160 a 270 L/min - Tosse potencialmente insuficiente', '< 160 L/min - Tosse ineficaz'] },
-        { id: 4, label: 'Observações', fieldType: 'long_text', isRequired: false },
-      ],
-    },
-    {
-      label: 'Escala de Dispneia - MRC',
-      title: 'Escala de Dispneia do Medical Research Council (MRC)',
-      description: 'Grau de falta de ar no cotidiano',
-      category: 'Cardiorrespiratória',
-      getFields: () => [
-        { id: 1, label: 'Grau de Dispneia (MRC)', fieldType: 'single_select', isRequired: true, options: ['0 - Apenas com exercício extenuante', '1 - Ao caminhar rápido no plano ou subir ladeira suave', '2 - Mais devagar que pessoas da mesma idade', '3 - Para para respirar após 1 quadra ou poucos minutos', '4 - Muito dispneico para sair de casa ou ao se vestir'] },
-      ],
-    },
-    {
-      label: 'Classificação Funcional - NYHA',
-      title: 'Classificação Funcional Cardíaca (NYHA)',
-      description: 'Limitação funcional por sintomas cardíacos',
-      category: 'Cardiorrespiratória',
-      getFields: () => [
-        { id: 1, label: 'Classe Funcional (NYHA)', fieldType: 'single_select', isRequired: true, options: ['CLASSE I - Ausência de sintomas em atividades cotidianas', 'CLASSE II - Sintomas leves em atividades cotidianas', 'CLASSE III - Sintomas em atividades leves/pequenos esforços', 'CLASSE IV - Sintomas em repouso'] },
-      ],
-    },
-  ],
-
-  'Composição Corporal': [
-    {
-      label: 'Avaliação por Bioimpedância',
-      title: 'Bioimpedância Corporal',
-      description: 'Composição corporal completa (massa magra, gorda, água e metabolismo)',
-      category: 'Composição Corporal',
-      getFields: () => [
-        { id: 1, label: 'Peso', fieldType: 'number', unit: 'kg', isRequired: true },
-        { id: 2, label: 'IMC (Índice de Massa Corporal)', fieldType: 'number', unit: 'kg/m²', isRequired: false },
-        { id: 3, label: 'Gordura Corporal', fieldType: 'number', unit: '%', isRequired: false },
-        { id: 4, label: 'Massa Muscular', fieldType: 'number', unit: 'kg', isRequired: false },
-        { id: 5, label: 'Água Corporal', fieldType: 'number', unit: '%', isRequired: false },
-        { id: 6, label: 'Gordura Visceral', fieldType: 'number', isRequired: false },
-        { id: 7, label: 'TMB (Taxa Metabólica Basal)', fieldType: 'number', unit: 'kcal', isRequired: false },
-        { id: 8, label: 'Idade Metabólica', fieldType: 'number', unit: 'anos', isRequired: false },
-        { id: 9, label: 'Observações do Teste', fieldType: 'long_text', isRequired: false },
-      ],
-    },
-  ],
-
-  'Membros Superiores e Inferiores': [
-    {
-      label: 'Escala de Força Muscular (MRC)',
-      title: 'Escala de Força Muscular Periférica (MRC 0-5)',
-      description: 'Graduação de força muscular em 12 grupos musculares',
-      category: 'Membros Superiores e Inferiores',
-      getFields: () => [
-        { id: 1, label: 'Flexão do Braço (Bíceps)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 2, label: 'Extensão do Braço (Tríceps)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 3, label: 'Elevação de Ombro', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 4, label: 'Rotação Externa do Ombro', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 5, label: 'Flexão do Punho', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 6, label: 'Extensão do Punho', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 7, label: 'Flexão do Quadril', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 8, label: 'Extensão do Quadril', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 9, label: 'Flexão do Joelho', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 10, label: 'Extensão do Joelho', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 11, label: 'Flexão do Tornozelo', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-        { id: 12, label: 'Extensão do Tornozelo', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
-      ],
-    },
-  ],
-
-  'Goniometria': [
-    'Cervical', 'Ombro', 'Cotovelo e Antebraço', 'Punho', 'Quadril', 'Joelho', 'Tornozelo'
-  ].map((joint) => ({
-    label: `Goniometria - ${joint}`,
-    title: `Goniometria Articular - ${joint}`,
-    description: `Graus de Amplitude de Movimento (ADM) para ${joint}`,
-    category: 'Goniometria',
-    getFields: () => makeGoniometriaFields(joint),
-  })),
-
-  'Geral': [
-    {
-      label: 'Anamnese Fisioterapêutica',
-      title: 'Anamnese e História Clínica',
-      description: 'Queixa Principal, HDA, HMP, Histórico Familiar e Diagnóstico Funcional',
-      category: 'Geral',
-      getFields: () => [
-        { id: 1, label: 'Queixa Principal (QP) / Motivo da Consulta', fieldType: 'long_text', isRequired: true, helpText: 'Motivo principal da procura pelo atendimento' },
-        { id: 2, label: 'História da Doença Atual (HDA)', fieldType: 'long_text', isRequired: true, helpText: 'Início, evolução, mecanismo de lesão e sintomas' },
-        { id: 3, label: 'História Médica Pregressa (HMP)', fieldType: 'long_text', isRequired: false, helpText: 'Cirurgias, comorbidades (HAS, DM), medicamentos' },
-        { id: 4, label: 'Histórico Familiar (HF)', fieldType: 'long_text', isRequired: false },
-        { id: 5, label: 'Observações Gerais & Diagnóstico Funcional', fieldType: 'long_text', isRequired: false },
-      ],
-    },
-    {
-      label: 'Pontos e Mapeamento de Dor (Body Map)',
-      title: 'Mapeamento Anatômico e Tipo de Dor',
-      description: 'Localização anatômica, padrão e fatores agravantes',
-      category: 'Geral',
-      getFields: () => [
-        { id: 1, label: 'Intensidade da Dor (Escala EVA)', fieldType: 'scale_0_10', isRequired: true },
-        { id: 2, label: 'Localização Anatômica da Dor', fieldType: 'text', isRequired: true },
-        { id: 3, label: 'Tipo / Característica da Dor', fieldType: 'single_select', options: ['Queimação', 'Pontada / Agulhada', 'Latejante / Pulsátil', 'Em Peso / Cansaço', 'Choque / Irradiada', 'Contínua / Profunda'], isRequired: true },
-        { id: 4, label: 'Fatores de Piora e Melhora', fieldType: 'long_text', isRequired: false },
-      ],
-    },
-    {
-      label: 'Escala Visual Analógica (EVA)',
-      title: 'Escala Visual Analógica (EVA 0-10)',
-      description: 'Intensidade e frequência da dor',
-      category: 'Geral',
-      getFields: () => [
-        { id: 1, label: 'Intensidade da Dor (EVA)', fieldType: 'scale_0_10', isRequired: true },
-        { id: 2, label: 'Local da Dor', fieldType: 'text', isRequired: false },
-        { id: 3, label: 'Frequência / Pior Momento', fieldType: 'single_select', options: ['Constante', 'Ao movimento', 'Ao repouso', 'Matinal', 'Noturna'], isRequired: false },
-        { id: 4, label: 'Observações / Medicamentos', fieldType: 'long_text', isRequired: false },
+        {
+          id: 1,
+          label: '1. Higiene Pessoal',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Lavar as mãos/face, escovar dentes, barbear, pentear ou maquiar-se.',
+          options: [
+            '0 - Incapaz de realizar higiene pessoal sendo dependente em todos os aspectos',
+            '1 - Necessita de assistência em todos os passos da higiene pessoal',
+            '3 - Alguma assistência é necessária em um ou mais passos da higiene pessoal',
+            '4 - Capaz de conduzir a própria higiene, mas requer mínima assistência antes/depois',
+            '5 - Totalmente independente (lava mãos/face, limpa dentes, penteia, barbeia/maquia-se)',
+          ],
+        },
+        {
+          id: 2,
+          label: '2. Banho',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Capacidade de lavar-se, transferir-se e secar-se.',
+          options: [
+            '0 - Totalmente dependente para banhar-se',
+            '1 - Requer assistência em todos os aspectos do banho',
+            '3 - Requer assistência para transferir-se, lavar-se e/ou secar-se',
+            '4 - Requer supervisão por segurança no ajuste da temperatura ou na transferência',
+            '5 - Totalmente independente (realiza todas as etapas do banho com ou sem equipamentos)',
+          ],
+        },
+        {
+          id: 3,
+          label: '3. Alimentação',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Manipulação de talheres, mastigação, cortar alimentos e beber.',
+          options: [
+            '0 - Dependente em todos os aspectos e necessita ser alimentado',
+            '2 - Manipula utensílios (colher), porém necessita de assistência constante na refeição',
+            '5 - Come com supervisão; requer assistência em tarefas associadas (açúcar, tempero, cortar)',
+            '8 - Independência em prato pronto; assistência apenas para cortar carne, abrir potes/garrafas',
+            '10 - Totalmente independente (alimenta-se de prato/bandeja, corta carne, passa manteiga)',
+          ],
+        },
+        {
+          id: 4,
+          label: '4. Toalete (Uso do Vaso Sanitário)',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Despir-se/vestir-se, transferir-se, higiene íntima e lavar as mãos.',
+          options: [
+            '0 - Totalmente dependente no uso do vaso sanitário',
+            '2 - Necessita de assistência no uso do vaso sanitário',
+            '5 - Necessita de assistência para se despir/vestir, transferir-se ou lavar as mãos',
+            '8 - Requer supervisão por segurança ou auxílio para esvaziar/limpar comadre/penico',
+            '10 - Totalmente independente (vai ao sanitário, despe/veste-se, limpa-se sem ajuda)',
+          ],
+        },
+        {
+          id: 5,
+          label: '5. Subir e Descer Escadas',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Capacidade de subir e descer lances de escada.',
+          options: [
+            '0 - Incapaz de subir escadas',
+            '2 - Requer assistência em todos os aspectos ao subir escadas (inclusive com dispositivos)',
+            '5 - Sobe e desce, porém não carrega dispositivos, necessitando supervisão e assistência',
+            '8 - Geralmente não necessita de assistência; requer supervisão eventual por segurança',
+            '10 - Totalmente independente (sobe e desce com segurança um lance de escadas com/sem dispositivos)',
+          ],
+        },
+        {
+          id: 6,
+          label: '6. Vestuário',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Vestir-se, despir-se, abotoar, fechar zíper, calçar e amarrar sapatos.',
+          options: [
+            '0 - Dependente em todos os aspectos do vestir e incapaz de participar',
+            '2 - Apresenta algum grau de participação, mas é dependente em todos os aspectos',
+            '5 - Necessita de assistência para se vestir ou se despir',
+            '8 - Necessita de assistência mínima (abotoar, fechar zíper, amarrar sapatos)',
+            '10 - Totalmente independente (veste-se, despe-se, amarra sapatos, coloca colete/órtese)',
+          ],
+        },
+        {
+          id: 7,
+          label: '7. Controle Esfincteriano (Bexiga)',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Controle da micção e continência urinária.',
+          options: [
+            '0 - Apresenta incontinência urinária total',
+            '2 - Necessita de auxílio para posição apropriada e manobras de esvaziamento',
+            '5 - Acidentes frequentes, necessita de assistência com fraldas e manobras',
+            '8 - Acidentes ocasionais ou necessita de supervisão',
+            '10 - Controle urinário total, sem acidentes',
+          ],
+        },
+        {
+          id: 8,
+          label: '8. Controle Esfincteriano (Intestino)',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Controle da evacuação e continência fecal.',
+          options: [
+            '0 - Não tem controle de esfíncteres ou utiliza cateterismo',
+            '2 - Incontinência, mas é capaz de assistir na aplicação de auxílios externos/internos',
+            '5 - Geralmente seco ao dia, porém não à noite; necessita equipamentos para esvaziamento',
+            '8 - Geralmente seco durante dia/noite; acidentes ocasionais ou auxílio com equipamentos',
+            '10 - Controle esfincteriano total durante o dia e a noite (independente)',
+          ],
+        },
+        {
+          id: 9,
+          label: '9. Deambulação / Mobilidade',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Capacidade de caminhar 50 metros com ou sem dispositivos (ou condução de cadeira de rodas).',
+          options: [
+            '0 - Totalmente dependente para deambular / conduzir cadeira de rodas',
+            '1 - Cadeira de Rodas: Conduz em pequenas distâncias/piso liso, necessita auxílio geral',
+            '3 - Deambulação: Presença constante de 1+ pessoas | Cadeira: Requer assistência contínua',
+            '4 - Cadeira de Rodas: Conduz por tempo razoável em solo regular, mínima ajuda',
+            '5 - Cadeira de Rodas: Totalmente independente em longos percursos e transferências',
+            '8 - Deambulação: Requer assistência de 1 pessoa para manipular dispositivos auxiliares',
+            '12 - Deambulação: Independente para andar 50m com auxílio/supervisão em situações de risco',
+            '15 - Deambulação: Totalmente independente (anda 50m sem auxílio ou supervisão)',
+          ],
+        },
+        {
+          id: 10,
+          label: '10. Transferências (Cadeira / Cama)',
+          fieldType: 'single_select',
+          isRequired: true,
+          helpText: 'Transferir-se da cama para a cadeira de rodas/poltrona e retornar.',
+          options: [
+            '0 - Incapaz de participar da transferência (necessita de 2 pessoas / auxílio mecânico)',
+            '3 - Participa, porém necessita de máxima assistência de outra pessoa',
+            '8 - Requer assistência de outra pessoa para transferir-se',
+            '12 - Requer presença de outra pessoa supervisionando como medida de segurança',
+            '15 - Totalmente independente em todas as fases da transferência (cama/cadeira)',
+          ],
+        },
       ],
     },
     {
       label: 'Qualidade de Vida (SF-36)',
       title: 'Questionário de Qualidade de Vida (SF-36)',
-      description: 'Saúde física, capacidade funcional, dor e aspectos emocionais',
-      category: 'Geral',
+      description: 'Saúde física, capacidade funcional, dor, vitalidade e aspectos emocionais',
+      category: 'Qualidade de Vida e Autonomia',
       getFields: () => [
         { id: 1, label: '1 - Em geral sua saúde é:', fieldType: 'single_select', isRequired: true, options: ['1 - Excelente', '2 - Muito Boa', '3 - Boa', '4 - Ruim', '5 - Muito Ruim'] },
         { id: 2, label: '2 - Comparada há um ano atrás:', fieldType: 'single_select', isRequired: true, options: ['1 - Muito Melhor', '2 - Um Pouco Melhor', '3 - Quase a Mesma', '4 - Um Pouco Pior', '5 - Muito Pior'] },
         { id: 3, label: '3a - Atividades Rigorosas (correr, levantar peso)', fieldType: 'single_select', isRequired: true, options: ['1 - Dificulta muito', '2 - Dificulta um pouco', '3 - Não dificulta'] },
-        { id: 4, label: '3b - Atividades Moderadas', fieldType: 'single_select', isRequired: true, options: ['1 - Dificulta muito', '2 - Dificulta um pouco', '3 - Não dificulta'] },
+        { id: 4, label: '3b - Atividades Moderadas (mover mesa, aspirador)', fieldType: 'single_select', isRequired: true, options: ['1 - Dificulta muito', '2 - Dificulta um pouco', '3 - Não dificulta'] },
         { id: 5, label: '3c - Levantar ou carregar mantimentos', fieldType: 'single_select', isRequired: true, options: ['1 - Dificulta muito', '2 - Dificulta um pouco', '3 - Não dificulta'] },
         { id: 6, label: '3d - Subir vários lances de escada', fieldType: 'single_select', isRequired: true, options: ['1 - Dificulta muito', '2 - Dificulta um pouco', '3 - Não dificulta'] },
         { id: 7, label: '3e - Subir um lance de escada', fieldType: 'single_select', isRequired: true, options: ['1 - Dificulta muito', '2 - Dificulta um pouco', '3 - Não dificulta'] },
@@ -409,7 +470,7 @@ export const CLINICAL_PRESETS: Record<string, ClinicalPreset[]> = {
       label: 'Qualidade do Sono (PSQI)',
       title: 'Índice de Qualidade do Sono de Pittsburgh (PSQI)',
       description: 'Padrão, latência, duração e distúrbios do sono',
-      category: 'Geral',
+      category: 'Qualidade de Vida e Autonomia',
       getFields: () => [
         { id: 1, label: '1. Hora usual de deitar', fieldType: 'text', isRequired: true },
         { id: 2, label: '2. Minutos para adormecer', fieldType: 'number', unit: 'min', isRequired: true },
@@ -420,6 +481,179 @@ export const CLINICAL_PRESETS: Record<string, ClinicalPreset[]> = {
         { id: 7, label: '7. Qualidade geral do sono', fieldType: 'single_select', isRequired: true, options: ['0 - Muito boa', '1 - Boa', '2 - Ruim', '3 - Muito Ruim'] },
         { id: 8, label: '8. Medicamento para dormir', fieldType: 'single_select', isRequired: true, options: freqPSQIOptions },
         { id: 9, label: '9. Dificuldade para ficar acordado de dia', fieldType: 'single_select', isRequired: true, options: freqPSQIOptions },
+      ],
+    },
+  ],
+
+  // 5. DOR
+  'Dor': [
+    {
+      label: 'Escala Visual Analógica (EVA)',
+      title: 'Escala Visual Analógica (EVA 0-10)',
+      description: 'Intensidade, padrão temporal e frequência da dor',
+      category: 'Dor',
+      getFields: () => [
+        { id: 1, label: 'Intensidade da Dor (EVA)', fieldType: 'scale_0_10', isRequired: true },
+        { id: 2, label: 'Local Principal da Dor', fieldType: 'text', isRequired: false },
+        { id: 3, label: 'Frequência / Pior Momento', fieldType: 'single_select', options: ['Constante', 'Ao movimento', 'Ao repouso', 'Matinal', 'Noturna', 'Intermitente'], isRequired: false },
+        { id: 4, label: 'Observações / Medicamentos em Uso', fieldType: 'long_text', isRequired: false },
+      ],
+    },
+    {
+      label: 'Pontos e Mapeamento de Dor (Body Map)',
+      title: 'Mapeamento Anatômico e Tipo de Dor (Body Map)',
+      description: 'Localização anatômica corporal, tipo, irradiação e fatores agravantes',
+      category: 'Dor',
+      getFields: () => [
+        { id: 1, label: 'Intensidade da Dor (Escala EVA)', fieldType: 'scale_0_10', isRequired: true },
+        {
+          id: 2,
+          label: 'Regiões Anatômicas Afetadas (Body Map)',
+          fieldType: 'multi_select',
+          isRequired: true,
+          options: [
+            'Cabeça / Face',
+            'Coluna Cervical',
+            'Coluna Torácica',
+            'Coluna Lombar',
+            'Ombro Direito',
+            'Ombro Esquerdo',
+            'Cotovelo/Antebraço Direito',
+            'Cotovelo/Antebraço Esquerdo',
+            'Punho/Mão Direita',
+            'Punho/Mão Esquerda',
+            'Quadril/Pelve Direita',
+            'Quadril/Pelve Esquerda',
+            'Joelho Direito',
+            'Joelho Esquerdo',
+            'Tornozelo/Pé Direito',
+            'Tornozelo/Pé Esquerdo',
+          ],
+        },
+        {
+          id: 3,
+          label: 'Tipo / Característica da Dor',
+          fieldType: 'single_select',
+          isRequired: true,
+          options: [
+            'Queimação',
+            'Pontada / Agulhada',
+            'Latejante / Pulsátil',
+            'Em Peso / Cansaço',
+            'Choque / Irradiada',
+            'Contínua / Profunda',
+            'Cólica / Aperto',
+          ],
+        },
+        { id: 4, label: 'Irradiação da Dor', fieldType: 'text', isRequired: false, helpText: 'Ex: Irradia para membro inferior direito até o pé' },
+        { id: 5, label: 'Fatores de Piora e Melhora', fieldType: 'long_text', isRequired: false },
+      ],
+    },
+  ],
+
+  // 6. FORÇA MUSCULAR
+  'Força Muscular': [
+    {
+      label: 'Escala de Força Muscular (MRC)',
+      title: 'Escala de Força Muscular Periférica (MRC 0-5)',
+      description: 'Graduação de força muscular (0 a 5) nos principais grupos e músculos específicos',
+      category: 'Força Muscular',
+      getFields: () => [
+        { id: 1, label: 'Flexão do Braço (Bíceps)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 2, label: 'Extensão do Braço (Tríceps)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 3, label: 'Elevação / Abdução de Ombro', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 4, label: 'Rotação Externa de Ombro', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 5, label: 'Flexão do Punho', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 6, label: 'Extensão do Punho', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 7, label: 'Flexão do Quadril (Iliopsoas)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 8, label: 'Extensão do Quadril (Glúteo Máximo)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 9, label: 'Flexão do Joelho (Isquiotibiais)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 10, label: 'Extensão do Joelho (Quadríceps)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 11, label: 'Dorsiflexão do Tornozelo (Tibial Anterior)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 12, label: 'Flexão Plantar (Tríceps Sural)', fieldType: 'single_select', isRequired: true, options: mrcMuscleOptions },
+        { id: 13, label: 'Músculo Específico Avaliado (Caso Necessário)', fieldType: 'text', isRequired: false, helpText: 'Ex: Serrátil Anterior, Trapézio, Glúteo Médio, etc.' },
+        { id: 14, label: 'Grau de Força do Músculo Específico (MRC)', fieldType: 'single_select', isRequired: false, options: mrcMuscleOptions },
+        { id: 15, label: 'Observações / Assimetrias de Força Muscular', fieldType: 'long_text', isRequired: false, helpText: 'Anotar assimetrias, fadiga ou compensações' },
+      ],
+    },
+  ],
+
+  // 7. POSTURAL
+  'Postural': [
+    {
+      label: 'Avaliação Postural Global',
+      title: 'Avaliação Postural Global',
+      description: 'Checklist anatômico nos planos anterior, posterior e laterais',
+      category: 'Postural',
+      getFields: () => [
+        { id: 1, label: 'Desvios Posturais - Visão Anterior (De Frente)', fieldType: 'multi_select', options: ['Inclinação cervical', 'Rotação cervical', 'Elevação/Desalinhamento de ombros', 'Triângulo de Tales assimétrico', 'Desalinhamento de quadril', 'Geno Valgo', 'Genu Varo', 'Pé Pronado', 'Pé Supinado'], isRequired: false, helpText: 'Alterações posturais observadas de frente' },
+        { id: 2, label: 'Desvios Posturais - Visão Posterior (De Costas)', fieldType: 'multi_select', options: ['Escoliose / Desvio lateral de coluna', 'Escápula alada / protusa', 'Assimetria de pregas glúteas', 'Tendão calcâneo valgo/varo'], isRequired: false, helpText: 'Alterações posturais observadas de costas' },
+        { id: 3, label: 'Desvios Posturais - Visão Lateral (Perfil)', fieldType: 'multi_select', options: ['Projeção anterior da cabeça', 'Hipercifose Torácica', 'Hiperlordose Lombar', 'Retificação Lombar', 'Anteversão Pélvica', 'Retroversão Pélvica', 'Genu Recurvatum', 'Genu Flexo'], isRequired: false, helpText: 'Alterações posturais observadas de perfil' },
+        { id: 4, label: 'Triângulo de Tales e Alinhamento Pélvico', fieldType: 'single_select', options: ['Simétrico', 'Assimétrico à Direita', 'Assimétrico à Esquerda'], isRequired: false },
+        { id: 5, label: 'Conclusão e Conduta Postural', fieldType: 'long_text', isRequired: false, helpText: 'Orientações ergonômicas e alinhamento biomecânico' },
+      ],
+    },
+  ],
+
+  // 8. COMPOSIÇÃO CORPORAL / BIOIMPEDÂNCIA
+  'Composição Corporal / Bioimpedância': [
+    {
+      label: 'Avaliação por Bioimpedância',
+      title: 'Bioimpedância e Composição Corporal',
+      description: 'Composição corporal completa (massa magra, gorda, água e metabolismo)',
+      category: 'Composição Corporal / Bioimpedância',
+      getFields: () => [
+        { id: 1, label: 'Peso Atual', fieldType: 'number', unit: 'kg', isRequired: true },
+        { id: 2, label: 'Altura', fieldType: 'number', unit: 'cm', isRequired: false },
+        { id: 3, label: 'IMC (Índice de Massa Corporal)', fieldType: 'number', unit: 'kg/m²', isRequired: false },
+        { id: 4, label: '% de Gordura Corporal', fieldType: 'number', unit: '%', isRequired: false },
+        { id: 5, label: 'Massa Muscular Esquelética', fieldType: 'number', unit: 'kg', isRequired: false },
+        { id: 6, label: 'Água Corporal Total', fieldType: 'number', unit: '%', isRequired: false },
+        { id: 7, label: 'Nível de Gordura Visceral', fieldType: 'number', unit: 'nível', isRequired: false },
+        { id: 8, label: 'Taxa Metabólica Basal (TMB)', fieldType: 'number', unit: 'kcal', isRequired: false },
+        { id: 9, label: 'Idade Metabólica', fieldType: 'number', unit: 'anos', isRequired: false },
+        { id: 10, label: 'Observações da Bioimpedância', fieldType: 'long_text', isRequired: false },
+      ],
+    },
+    {
+      label: 'Registro Fotográfico (Fotos Anterior, Posterior e Laterais)',
+      title: 'Registro Fotográfico Corporal e Postural',
+      description: 'Registro visual dos planos anterior, posterior e laterais com fotos',
+      category: 'Composição Corporal / Bioimpedância',
+      getFields: () => [
+        { id: 1, label: 'Observações da Foto Anterior (De Frente)', fieldType: 'long_text', isRequired: false },
+        { id: 2, label: 'Observações da Foto Posterior (De Costas)', fieldType: 'long_text', isRequired: false },
+        { id: 3, label: 'Observações da Foto Lateral Direita', fieldType: 'long_text', isRequired: false },
+        { id: 4, label: 'Observações da Foto Lateral Esquerda', fieldType: 'long_text', isRequired: false },
+        { id: 5, label: 'Evolução / Comparativo Visual', fieldType: 'long_text', isRequired: false },
+      ],
+    },
+  ],
+
+  // 9. GONIOMETRIA
+  'Goniometria': [
+    'Cervical', 'Ombro', 'Cotovelo e Antebraço', 'Punho', 'Quadril', 'Joelho', 'Tornozelo'
+  ].map((joint) => ({
+    label: `Goniometria - ${joint}`,
+    title: `Goniometria Articular - ${joint}`,
+    description: `Graus de Amplitude de Movimento (ADM) para ${joint}`,
+    category: 'Goniometria',
+    getFields: () => makeGoniometriaFields(joint),
+  })),
+
+  // 10. GERAL
+  'Geral': [
+    {
+      label: 'Anamnese Fisioterapêutica',
+      title: 'Anamnese e História Clínica',
+      description: 'Queixa Principal, HDA, HMP, Histórico Familiar e Diagnóstico Funcional',
+      category: 'Geral',
+      getFields: () => [
+        { id: 1, label: 'Queixa Principal (QP) / Motivo da Consulta', fieldType: 'long_text', isRequired: true, helpText: 'Motivo principal da procura pelo atendimento' },
+        { id: 2, label: 'História da Doença Atual (HDA)', fieldType: 'long_text', isRequired: true, helpText: 'Início, evolução, mecanismo de lesão e sintomas' },
+        { id: 3, label: 'História Médica Pregressa (HMP)', fieldType: 'long_text', isRequired: false, helpText: 'Cirurgias, comorbidades (HAS, DM), medicamentos' },
+        { id: 4, label: 'Histórico Familiar (HF)', fieldType: 'long_text', isRequired: false },
+        { id: 5, label: 'Observações Gerais & Diagnóstico Funcional', fieldType: 'long_text', isRequired: false },
       ],
     },
   ],

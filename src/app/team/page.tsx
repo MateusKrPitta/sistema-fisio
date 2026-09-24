@@ -27,10 +27,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  EyeOff
+  EyeOff,
+  DollarSign,
+  Wallet,
+  CreditCard,
+  Briefcase,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { maskCpfCnpj, maskPhone, maskCrefito } from '@/lib/masks';
+import { CurrencyInput, formatCurrency } from '@/components/currency-input';
+import { CustomSelect } from '@/components/custom-select';
 
 interface TeamMember {
   id: number;
@@ -43,6 +49,13 @@ interface TeamMember {
   avatarUrl?: string | null;
   active?: boolean;
   companyId?: number | null;
+  compensationType?: 'fixed' | 'per_session' | 'percentage' | 'hybrid' | 'pro_labore' | null;
+  baseSalary?: number | null;
+  sessionRate?: number | null;
+  commissionPercentage?: number | null;
+  paymentDay?: number | null;
+  pixKey?: string | null;
+  bankInfo?: string | null;
   company?: {
     id: number;
     name: string;
@@ -94,6 +107,15 @@ export default function TeamManagementPage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [active, setActive] = useState(true);
 
+  // Compensation State
+  const [compensationType, setCompensationType] = useState<'fixed' | 'per_session' | 'percentage' | 'hybrid' | 'pro_labore'>('fixed');
+  const [baseSalary, setBaseSalary] = useState<number | string>('');
+  const [sessionRate, setSessionRate] = useState<number | string>('');
+  const [commissionPercentage, setCommissionPercentage] = useState<number | string>('');
+  const [paymentDay, setPaymentDay] = useState<number | string>(5);
+  const [pixKey, setPixKey] = useState('');
+  const [bankInfo, setBankInfo] = useState('');
+
   const fetchQuota = async () => {
     try {
       const url = companyIdFilter ? `/team/quota?companyId=${companyIdFilter}` : '/team/quota';
@@ -137,6 +159,13 @@ export default function TeamManagementPage() {
     setPhone('');
     setAvatarUrl('');
     setActive(true);
+    setCompensationType('per_session');
+    setBaseSalary('');
+    setSessionRate('');
+    setCommissionPercentage('');
+    setPaymentDay(5);
+    setPixKey('');
+    setBankInfo('');
   };
 
   const handleOpenCreateModal = () => {
@@ -156,6 +185,18 @@ export default function TeamManagementPage() {
     setPhone(maskPhone(m.phone || ''));
     setAvatarUrl(m.avatarUrl || '');
     setActive(m.active !== undefined ? m.active : true);
+    setCompensationType(
+      (m.compensationType as any) ||
+        (m.role === 'secretary' ? 'fixed' : m.role === 'clinic_admin' ? 'pro_labore' : 'per_session')
+    );
+    setBaseSalary(m.baseSalary !== null && m.baseSalary !== undefined ? m.baseSalary : '');
+    setSessionRate(m.sessionRate !== null && m.sessionRate !== undefined ? m.sessionRate : '');
+    setCommissionPercentage(
+      m.commissionPercentage !== null && m.commissionPercentage !== undefined ? m.commissionPercentage : ''
+    );
+    setPaymentDay(m.paymentDay || 5);
+    setPixKey(m.pixKey || '');
+    setBankInfo(m.bankInfo || '');
     setModalOpen(true);
   };
 
@@ -224,6 +265,13 @@ export default function TeamManagementPage() {
           phone: phone.trim() || null,
           avatarUrl: avatarUrl || null,
           active,
+          compensationType,
+          baseSalary: baseSalary !== '' ? Number(baseSalary) : null,
+          sessionRate: sessionRate !== '' ? Number(sessionRate) : null,
+          commissionPercentage: commissionPercentage !== '' ? Number(commissionPercentage) : null,
+          paymentDay: paymentDay ? Number(paymentDay) : null,
+          pixKey: pixKey.trim() || null,
+          bankInfo: bankInfo.trim() || null,
         };
         if (password.trim()) {
           payload.password = password.trim();
@@ -241,6 +289,13 @@ export default function TeamManagementPage() {
           phone: phone.trim() || null,
           avatarUrl: avatarUrl || null,
           companyId: companyIdFilter ? Number(companyIdFilter) : undefined,
+          compensationType,
+          baseSalary: baseSalary !== '' ? Number(baseSalary) : null,
+          sessionRate: sessionRate !== '' ? Number(sessionRate) : null,
+          commissionPercentage: commissionPercentage !== '' ? Number(commissionPercentage) : null,
+          paymentDay: paymentDay ? Number(paymentDay) : null,
+          pixKey: pixKey.trim() || null,
+          bankInfo: bankInfo.trim() || null,
         });
         toast.success('Novo membro cadastrado na equipe com sucesso!');
       }
@@ -491,6 +546,7 @@ export default function TeamManagementPage() {
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <th className="py-3.5 px-4 sm:px-6">Profissional</th>
                     <th className="py-3.5 px-4">Cargo & Perfil</th>
+                    <th className="py-3.5 px-4">Remuneração / Salário</th>
                     <th className="py-3.5 px-4">CREFITO & CPF/CNPJ</th>
                     <th className="py-3.5 px-4">Contato</th>
                     <th className="py-3.5 px-4 sm:px-6 text-right">Ações</th>
@@ -500,6 +556,75 @@ export default function TeamManagementPage() {
                   {paginatedMembers.map((m) => {
                     const memberName = m.fullName || (m as any).full_name || (m as any).name || m.email || 'Profissional';
                     const initial = (memberName || 'P').charAt(0).toUpperCase();
+
+                    const getCompensationBadge = (member: TeamMember) => {
+                      const cType = member.compensationType || (member.role === 'secretary' ? 'fixed' : member.role === 'clinic_admin' ? 'pro_labore' : 'per_session');
+                      const bSalary = member.baseSalary !== null && member.baseSalary !== undefined ? Number(member.baseSalary) : 0;
+                      const sRate = member.sessionRate !== null && member.sessionRate !== undefined ? Number(member.sessionRate) : 0;
+                      const cPct = member.commissionPercentage !== null && member.commissionPercentage !== undefined ? Number(member.commissionPercentage) : 0;
+
+                      if (cType === 'fixed') {
+                        return (
+                          <div className="space-y-0.5">
+                            <span className="font-bold text-slate-800 text-xs">
+                              {bSalary > 0 ? formatCurrency(bSalary) : 'Fixo a definir'}
+                            </span>
+                            <span className="block text-[10px] text-slate-400 font-medium">
+                              Salário Mensal {member.paymentDay ? `(Dia ${member.paymentDay})` : ''}
+                            </span>
+                          </div>
+                        );
+                      }
+                      if (cType === 'pro_labore') {
+                        return (
+                          <div className="space-y-0.5">
+                            <span className="font-bold text-indigo-700 text-xs">
+                              {bSalary > 0 ? formatCurrency(bSalary) : 'Pró-labore a definir'}
+                            </span>
+                            <span className="block text-[10px] text-indigo-500 font-medium">
+                              Pró-labore Mensal {member.paymentDay ? `(Dia ${member.paymentDay})` : ''}
+                            </span>
+                          </div>
+                        );
+                      }
+                      if (cType === 'per_session') {
+                        return (
+                          <div className="space-y-0.5">
+                            <span className="font-bold text-blue-700 text-xs">
+                              {sRate > 0 ? `${formatCurrency(sRate)} / sessão` : 'Valor/sessão a definir'}
+                            </span>
+                            <span className="block text-[10px] text-blue-500 font-medium">
+                              Por Atendimento Realizado
+                            </span>
+                          </div>
+                        );
+                      }
+                      if (cType === 'percentage') {
+                        return (
+                          <div className="space-y-0.5">
+                            <span className="font-bold text-emerald-700 text-xs">
+                              {cPct > 0 ? `${cPct}% por sessão` : 'Comissão a definir'}
+                            </span>
+                            <span className="block text-[10px] text-emerald-500 font-medium">
+                              Comissão sobre Faturamento
+                            </span>
+                          </div>
+                        );
+                      }
+                      if (cType === 'hybrid') {
+                        return (
+                          <div className="space-y-0.5">
+                            <span className="font-bold text-amber-700 text-xs">
+                              {bSalary > 0 ? formatCurrency(bSalary) : 'R$ 0'} + {sRate > 0 ? formatCurrency(sRate) : `${cPct}%`}/sessão
+                            </span>
+                            <span className="block text-[10px] text-amber-500 font-medium">
+                              Misto (Fixo + Sessões)
+                            </span>
+                          </div>
+                        );
+                      }
+                      return <span className="text-slate-400 italic">Não configurado</span>;
+                    };
 
                     return (
                       <tr key={m.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
@@ -535,6 +660,11 @@ export default function TeamManagementPage() {
                       {/* Role Badge */}
                       <td className="py-3.5 px-4">
                         {getRoleBadge(m.role)}
+                      </td>
+
+                      {/* Remuneração & Salário */}
+                      <td className="py-3.5 px-4">
+                        {getCompensationBadge(m)}
                       </td>
 
                       {/* CREFITO & CPF/CNPJ */}
@@ -685,21 +815,27 @@ export default function TeamManagementPage() {
               <form onSubmit={handleSaveMember} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Perfil de Acesso (Cargo) *</label>
-                  <select
+                  <CustomSelect
                     value={role}
-                    onChange={(e: any) => setRole(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden"
-                  >
-                    <option value="physiotherapist">
-                      🩺 Fisioterapeuta {quota?.maxPhysios ? `(${quota.physiosUsed}/${quota.maxPhysios})` : ''}
-                    </option>
-                    <option value="secretary">
-                      📋 Secretária {quota?.maxSecretaries === 0 ? '(Não incluso no plano)' : quota?.maxSecretaries ? `(${quota.secretariesUsed}/${quota.maxSecretaries})` : ''}
-                    </option>
-                    <option value="clinic_admin">
-                      🏢 Administrador da Clínica (Acesso total + Equipe + Financeiro)
-                    </option>
-                  </select>
+                    onChange={(val) => setRole(val as any)}
+                    options={[
+                      {
+                        value: 'physiotherapist',
+                        label: `Fisioterapeuta ${quota?.maxPhysios ? `(${quota.physiosUsed}/${quota.maxPhysios})` : ''}`,
+                        sublabel: 'Acesso clínico aos pacientes e agenda',
+                      },
+                      {
+                        value: 'secretary',
+                        label: `Secretária / Recepção ${quota?.maxSecretaries === 0 ? '(Não incluso no plano)' : quota?.maxSecretaries ? `(${quota.secretariesUsed}/${quota.maxSecretaries})` : ''}`,
+                        sublabel: 'Gestão de agendamentos e recepção',
+                      },
+                      {
+                        value: 'clinic_admin',
+                        label: 'Administrador da Clínica',
+                        sublabel: 'Acesso total, equipe e relatórios financeiros',
+                      },
+                    ]}
+                  />
 
                   {/* Contextual Quota Warning */}
                   {!editingMember && quota && (
@@ -838,6 +974,147 @@ export default function TeamManagementPage() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Remuneração & Configurações Financeiras */}
+                  <div className="sm:col-span-2 bg-gradient-to-br from-slate-50 to-blue-50/40 p-4 sm:p-5 rounded-2xl border border-slate-200/90 space-y-4 shadow-2xs">
+                    <div className="flex items-center space-x-2.5 border-b border-slate-200/70 pb-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                        <Wallet className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                          Remuneração & Salário (Folha de Pagamento)
+                        </h4>
+                        <p className="text-[11px] text-slate-500">
+                          Define a regra de cálculo automático para repasses no financeiro
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Modelo de Remuneração *
+                        </label>
+                        <CustomSelect
+                          value={compensationType}
+                          onChange={(val) => setCompensationType(val as any)}
+                          options={[
+                            { value: 'fixed', label: 'Salário Fixo Mensal', sublabel: 'Valor fixo pago por mês' },
+                            ...(role !== 'secretary'
+                              ? [
+                                  { value: 'per_session', label: 'Valor Fixo por Sessão / Atendimento', sublabel: 'Repasse por sessão realizada' },
+                                  { value: 'percentage', label: 'Porcentagem / Comissão por Sessão (%)', sublabel: 'Comissão percentual sobre valor' },
+                                  { value: 'hybrid', label: 'Misto (Salário Base + Sessão / Comissão)', sublabel: 'Fixo mensal mais comissão variável' },
+                                ]
+                              : []),
+                            ...(role === 'clinic_admin'
+                              ? [{ value: 'pro_labore', label: 'Pró-labore / Retirada Fixa Mensal', sublabel: 'Retirada mensal de administrador' }]
+                              : []),
+                          ]}
+                        />
+                      </div>
+
+                      {/* Base Salary Input */}
+                      {(compensationType === 'fixed' ||
+                        compensationType === 'hybrid' ||
+                        compensationType === 'pro_labore') && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            {compensationType === 'pro_labore' ? 'Valor do Pró-labore Mensal' : 'Salário Fixo Mensal (R$)'}
+                          </label>
+                          <CurrencyInput
+                            value={baseSalary}
+                            onChange={(val) => setBaseSalary(val)}
+                            placeholder="R$ 2.500,00"
+                          />
+                        </div>
+                      )}
+
+                      {/* Session Rate Input */}
+                      {(compensationType === 'per_session' || compensationType === 'hybrid') && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Valor por Sessão Realizada (R$)
+                          </label>
+                          <CurrencyInput
+                            value={sessionRate}
+                            onChange={(val) => setSessionRate(val)}
+                            placeholder="Ex: R$ 50,00"
+                          />
+                        </div>
+                      )}
+
+                      {/* Commission Percentage Input */}
+                      {(compensationType === 'percentage' ||
+                        (compensationType === 'hybrid' && !sessionRate)) && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Comissão por Atendimento (%)
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="0.5"
+                              value={commissionPercentage}
+                              onChange={(e) => setCommissionPercentage(e.target.value)}
+                              placeholder="Ex: 50"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 pr-8 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Payment Day */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Dia de Pagamento Mensal
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="31"
+                          value={paymentDay}
+                          onChange={(e) => setPaymentDay(e.target.value)}
+                          placeholder="Dia (ex: 5)"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden"
+                        />
+                      </div>
+
+                      {/* PIX Key */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Chave PIX para Repasse
+                        </label>
+                        <input
+                          type="text"
+                          value={pixKey}
+                          onChange={(e) => setPixKey(e.target.value)}
+                          placeholder="CPF, e-mail, telefone ou chave aleatória"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden"
+                        />
+                      </div>
+
+                      {/* Bank Info */}
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Dados Bancários (Opcional)
+                        </label>
+                        <input
+                          type="text"
+                          value={bankInfo}
+                          onChange={(e) => setBankInfo(e.target.value)}
+                          placeholder="Ex: Banco Santander, Agência 0123, CC 12345-6"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden"
+                        />
+                      </div>
                     </div>
                   </div>
 

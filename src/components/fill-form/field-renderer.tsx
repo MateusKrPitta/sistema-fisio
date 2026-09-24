@@ -9,6 +9,8 @@ interface FieldRendererProps {
   value: any;
   onChange: (value: any) => void;
   index: number;
+  allAnswers?: Record<string, any>;
+  onAnswerChange?: (key: string, value: any) => void;
 }
 
 export const getPainRatingBadge = (val: number) => {
@@ -19,7 +21,7 @@ export const getPainRatingBadge = (val: number) => {
   return { label: 'Dor Máxima', bg: 'bg-rose-600 text-white', icon: <Frown className="w-3.5 h-3.5" /> };
 };
 
-export function FieldRenderer({ field, value, onChange, index }: FieldRendererProps) {
+export function FieldRenderer({ field, value, onChange, index, allAnswers, onAnswerChange }: FieldRendererProps) {
   let fieldOptions: string[] = [];
   if (Array.isArray(field.options)) fieldOptions = field.options;
   else if (typeof field.options === 'string') {
@@ -29,6 +31,17 @@ export function FieldRenderer({ field, value, onChange, index }: FieldRendererPr
       fieldOptions = [];
     }
   }
+
+  const labelLower = (field.label || '').toLowerCase();
+  const isO2Field =
+    labelLower.includes('o2') ||
+    labelLower.includes('oxigênio') ||
+    labelLower.includes('oxigenio');
+
+  const o2AmountVal =
+    allAnswers?.['Qual a quantidade de O2?'] ??
+    allAnswers?.[`${field.id || field.label}_amount`] ??
+    '';
 
   return (
     <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 hover:border-slate-300 transition-all space-y-3">
@@ -182,29 +195,64 @@ export function FieldRenderer({ field, value, onChange, index }: FieldRendererPr
 
       {/* BOOLEAN */}
       {field.fieldType === 'boolean' && (
-        <div className="flex items-center space-x-3 pt-1">
-          <button
-            type="button"
-            onClick={() => onChange(true)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              value === true
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-            }`}
-          >
-            Sim / Presente
-          </button>
-          <button
-            type="button"
-            onClick={() => onChange(false)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              value === false
-                ? 'bg-slate-800 text-white shadow-xs'
-                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-            }`}
-          >
-            Não / Ausente
-          </button>
+        <div className="flex flex-wrap items-center gap-3 pt-1">
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => onChange(true)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                value === true
+                  ? 'bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-600/20'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              Sim / Presente
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onChange(false);
+                if (isO2Field && onAnswerChange) {
+                  onAnswerChange('Qual a quantidade de O2?', '');
+                  onAnswerChange(`${field.id || field.label}_amount`, '');
+                }
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                value === false
+                  ? 'bg-slate-800 text-white shadow-xs'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              Não / Ausente
+            </button>
+          </div>
+
+          {/* Conditional field for O2 quantity appearing directly beside when Sim is selected */}
+          {isO2Field && value === true && (
+            <div className="flex items-center space-x-2.5 bg-blue-50/90 border border-blue-200 px-3.5 py-1.5 rounded-xl shadow-2xs">
+              <label className="text-xs font-bold text-blue-900 whitespace-nowrap">
+                Qual a quantidade de O2?
+              </label>
+              <div className="flex items-center space-x-1">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={o2AmountVal}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (onAnswerChange) {
+                      onAnswerChange('Qual a quantidade de O2?', val);
+                      onAnswerChange(`${field.id || field.label}_amount`, val);
+                    }
+                  }}
+                  placeholder="Ex: 2"
+                  className="w-20 bg-white border border-blue-300 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none"
+                />
+                <span className="text-xs font-extrabold text-blue-700">L/min</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

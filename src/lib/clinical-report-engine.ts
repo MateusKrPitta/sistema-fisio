@@ -342,12 +342,23 @@ export const resolveFieldInfo = (
   }
 
   // 10. Timed Up and Go (TUG)
-  if (cleanKey.includes('tug') || cleanKey.includes('timed up and go')) {
+  if (
+    cleanKey.includes('tug') ||
+    cleanKey.includes('timed up and go') ||
+    (cleanKey.includes('marcha') && !cleanKey.includes('goniometria')) ||
+    (cleanKey.includes('dispositivo') && !cleanKey.includes('respiratorio') && !cleanKey.includes('cuff'))
+  ) {
     let label = 'Tempo de Execução (TUG)';
     let unit: string | undefined = 'segundos';
     if (cleanKey.includes('risco') || valStr.includes('risco')) {
       label = 'Classificação de Risco de Queda';
       unit = undefined;
+    } else if (cleanKey.includes('marcha') || cleanKey.includes('dispositivo')) {
+      label = 'Dispositivo de Marcha';
+      unit = undefined;
+    } else if (cleanKey.includes('o2') || cleanKey.includes('oxigênio') || cleanKey.includes('oxigenio')) {
+      label = cleanKey.includes('quantidade') || cleanKey.includes('fluxo') ? 'Quantidade de O2' : 'Utilização de O2';
+      if (cleanKey.includes('quantidade') || cleanKey.includes('fluxo')) unit = 'L/min';
     }
     return {
       scaleKey: 'tug',
@@ -590,35 +601,64 @@ export const parseScaleGroupsFromRecords = (patientRecords: EvaluationRecord[]):
       // 6. TUG
       else if (scaleKey === 'tug') {
         const timeItem = items.find((i) => i.unit === 'segundos' || i.label.includes('Tempo'));
+        const gaitDeviceItem = items.find((i) => i.label.includes('Marcha') || i.label.includes('Dispositivo'));
+        const o2Item = items.find((i) => i.label.includes('O2') || i.label.includes('Oxigênio') || i.label.includes('Oxigenio'));
+        const o2AmountItem = items.find((i) => i.label.includes('Quantidade') || i.label.includes('Fluxo'));
+
         if (timeItem) {
           const num = parseFloat(timeItem.value);
           calculatedScore = `${timeItem.value} seg`;
-          clinicalInterp =
+          let interp =
             num < 10
               ? 'Baixo Risco de Quedas (Mobilidade normal para idosos)'
               : num <= 20
               ? 'Risco Moderado de Quedas (Mobilidade razoável)'
               : 'Alto Risco de Quedas / Dependência Funcional';
+
+          const extras: string[] = [];
+          if (gaitDeviceItem && gaitDeviceItem.value && gaitDeviceItem.value !== 'Não utiliza') {
+            extras.push(`Dispositivo: ${gaitDeviceItem.value}`);
+          }
+          if (
+            o2Item &&
+            (String(o2Item.value).toLowerCase() === 'sim' ||
+              String(o2Item.value).toLowerCase() === 'true' ||
+              String(o2Item.value).toLowerCase() === 'presente')
+          ) {
+            const flow = o2AmountItem?.value ? ` (${o2AmountItem.value} L/min)` : '';
+            extras.push(`Em uso de O2 suplementar${flow}`);
+          }
+          if (extras.length > 0) {
+            interp += ` • [${extras.join(' | ')}]`;
+          }
+
+          clinicalInterp = interp;
         }
       }
 
       // 7. Barthel
       else if (scaleKey === 'barthel') {
         let sum = 0;
+        let answeredCount = 0;
         items.forEach((i) => {
           const digit = parseInt(i.value.trim().split(' ')[0], 10);
-          if (!isNaN(digit)) sum += digit;
+          if (!isNaN(digit)) {
+            sum += digit;
+            answeredCount++;
+          }
         });
-        if (sum > 0) {
+        if (answeredCount > 0) {
           calculatedScore = `${sum} / 100 pts`;
           clinicalInterp =
             sum === 100
-              ? 'Independência Funcional Completa nas AVDs'
-              : sum >= 60
-              ? 'Dependência Leve nas Atividades Diárias'
-              : sum >= 40
-              ? 'Dependência Moderada'
-              : 'Dependência Severa / Total';
+              ? 'Totalmente Independente (100 pts)'
+              : sum >= 76
+              ? 'Dependência Leve (76 a 99 pts)'
+              : sum >= 51
+              ? 'Dependência Moderada (51 a 75 pts)'
+              : sum >= 26
+              ? 'Dependência Severa (26 a 50 pts)'
+              : 'Dependência Total (25 pts ou menos)';
         }
       }
 

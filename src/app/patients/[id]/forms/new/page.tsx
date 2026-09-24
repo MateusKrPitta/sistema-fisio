@@ -190,6 +190,35 @@ export default function NewPatientFormRecordPage() {
     return 'bg-red-600 text-white';
   };
 
+  const calculateBarthelScore = (mod: any) => {
+    let total = 0;
+    (mod.fields || []).forEach((f: any) => {
+      const key = String(f.id || f.label);
+      const val = answers[key];
+      if (val) {
+        const digit = parseInt(String(val).trim().split(' ')[0], 10);
+        if (!isNaN(digit)) total += digit;
+      }
+    });
+    return total;
+  };
+
+  const getBarthelStatusLabel = (score: number) => {
+    if (score === 100) return 'Totalmente Independente (100 pts)';
+    if (score >= 76) return 'Dependência Leve (76-99 pts)';
+    if (score >= 51) return 'Dependência Moderada (51-75 pts)';
+    if (score >= 26) return 'Dependência Severa (26-50 pts)';
+    return 'Dependência Total (0-25 pts)';
+  };
+
+  const getBarthelStatusStyle = (score: number) => {
+    if (score === 100) return 'bg-emerald-600 text-white';
+    if (score >= 76) return 'bg-blue-600 text-white';
+    if (score >= 51) return 'bg-amber-500 text-white';
+    if (score >= 26) return 'bg-orange-600 text-white';
+    return 'bg-red-600 text-white';
+  };
+
   const isTrunkOptions = (opts: string[]) => {
     if (!opts || opts.length < 3) return false;
     const has0 = opts.some((o) => String(o).startsWith('0'));
@@ -287,17 +316,14 @@ export default function NewPatientFormRecordPage() {
                   <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                     1. Categoria Clínica
                   </label>
-                  <select
+                  <CustomSelect
                     value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none transition-all cursor-pointer"
-                  >
-                    {allCategories.map((c) => (
-                      <option key={c} value={c}>
-                        {c === 'Todas' ? '🌟 Todas as Categorias' : c}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setSelectedCategory(String(val))}
+                    options={allCategories.map((c) => ({
+                      value: c,
+                      label: c === 'Todas' ? 'Todas as Categorias' : c,
+                    }))}
+                  />
                 </div>
 
                 <div className="sm:col-span-2">
@@ -362,6 +388,8 @@ export default function NewPatientFormRecordPage() {
                 {selectedTemplate.modules?.map((mod) => {
                   const isTrunkMod = mod.name.toLowerCase().includes('tronco') || (mod.category || '').toLowerCase().includes('tronco');
                   const trunkScore = isTrunkMod ? calculateTrunkScore(mod) : 0;
+                  const isBarthelMod = mod.name.toLowerCase().includes('barthel') || (mod.category || '').toLowerCase().includes('barthel');
+                  const barthelScore = isBarthelMod ? calculateBarthelScore(mod) : 0;
 
                   return (
                     <motion.div
@@ -395,13 +423,45 @@ export default function NewPatientFormRecordPage() {
                             </span>
                           </div>
                         )}
+
+                        {isBarthelMod && (
+                          <div className="flex items-center space-x-3 bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700">
+                            <div className="text-right">
+                              <p className="text-[10px] text-slate-400 uppercase font-bold">Índice de Barthel</p>
+                              <p className="text-base font-black text-white">{barthelScore} / 100 pts</p>
+                            </div>
+                            <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg ${getBarthelStatusStyle(barthelScore)}`}>
+                              {getBarthelStatusLabel(barthelScore)}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Fields Inputs */}
                       <div className="p-5 sm:p-6 space-y-6">
-                        {mod.fields.map((f) => {
+                        {mod.fields
+                          .filter((f: any) => {
+                            const labelLower = (f.label || '').toLowerCase();
+                            if (labelLower.includes('quantidade de o2')) {
+                              const hasO2BoolField = mod.fields.some((other: any) => {
+                                const otherLabel = (other.label || '').toLowerCase();
+                                return (
+                                  (otherLabel.includes('o2') || otherLabel.includes('oxigênio') || otherLabel.includes('oxigenio')) &&
+                                  !otherLabel.includes('quantidade')
+                                );
+                              });
+                              if (hasO2BoolField) return false;
+                            }
+                            return true;
+                          })
+                          .map((f) => {
                           const answerKey = String(f.id || f.label);
                           const currentVal = answers[answerKey];
+                          const labelLower = (f.label || '').toLowerCase();
+                          const isO2Field =
+                            labelLower.includes('o2') ||
+                            labelLower.includes('oxigênio') ||
+                            labelLower.includes('oxigenio');
 
                           return (
                             <div key={answerKey} className="space-y-2 border-b border-slate-100 pb-5 last:border-0 last:pb-0">
@@ -508,7 +568,7 @@ export default function NewPatientFormRecordPage() {
                               {f.fieldType === 'single_select' && (
                                 isTrunkOptions(f.options || []) ? (
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-                                    {(f.options || []).map((opt) => {
+                                    {(f.options || []).map((opt: string) => {
                                       const isSelected = currentVal === opt;
                                       const optStr = String(opt);
                                       const is0 = optStr.startsWith('0');
@@ -564,7 +624,7 @@ export default function NewPatientFormRecordPage() {
                                   </div>
                                 ) : (
                                   <div className="flex flex-wrap gap-2 pt-1">
-                                    {(f.options || []).map((opt) => {
+                                    {(f.options || []).map((opt: string) => {
                                       const isSelected = currentVal === opt;
                                       return (
                                         <button
@@ -587,29 +647,61 @@ export default function NewPatientFormRecordPage() {
 
                               {/* Boolean */}
                               {f.fieldType === 'boolean' && (
-                                <div className="flex items-center space-x-3 pt-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAnswerChange(answerKey, true)}
-                                    className={`px-4 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-                                      currentVal === true
-                                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                                        : 'bg-slate-50 text-slate-700 border-slate-200'
-                                    }`}
-                                  >
-                                    Sim
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAnswerChange(answerKey, false)}
-                                    className={`px-4 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-                                      currentVal === false
-                                        ? 'bg-red-600 text-white border-red-600 shadow-xs'
-                                        : 'bg-slate-50 text-slate-700 border-slate-200'
-                                    }`}
-                                  >
-                                    Não
-                                  </button>
+                                <div className="flex flex-wrap items-center gap-3 pt-1">
+                                  <div className="flex items-center space-x-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAnswerChange(answerKey, true)}
+                                      className={`px-4 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                                        currentVal === true
+                                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                                          : 'bg-slate-50 text-slate-700 border-slate-200'
+                                      }`}
+                                    >
+                                      Sim
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleAnswerChange(answerKey, false);
+                                        if (isO2Field) {
+                                          handleAnswerChange('Qual a quantidade de O2?', '');
+                                          handleAnswerChange(`${answerKey}_amount`, '');
+                                        }
+                                      }}
+                                      className={`px-4 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                                        currentVal === false
+                                          ? 'bg-red-600 text-white border-red-600 shadow-xs'
+                                          : 'bg-slate-50 text-slate-700 border-slate-200'
+                                      }`}
+                                    >
+                                      Não
+                                    </button>
+                                  </div>
+
+                                  {/* Inline O2 amount field */}
+                                  {isO2Field && currentVal === true && (
+                                    <div className="flex items-center space-x-2.5 bg-blue-50/90 border border-blue-200 px-3.5 py-1.5 rounded-xl shadow-2xs">
+                                      <label className="text-xs font-bold text-blue-900 whitespace-nowrap">
+                                        Qual a quantidade de O2?
+                                      </label>
+                                      <div className="flex items-center space-x-1">
+                                        <input
+                                          type="number"
+                                          step="any"
+                                          min="0"
+                                          value={answers['Qual a quantidade de O2?'] ?? answers[`${answerKey}_amount`] ?? ''}
+                                          onChange={(e) => {
+                                            handleAnswerChange('Qual a quantidade de O2?', e.target.value);
+                                            handleAnswerChange(`${answerKey}_amount`, e.target.value);
+                                          }}
+                                          placeholder="Ex: 2"
+                                          className="w-20 bg-white border border-blue-300 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none"
+                                        />
+                                        <span className="text-xs font-extrabold text-blue-700">L/min</span>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>

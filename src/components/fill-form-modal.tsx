@@ -25,6 +25,8 @@ import {
   formatDateSafe,
   getAnswerForField,
   parseAnswers,
+  detectScaleForField,
+  ScaleGroup,
 } from './fill-form/evaluation-history-list';
 
 interface FillFormModalProps {
@@ -95,7 +97,6 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
         setFormRecords([]);
       }
 
-      // Start fresh with no forced pre-selected scale for new evaluation
       setModuleCategory('Controle de Tronco');
       setModuleTitle('');
       setModuleDescription('');
@@ -201,7 +202,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
     setViewMode('fill');
   };
 
-  const startEditEvaluation = (record: any) => {
+  const startEditEvaluation = (record: any, targetScale?: ScaleGroup) => {
     setEditingRecord(record);
     const recAnswers = parseAnswers(record.answers);
     setAnswers(recAnswers);
@@ -221,19 +222,28 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
       const cat = record.template.category || (record.template.modules && record.template.modules[0]?.category) || 'Geral';
       setModuleCategory(cat);
 
-      const rawFields =
-        record.template.modules && record.template.modules[0]?.fields
-          ? record.template.modules[0].fields
-          : record.template.fields || [];
-      const parsed: CustomField[] = (rawFields || []).map((f: any) => ({
-        ...f,
-        options: typeof f.options === 'string' ? JSON.parse(f.options) : f.options || [],
-        group: f.group || record.template.title || 'Escala Principal',
-      }));
-      setActiveFields(parsed);
+      let allFields: CustomField[] = [];
+      if (Array.isArray(record.template.modules) && record.template.modules.length > 0) {
+        record.template.modules.forEach((mod: any) => {
+          (mod.fields || []).forEach((f: any) => {
+            allFields.push({
+              ...f,
+              options: typeof f.options === 'string' ? JSON.parse(f.options) : f.options || [],
+              group: f.group || mod.name || detectScaleForField(f).scaleTitle,
+            });
+          });
+        });
+      } else if (Array.isArray(record.template.fields)) {
+        allFields = (record.template.fields || []).map((f: any) => ({
+          ...f,
+          options: typeof f.options === 'string' ? JSON.parse(f.options) : f.options || [],
+          group: f.group || detectScaleForField(f).scaleTitle,
+        }));
+      }
 
+      setActiveFields(allFields);
       const distinctGroups: string[] = Array.from(
-        new Set(parsed.map((f) => f.group || record.template.title || 'Escala Principal'))
+        new Set(allFields.map((f) => f.group || detectScaleForField(f).scaleTitle))
       );
       setLoadedPresets(distinctGroups);
     } else {
@@ -249,6 +259,14 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
     setRecordDate(rDateStr);
 
     setViewMode('fill');
+
+    if (targetScale) {
+      toast({
+        title: `Editando ${targetScale.title}`,
+        description: 'Você pode editar as respostas desta escala e salvar a avaliação.',
+        type: 'info',
+      });
+    }
   };
 
   const toggleExpandRecord = (id: number) => {
@@ -394,7 +412,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
   // Group active fields by scale
   const groupedActiveScales: { groupName: string; fields: CustomField[] }[] = [];
   activeFields.forEach((f) => {
-    const grp = f.group || moduleTitle || 'Escala de Avaliação';
+    const grp = f.group || detectScaleForField(f).scaleTitle || moduleTitle || 'Escala de Avaliação';
     let found = groupedActiveScales.find((g) => g.groupName === grp);
     if (!found) {
       found = { groupName: grp, fields: [] };
@@ -535,6 +553,12 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                     onToggleExpand={toggleExpandRecord}
                     onStartEdit={startEditEvaluation}
                     onRequestDelete={(rec) => setRecordToDelete(rec)}
+                    onRecordUpdated={(recId, updatedAnswers) => {
+                      setFormRecords((prev) =>
+                        prev.map((r) => (r.id === recId ? { ...r, answers: updatedAnswers } : r))
+                      );
+                      onSuccess?.();
+                    }}
                   />
                 </div>
               )}
@@ -615,12 +639,33 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {groupedActiveScales.map((scaleGroup, scaleIdx) => (
+                      {groupedActiveScales.map((scaleGroup, scaleIdx) => {
+                        const isBarthel = (scaleGroup.groupName || '').toLowerCase().includes('barthel');
+                        let barthelScore = 0;
+                        if (isBarthel) {
+                          scaleGroup.fields.forEach((f: CustomField) => {
+                            const val = answers[String(f.id || f.label)] ?? answers[String(f.label)];
+                            if (val) {
+                              const digit = parseInt(String(val).trim().split(' ')[0], 10);
+                              if (!isNaN(digit)) barthelScore += digit;
+                            }
+                          });
+                        }
+
+                        const getBarthelBadge = (score: number) => {
+                          if (score === 100) return { label: 'Totalmente Independente (100 pts)', bg: 'bg-emerald-600 text-white' };
+                          if (score >= 76) return { label: 'Dependência Leve (76-99 pts)', bg: 'bg-blue-600 text-white' };
+                          if (score >= 51) return { label: 'Dependência Moderada (51-75 pts)', bg: 'bg-amber-500 text-white' };
+                          if (score >= 26) return { label: 'Dependência Severa (26-50 pts)', bg: 'bg-orange-600 text-white' };
+                          return { label: 'Dependência Total (0-25 pts)', bg: 'bg-red-600 text-white' };
+                        };
+
+                        return (
                         <div
                           key={scaleGroup.groupName || scaleIdx}
                           className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
                         >
-                          <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+                          <div className="bg-slate-900 text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="flex items-center space-x-3.5">
                               <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xs shadow-sm">
                                 {scaleIdx + 1}
@@ -635,35 +680,67 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                               </div>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => handleRemovePreset(scaleGroup.groupName)}
-                              className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-                              title={`Remover escala "${scaleGroup.groupName}"`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center space-x-3">
+                              {isBarthel && (
+                                <div className="flex items-center space-x-2.5 bg-slate-800/90 px-3.5 py-1.5 rounded-xl border border-slate-700">
+                                  <div className="text-right">
+                                    <p className="text-[10px] text-slate-400 uppercase font-bold">Total Barthel</p>
+                                    <p className="text-sm font-black text-white">{barthelScore} / 100 pts</p>
+                                  </div>
+                                  <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg ${getBarthelBadge(barthelScore).bg}`}>
+                                    {getBarthelBadge(barthelScore).label}
+                                  </span>
+                                </div>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePreset(scaleGroup.groupName)}
+                                className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                                title={`Remover escala "${scaleGroup.groupName}"`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
 
                           <div className="p-6 sm:p-7 space-y-6">
-                            {scaleGroup.fields.map((f: CustomField, fIdx: number) => {
-                              const answerKey = String(f.id || f.label);
-                              const currentVal =
-                                answers[answerKey] !== undefined ? answers[answerKey] : answers[String(f.label)];
+                            {scaleGroup.fields
+                              .filter((f: CustomField) => {
+                                const labelLower = (f.label || '').toLowerCase();
+                                if (labelLower.includes('quantidade de o2')) {
+                                  const hasO2BoolField = scaleGroup.fields.some((other: CustomField) => {
+                                    const otherLabel = (other.label || '').toLowerCase();
+                                    return (
+                                      (otherLabel.includes('o2') || otherLabel.includes('oxigênio') || otherLabel.includes('oxigenio')) &&
+                                      !otherLabel.includes('quantidade')
+                                    );
+                                  });
+                                  if (hasO2BoolField) return false;
+                                }
+                                return true;
+                              })
+                              .map((f: CustomField, fIdx: number) => {
+                                const answerKey = String(f.id || f.label);
+                                const currentVal =
+                                  answers[answerKey] !== undefined ? answers[answerKey] : answers[String(f.label)];
 
-                              return (
-                                <FieldRenderer
-                                  key={answerKey}
-                                  field={f}
-                                  value={currentVal}
-                                  onChange={(val) => setAnswers((prev) => ({ ...prev, [answerKey]: val }))}
-                                  index={fIdx}
-                                />
-                              );
-                            })}
+                                return (
+                                  <FieldRenderer
+                                    key={answerKey}
+                                    field={f}
+                                    value={currentVal}
+                                    onChange={(val) => setAnswers((prev) => ({ ...prev, [answerKey]: val, [String(f.label)]: val }))}
+                                    allAnswers={answers}
+                                    onAnswerChange={(key, val) => setAnswers((prev) => ({ ...prev, [key]: val }))}
+                                    index={fIdx}
+                                  />
+                                );
+                              })}
                           </div>
                         </div>
-                      ))}
+                      );
+                    })}
 
                       {/* Observations / Notes */}
                       <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-3">

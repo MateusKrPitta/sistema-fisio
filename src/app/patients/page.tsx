@@ -582,11 +582,25 @@ export default function PatientsListPage() {
           setTherapists(activeTherapists);
         }
 
-        const data = res?.data || res;
-        setDetailedPatient(data);
+        const data = res?.data || (res?.id ? res : null);
+        if (data) {
+          setDetailedPatient(data);
+        } else {
+          const localPatient = patients.find((p) => String(p.id) === String(id));
+          if (localPatient) {
+            setDetailedPatient(localPatient);
+          } else {
+            setDetailedPatient(null);
+          }
+        }
       })
       .catch(() => {
-        setDetailedPatient(null);
+        const localPatient = patients.find((p) => String(p.id) === String(id));
+        if (localPatient) {
+          setDetailedPatient(localPatient);
+        } else {
+          setDetailedPatient(null);
+        }
       })
       .finally(() => setLoadingDetails(false));
   };
@@ -1721,28 +1735,23 @@ export default function PatientsListPage() {
 
                                       <div className="flex items-center space-x-2 shrink-0">
                                         {/* Status Dropdown */}
-                                        <select
-                                          value={apiToUiStatus(app.status)}
-                                          onChange={(e) => handleUpdateAppointmentStatus(app.id, e.target.value)}
-                                          className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border cursor-pointer transition-all ${
-                                            app.status === 'finalizado'
-                                              ? 'bg-emerald-100 text-emerald-900 border-emerald-400 font-extrabold shadow-xs'
-                                              : app.status === 'confirmado'
-                                              ? 'bg-blue-100 text-blue-900 border-blue-400 font-extrabold shadow-xs'
-                                              : app.status === 'ausente' || app.status === 'cancelado' || app.status === 'desmarcado'
-                                              ? 'bg-rose-100 text-rose-900 border-rose-300 font-bold shadow-xs'
-                                              : 'bg-white text-slate-800 border-slate-300 font-semibold shadow-xs'
-                                          }`}
-                                        >
-                                          <option value="Agendado">🔵 Agendado</option>
-                                          <option value="Atendido">🟢 Atendido</option>
-                                          <option value="Faltou">🔴 Faltou</option>
-                                          <option value="Faltou (com aviso prévio)">🟡 Faltou (com aviso prévio)</option>
-                                          <option value="Faltou (sem aviso prévio)">🟠 Faltou (sem aviso prévio)</option>
-                                          <option value="Não atendido (Sem cobrança)">⚫ Não atendido (Sem cobrança)</option>
-                                          <option value="Presença confirmada">🔵 Presença confirmada</option>
-                                          <option value="Remarcar">🩵 Remarcar</option>
-                                        </select>
+                                        <div className="min-w-[140px]">
+                                          <CustomSelect
+                                            size="sm"
+                                            value={apiToUiStatus(app.status)}
+                                            onChange={(val) => handleUpdateAppointmentStatus(app.id, String(val))}
+                                            options={[
+                                              { value: 'Agendado', label: 'Agendado' },
+                                              { value: 'Atendido', label: 'Atendido' },
+                                              { value: 'Presença confirmada', label: 'Confirmado' },
+                                              { value: 'Faltou', label: 'Faltou' },
+                                              { value: 'Faltou (com aviso prévio)', label: 'Desmarcou (com aviso)' },
+                                              { value: 'Faltou (sem aviso prévio)', label: 'Faltou (sem aviso)' },
+                                              { value: 'Não atendido (Sem cobrança)', label: 'Não atendido' },
+                                              { value: 'Remarcar', label: 'Remarcar' },
+                                            ]}
+                                          />
+                                        </div>
 
                                         {/* Edit Button */}
                                         <button
@@ -1820,7 +1829,19 @@ export default function PatientsListPage() {
                     </div>
                   </div>
                 </div>
-              ) : null}
+              ) : (
+                <div className="py-16 text-center space-y-3">
+                  <p className="text-sm font-bold text-slate-800">Não foi possível carregar os dados deste paciente.</p>
+                  <p className="text-xs text-slate-500">Tente fechar e abrir novamente ou recarregue a página.</p>
+                  <button
+                    type="button"
+                    onClick={() => setDetailsModalOpen(false)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
@@ -1940,33 +1961,34 @@ export default function PatientsListPage() {
                       <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
                         Gênero
                       </label>
-                      <select
+                      <CustomSelect
                         value={editForm.gender}
-                        onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
-                      >
-                        <option value="Feminino">Feminino</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Outro">Outro / Prefiro não informar</option>
-                      </select>
+                        onChange={(val) => setEditForm({ ...editForm, gender: String(val) })}
+                        options={[
+                          { value: 'Feminino', label: 'Feminino' },
+                          { value: 'Masculino', label: 'Masculino' },
+                          { value: 'Outro', label: 'Outro / Prefiro não informar' },
+                        ]}
+                      />
                     </div>
 
                     <div>
                       <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
                         Fisioterapeuta Responsável
                       </label>
-                      <select
+                      <CustomSelect
                         value={editForm.userId}
-                        onChange={(e) => setEditForm({ ...editForm, userId: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
-                      >
-                        <option value="">Sem fisioterapeuta vinculado</option>
-                        {therapists.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.fullName || t.name || t.email}{t.crefito ? ` (CREFITO: ${t.crefito})` : ''}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setEditForm({ ...editForm, userId: String(val) })}
+                        placeholder="Sem fisioterapeuta vinculado"
+                        options={[
+                          { value: '', label: 'Sem fisioterapeuta vinculado' },
+                          ...therapists.map((t) => ({
+                            value: String(t.id),
+                            label: t.fullName || t.name || t.email,
+                            sublabel: t.crefito ? `CREFITO: ${t.crefito}` : undefined,
+                          })),
+                        ]}
+                      />
                     </div>
                   </div>
 
@@ -1975,18 +1997,18 @@ export default function PatientsListPage() {
                       <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
                         Avaliação Associada
                       </label>
-                      <select
+                      <CustomSelect
                         value={editForm.templateId}
-                        onChange={(e) => setEditForm({ ...editForm, templateId: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
-                      >
-                        <option value="">Nenhuma Avaliação Vinculada</option>
-                        {templates.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.title}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setEditForm({ ...editForm, templateId: String(val) })}
+                        placeholder="Nenhuma Avaliação Vinculada"
+                        options={[
+                          { value: '', label: 'Nenhuma Avaliação Vinculada' },
+                          ...templates.map((t) => ({
+                            value: String(t.id),
+                            label: t.title,
+                          })),
+                        ]}
+                      />
                     </div>
                   </div>
 
