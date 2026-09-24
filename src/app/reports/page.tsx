@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Star,
 } from 'lucide-react';
 import {
   PatientItem,
@@ -19,6 +20,7 @@ import {
   parseScaleGroupsFromRecords,
 } from '@/lib/clinical-report-engine';
 import { ClinicalReportModal } from '@/components/reports/clinical-report-modal';
+import { SatisfactionModal } from '@/components/reports/satisfaction-modal';
 
 export default function ReportsPage() {
   const [patients, setPatients] = useState<PatientItem[]>([]);
@@ -34,6 +36,9 @@ export default function ReportsPage() {
   const [selectedPatient, setSelectedPatient] = useState<PatientItem | null>(null);
   const [patientRecords, setPatientRecords] = useState<EvaluationRecord[]>([]);
   const [loadingReport, setLoadingReport] = useState(false);
+
+  // Selected Patient for Satisfaction (NPS) Modal
+  const [satisfactionPatient, setSatisfactionPatient] = useState<PatientItem | null>(null);
 
   // Debounce search query
   useEffect(() => {
@@ -237,9 +242,17 @@ export default function ReportsPage() {
                             )}
                           </td>
 
-                          {/* Action: Open Report */}
+                          {/* Action: Open Report & Open Satisfaction */}
                           <td className="py-4 px-6 text-right">
-                            <div className="flex items-center justify-end">
+                            <div className="flex items-center justify-end space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => setSatisfactionPatient(patient)}
+                                className="p-2 text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
+                                title="Pesquisas de Satisfação & NPS"
+                              >
+                                <Star className="w-5 h-5" />
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => handleOpenReport(patient)}
@@ -280,14 +293,24 @@ export default function ReportsPage() {
                             {evaluators.length > 0 ? evaluators[0] : 'Dra. Milene Salmazo'}
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenReport(patient)}
-                          className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
-                          title="Relatório"
-                        >
-                          <TrendingUp className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            type="button"
+                            onClick={() => setSatisfactionPatient(patient)}
+                            className="p-2 text-slate-400 hover:text-amber-500 rounded-lg hover:bg-amber-50 transition-colors cursor-pointer"
+                            title="Satisfação / NPS"
+                          >
+                            <Star className="w-5 h-5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReport(patient)}
+                            className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                            title="Relatório"
+                          >
+                            <TrendingUp className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -349,6 +372,13 @@ export default function ReportsPage() {
         parsedScaleGroups={parsedScaleGroups}
         loading={loadingReport}
         onClose={() => setSelectedPatient(null)}
+      />
+
+      {/* PATIENT SATISFACTION (NPS) MODAL */}
+      <SatisfactionModal
+        isOpen={!!satisfactionPatient}
+        onClose={() => setSatisfactionPatient(null)}
+        patient={satisfactionPatient}
       />
     </>
   );

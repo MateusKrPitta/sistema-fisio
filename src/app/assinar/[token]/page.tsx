@@ -289,22 +289,47 @@ export default function SignEvaluationPublicPage() {
     );
   }
 
-  const { patient, evaluator, template, answers, notes, recordDate, signedAt, signedByName, signatureImage } = evaluation;
+  const { patient, evaluator, clinic, template, answers, notes, recordDate, signedAt, signedByName, signatureImage } = evaluation;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100 py-6 sm:py-10 px-3 sm:px-6">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Security & Header Banner */}
         <header className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-md shadow-blue-500/20">
-              <FileText className="w-5 h-5" />
-            </div>
+          <div className="flex items-center space-x-3.5">
+            {clinic?.logoUrl ? (
+              <div className="h-12 w-auto max-w-[150px] p-1 bg-white rounded-xl border border-slate-100 flex items-center justify-center shrink-0">
+                <img
+                  src={clinic.logoUrl}
+                  alt={clinic?.name || 'Logo da Clínica'}
+                  className="max-h-10 w-auto object-contain"
+                />
+              </div>
+            ) : evaluator?.avatarUrl ? (
+              <img
+                src={evaluator.avatarUrl}
+                alt={evaluator?.fullName || 'Fisioterapeuta'}
+                className="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs"
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-md shadow-blue-500/20 shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+            )}
             <div>
-              <h1 className="font-extrabold text-slate-900 text-sm sm:text-base">Assinatura Digital de Avaliação</h1>
-              <p className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+              <div className="flex items-center space-x-2">
+                <h1 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                  Assinatura Digital de Avaliação
+                </h1>
+                {clinic?.name && (
+                  <span className="hidden md:inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200">
+                    {clinic.name}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 flex items-center gap-1 font-medium mt-0.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline" />
-                Ambiente Seguro e Autenticado
+                Ambiente Seguro e Autenticado • Termo de Tratamento
               </p>
             </div>
           </div>
@@ -344,9 +369,18 @@ export default function SignEvaluationPublicPage() {
             </div>
 
             {/* Evaluator Info */}
-            <div className="space-y-1 sm:text-right">
+            <div className="space-y-1 sm:text-right flex flex-col sm:items-end justify-center">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Fisioterapeuta Avaliador</span>
-              <p className="text-base font-extrabold text-slate-900">{evaluator?.fullName || 'Fisioterapeuta Responsável'}</p>
+              <div className="flex items-center space-x-2 sm:justify-end">
+                {evaluator?.avatarUrl && (
+                  <img
+                    src={evaluator.avatarUrl}
+                    alt={evaluator?.fullName || 'Fisioterapeuta'}
+                    className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-2xs shrink-0"
+                  />
+                )}
+                <p className="text-base font-extrabold text-slate-900">{evaluator?.fullName || 'Fisioterapeuta Responsável'}</p>
+              </div>
               <div className="flex flex-wrap items-center sm:justify-end gap-x-2 text-xs text-slate-500">
                 {evaluator?.crefito && <span>CREFITO: <strong>{evaluator.crefito}</strong></span>}
                 <span>• Data: <strong>{formatDate(recordDate)}</strong></span>

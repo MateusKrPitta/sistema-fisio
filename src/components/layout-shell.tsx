@@ -35,8 +35,9 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   const isSigningPage = pathname?.startsWith('/assinar');
+  const isEvaluationPage = pathname?.startsWith('/avaliacao');
   const isAuthPage = pathname === '/login' || pathname === '/register';
-  const isPublicPage = isAuthPage || isSigningPage;
+  const isPublicPage = isAuthPage || isSigningPage || isEvaluationPage;
 
   // Route protection
   useEffect(() => {
@@ -58,9 +59,9 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  // Public signing page for patient (no sidebar, full scrollable view)
-  if (isSigningPage) {
-    return <main className="min-h-screen w-full bg-slate-100 overflow-y-auto">{children}</main>;
+  // Public standalone pages for patient (no sidebar, full scrollable view)
+  if (isSigningPage || isEvaluationPage) {
+    return <main className="min-h-screen w-full bg-slate-50 overflow-y-auto">{children}</main>;
   }
 
   if (isLoading) {
