@@ -28,6 +28,7 @@ import {
   Clock,
   Camera,
   Upload,
+  Search,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,7 +40,7 @@ import { FillFormModal } from '@/components/fill-form-modal';
 export interface CustomField {
   id?: number | string;
   label: string;
-  fieldType: 'text' | 'long_text' | 'number' | 'scale_0_10' | 'date' | 'single_select' | 'multi_select' | 'boolean';
+  fieldType: 'text' | 'long_text' | 'number' | 'scale_0_10' | 'date' | 'single_select' | 'multi_select' | 'boolean' | 'body_map';
   options?: string[];
   unit?: string;
   helpText?: string;
@@ -407,10 +408,9 @@ export default function CustomModulesPage() {
   const loadAnamnesePreset = () => {
     return [
       { id: Date.now() + 1, label: 'Queixa Principal (QP) / Motivo da Consulta', fieldType: 'long_text', isRequired: false, helpText: 'Motivo principal da procura pelo atendimento fisioterapêutico' },
-      { id: Date.now() + 2, label: 'História da Doença Atual (HDA)', fieldType: 'long_text', isRequired: false, helpText: 'Início dos sintomas, evolução, mecanismo de lesão, fatores de piora e melhora' },
-      { id: Date.now() + 3, label: 'História Médica Pregressa (HMP)', fieldType: 'long_text', isRequired: false, helpText: 'Cirurgias, comorbidades (HAS, DM), medicamentos em uso e internações' },
-      { id: Date.now() + 4, label: 'Histórico Familiar (HF)', fieldType: 'long_text', isRequired: false, helpText: 'Histórico de doenças crônicas ou hereditárias na família' },
-      { id: Date.now() + 5, label: 'Observações Gerais & Diagnóstico Funcional', fieldType: 'long_text', isRequired: false, helpText: 'Parecer clínico inicial e objetivos terapêuticos' }
+      { id: Date.now() + 2, label: 'História Médica Pregressa (HMP)', fieldType: 'long_text', isRequired: false, helpText: 'Cirurgias, comorbidades (HAS, DM), medicamentos em uso e internações' },
+      { id: Date.now() + 3, label: 'Histórico Familiar (HF)', fieldType: 'long_text', isRequired: false, helpText: 'Histórico de doenças crônicas ou hereditárias na família' },
+      { id: Date.now() + 4, label: 'Observações Gerais & Diagnóstico Funcional', fieldType: 'long_text', isRequired: false, helpText: 'Parecer clínico inicial e objetivos terapêuticos' }
     ];
   };
 
@@ -529,28 +529,81 @@ export default function CustomModulesPage() {
   };
 
   const loadMRCScalePreset = () => {
-
     const mrcOptions = [
       '5 - Contração normal contra resistência plena',
       '4 - Contração contra resistência parcial',
       '3 - Contração contra gravidade apenas',
       '2 - Contração contra gravidade parcial',
       '1 - Contração contra gravidade mínima',
-      '0 - Sem contração detectável'
+      '0 - Sem contração detectável',
     ];
 
-    return [{ id: Date.now() + 1, label: 'Flexão do Braço (Bíceps)', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do braço contra gravidade', options: mrcOptions },
-      { id: Date.now() + 2, label: 'Extensão do Braço (Tríceps)', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do braço contra gravidade', options: mrcOptions },
-      { id: Date.now() + 3, label: 'Elevação de Ombro', fieldType: 'single_select', isRequired: false, helpText: 'Teste de elevação do ombro contra gravidade', options: mrcOptions },
-      { id: Date.now() + 4, label: 'Rotação Externa do Ombro', fieldType: 'single_select', isRequired: false, helpText: 'Teste de rotação externa do ombro contra gravidade', options: mrcOptions },
-      { id: Date.now() + 5, label: 'Flexão do Punho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do punho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 6, label: 'Extensão do Punho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do punho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 7, label: 'Flexão do Quadril', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do quadril contra gravidade', options: mrcOptions },
-      { id: Date.now() + 8, label: 'Extensão do Quadril', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do quadril contra gravidade', options: mrcOptions },
-      { id: Date.now() + 9, label: 'Flexão do Joelho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do joelho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 10, label: 'Extensão do Joelho', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do joelho contra gravidade', options: mrcOptions },
-      { id: Date.now() + 11, label: 'Flexão do Tornozelo', fieldType: 'single_select', isRequired: false, helpText: 'Teste de flexão do tornozelo contra gravidade', options: mrcOptions },
-      { id: Date.now() + 12, label: 'Extensão do Tornozelo', fieldType: 'single_select', isRequired: false, helpText: 'Teste de extensão do tornozelo contra gravidade', options: mrcOptions }]
+    const movements = [
+      'Flexão do Braço (Bíceps)',
+      'Extensão do Braço (Tríceps)',
+      'Elevação / Abdução de Ombro',
+      'Rotação Externa de Ombro',
+      'Flexão do Punho',
+      'Extensão do Punho',
+      'Flexão do Quadril (Iliopsoas)',
+      'Extensão do Quadril (Glúteo Máximo)',
+      'Flexão do Joelho (Isquiotibiais)',
+      'Extensão do Joelho (Quadríceps)',
+      'Dorsiflexão do Tornozelo (Tibial Anterior)',
+      'Flexão Plantar (Tríceps Sural)',
+    ];
+
+    const fields: any[] = [];
+    let counter = 1;
+    movements.forEach((mov) => {
+      fields.push({
+        id: Date.now() + counter++,
+        label: `${mov} - Direito`,
+        fieldType: 'single_select',
+        isRequired: false,
+        helpText: `Teste de ${mov.toLowerCase()} contra gravidade/resistência (Lado Direito)`,
+        options: mrcOptions,
+      });
+      fields.push({
+        id: Date.now() + counter++,
+        label: `${mov} - Esquerdo`,
+        fieldType: 'single_select',
+        isRequired: false,
+        helpText: `Teste de ${mov.toLowerCase()} contra gravidade/resistência (Lado Esquerdo)`,
+        options: mrcOptions,
+      });
+    });
+
+    fields.push({
+      id: Date.now() + counter++,
+      label: 'Músculo Específico Avaliado (Caso Necessário)',
+      fieldType: 'text',
+      isRequired: false,
+      helpText: 'Ex: Serrátil Anterior, Trapézio, Glúteo Médio, etc.',
+    });
+    fields.push({
+      id: Date.now() + counter++,
+      label: 'Grau de Força - Músculo Específico (Direito)',
+      fieldType: 'single_select',
+      isRequired: false,
+      options: mrcOptions,
+    });
+    fields.push({
+      id: Date.now() + counter++,
+      label: 'Grau de Força - Músculo Específico (Esquerdo)',
+      fieldType: 'single_select',
+      isRequired: false,
+      options: mrcOptions,
+    });
+    fields.push({
+      id: Date.now() + counter++,
+      label: 'Observações / Assimetrias de Força Muscular',
+      fieldType: 'long_text',
+      isRequired: false,
+      helpText: 'Anotar assimetrias, fadiga ou compensações',
+    });
+
+    return fields;
   };
 
   const loadTUGScalePreset = () => {
@@ -1354,59 +1407,58 @@ export default function CustomModulesPage() {
         subtitle="Crie conjuntos de perguntas, escalas de dor e medições separadas para montar suas Avaliações"
       />
 
-      <main className="flex-1 p-4 sm:p-6 md:p-8 pb-20 space-y-6 overflow-y-auto max-w-full">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
         {/* Header Bar & Search */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
-            <button
-              onClick={openCreateModal}
-              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-sm transition-all shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Criar Nova Avaliação</span>
-            </button>
-
-
-
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
             {/* Search Input */}
-            <div className="relative w-full flex-1 min-w-[200px]">
+            <div className="relative w-full sm:w-80 md:w-96 flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar avaliação ou teste clínico..."
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-3.5 pr-8 py-2.5 text-xs text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500 focus:outline-none transition-all"
+                placeholder="Buscar avaliação ou paciente..."
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all"
               />
             </div>
+
+            <button
+              onClick={openCreateModal}
+              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all shrink-0 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Criar Nova Avaliação</span>
+            </button>
         </div>
 
         {/* Modules Grid */}
         {loading ? (
-          <div className="py-12 flex justify-center text-slate-500">
+          <div className="py-16 flex justify-center text-slate-500">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
           </div>
         ) : filteredPatients.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
-            <Layers className="w-12 h-12 text-slate-300 mx-auto" />
-            <h3 className="text-lg font-bold text-slate-700">Nenhuma avaliação encontrada</h3>
-            <p className="text-sm text-slate-400">Tente selecionar outra especialidade ou alterar o termo de busca.</p>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-12 text-center space-y-3 shadow-xs">
+            <Layers className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+            <h3 className="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-200">Nenhuma avaliação encontrada</h3>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-sm mx-auto">Tente alterar o termo de busca ou crie uma nova avaliação para um paciente.</p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden flex flex-col">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse whitespace-nowrap">
+              <table className="w-full text-left border-collapse whitespace-nowrap text-xs sm:text-sm">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
-                    <th className="p-4 pl-6">Nome do Paciente</th>
-                    <th className="p-4 pr-6 text-right">Ações</th>
+                  <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
+                    <th className="py-3.5 px-6">Nome do Paciente</th>
+                    <th className="py-3.5 px-6 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paginatedPatients.map((patient) => (
-                    <tr key={patient.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="p-4 pl-6">
+                    <tr key={patient.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="py-3.5 px-6">
                         <p className="font-bold text-slate-800 dark:text-slate-100 truncate max-w-[200px] sm:max-w-xs">{patient.fullName || patient.name}</p>
                       </td>
-                      <td className="p-4 pr-6">
+                      <td className="py-3.5 px-6">
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             type="button"
@@ -1414,7 +1466,7 @@ export default function CustomModulesPage() {
                               setFillingPatient(patient);
                               setShowFillModal(true);
                             }}
-                            className="p-2 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors"
+                            className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
                             title="Preencher Avaliação"
                           >
                             <ClipboardCheck className="w-5 h-5" />
@@ -1423,7 +1475,7 @@ export default function CustomModulesPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteModule(patient)}
-                            className="p-2 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                            className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                             title="Excluir Avaliação"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1437,34 +1489,36 @@ export default function CustomModulesPage() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-xs text-slate-500 font-medium">
-                Página {currentPage} de {totalPages} <span className="hidden sm:inline">({totalItems} registros)</span>
-              </p>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed bg-transparent transition-all"
-                >
-                  Anterior
-                </button>
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed bg-transparent transition-all"
-                >
-                  Próxima
-                </button>
+            {totalPages > 1 && (
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                <p className="text-slate-500 dark:text-slate-400 font-medium">
+                  Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong> ({totalItems} registros)
+                </p>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    Próxima
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
         {/* Modal Construtor de Escala & Testes */}
         <AnimatePresence>
           {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -1478,15 +1532,21 @@ export default function CustomModulesPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-2xl p-5 sm:p-6 w-full max-w-3xl space-y-5 max-h-[92vh] overflow-y-auto"
+                className="relative z-10 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-6 w-full max-w-3xl space-y-5 max-h-[92vh] overflow-y-auto"
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-lg">
                       {editingModule ? 'Editar Avaliação' : 'Criar Nova Avaliação Clínica'}
                     </h3>
-                    <p className="text-xs text-slate-500">Defina o nome da avaliação e adicione os testes e medições desejados</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Defina o nome da avaliação e adicione os testes e medições desejados</p>
                   </div>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
 
                 <form onSubmit={handleSaveModule} className="space-y-6">

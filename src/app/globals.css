@@ -23,3 +23,78 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
 }
+
+@media print {
+  @page {
+    margin: 12mm 15mm;
+    size: A4 portrait;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide application navigation, headers, sidebars and interactive buttons on print */
+  header,
+  nav,
+  aside,
+  button:not(.print\:inline-flex):not(.print\:block),
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Ensure modal and printable containers expand naturally across pages */
+  .printable-modal-backdrop {
+    display: none !important;
+  }
+
+  .printable-modal-wrapper {
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    background: transparent !important;
+    z-index: auto !important;
+  }
+
+  .printable-modal-box {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  .printable-content-body {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  .break-inside-avoid,
+  .page-break-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

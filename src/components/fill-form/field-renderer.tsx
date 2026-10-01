@@ -3,6 +3,7 @@
 import React from 'react';
 import { CustomField } from '@/lib/clinical-presets';
 import { Smile, Meh, Frown } from 'lucide-react';
+import { InteractivePainBodyMap, PainMarker } from '@/components/interactive-pain-body-map';
 
 interface FieldRendererProps {
   field: CustomField;
@@ -33,6 +34,9 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
   }
 
   const labelLower = (field.label || '').toLowerCase();
+  const isRightSide = labelLower.includes('direito') || labelLower.includes(' dir.') || labelLower.endsWith(' - d') || labelLower.includes('(direito)');
+  const isLeftSide = labelLower.includes('esquerdo') || labelLower.includes(' esq.') || labelLower.endsWith(' - e') || labelLower.includes('(esquerdo)');
+
   const isO2Field =
     labelLower.includes('o2') ||
     labelLower.includes('oxigênio') ||
@@ -43,15 +47,71 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
     allAnswers?.[`${field.id || field.label}_amount`] ??
     '';
 
+  const isBodyMapField =
+    field.fieldType === 'body_map' ||
+    labelLower.includes('body map') ||
+    labelLower.includes('mapa de dor') ||
+    labelLower.includes('pontos de dor');
+
+  // Parse markers if field is body map
+  let parsedMarkers: PainMarker[] = [];
+  if (isBodyMapField) {
+    if (Array.isArray(value)) {
+      parsedMarkers = value;
+    } else if (typeof value === 'string') {
+      try {
+        const p = JSON.parse(value);
+        if (Array.isArray(p)) parsedMarkers = p;
+      } catch {
+        parsedMarkers = [];
+      }
+    }
+  }
+
+  const cardStyling = isRightSide
+    ? 'bg-blue-50/30 border-blue-200/90 hover:border-blue-400/90 shadow-2xs'
+    : isLeftSide
+    ? 'bg-purple-50/30 border-purple-200/90 hover:border-purple-400/90 shadow-2xs'
+    : 'bg-slate-50 border-slate-200/80 hover:border-slate-300';
+
   return (
-    <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 hover:border-slate-300 transition-all space-y-3">
+    <div className={`p-4 sm:p-5 rounded-2xl border transition-all space-y-3 ${cardStyling}`}>
       <div>
-        <label className="block text-xs sm:text-sm font-bold text-slate-800">
-          {field.label}
-          {field.isRequired && <span className="text-red-500 ml-1">*</span>}
-        </label>
-        {field.helpText && <p className="text-[11px] text-slate-500 mt-0.5">{field.helpText}</p>}
+        <div className="flex items-start justify-between gap-2">
+          <label className="block text-xs sm:text-sm font-bold text-slate-800 leading-snug">
+            {field.label}
+            {field.isRequired && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          {isRightSide && (
+            <span className="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow-2xs">
+              Direito (D)
+            </span>
+          )}
+          {isLeftSide && (
+            <span className="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white shadow-2xs">
+              Esquerdo (E)
+            </span>
+          )}
+        </div>
+        {field.helpText && <p className="text-[11px] text-slate-500 mt-1">{field.helpText}</p>}
       </div>
+
+      {/* BODY MAP (Desenho Anatômico e Pontos de Dor) */}
+      {isBodyMapField && (
+        <div className="pt-2">
+          <InteractivePainBodyMap
+            markers={parsedMarkers}
+            onChange={(newMarkers) => {
+              onChange(newMarkers);
+              if (onAnswerChange) {
+                onAnswerChange('markers', newMarkers);
+                onAnswerChange('totalPoints', newMarkers.length);
+              }
+            }}
+            showInstructions={true}
+          />
+        </div>
+      )}
 
       {/* SCALE 0-10 (EVA) */}
       {field.fieldType === 'scale_0_10' && (
@@ -94,18 +154,20 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
       )}
 
       {/* SINGLE SELECT (Multiple choice with score options) */}
-      {field.fieldType === 'single_select' && (
+      {field.fieldType === 'single_select' && !isBodyMapField && (
         <div className="space-y-1.5 pt-1">
           {fieldOptions.map((opt, optIdx) => {
             const isSelected = String(value) === String(opt);
+            const activeBgClass = isSelected
+              ? isLeftSide
+                ? 'bg-purple-100/80 border-purple-500 text-purple-950 font-bold shadow-2xs'
+                : 'bg-blue-50/90 border-blue-500 text-blue-950 font-bold shadow-2xs'
+              : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-700 text-xs';
+
             return (
               <label
                 key={optIdx}
-                className={`flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-blue-50/80 border-blue-500 text-blue-950 font-bold shadow-2xs'
-                    : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-700 text-xs'
-                }`}
+                className={`flex items-center space-x-2.5 p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${activeBgClass}`}
               >
                 <input
                   type="radio"
@@ -113,9 +175,9 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
                   value={opt}
                   checked={isSelected}
                   onChange={() => onChange(opt)}
-                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  className={`w-4 h-4 ${isLeftSide ? 'text-purple-600 focus:ring-purple-500' : 'text-blue-600 focus:ring-blue-500'}`}
                 />
-                <span className="text-xs">{opt}</span>
+                <span className="text-xs leading-snug">{opt}</span>
               </label>
             );
           })}
@@ -123,7 +185,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
       )}
 
       {/* MULTI SELECT */}
-      {field.fieldType === 'multi_select' && (
+      {field.fieldType === 'multi_select' && !isBodyMapField && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
           {fieldOptions.map((opt, optIdx) => {
             const selectedList: string[] = Array.isArray(value) ? value : [];
@@ -157,7 +219,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
       )}
 
       {/* NUMBER INPUT */}
-      {field.fieldType === 'number' && (
+      {field.fieldType === 'number' && !isBodyMapField && (
         <div className="flex items-center space-x-2">
           <input
             type="number"
@@ -172,7 +234,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
       )}
 
       {/* TEXT INPUT */}
-      {field.fieldType === 'text' && (
+      {field.fieldType === 'text' && !isBodyMapField && (
         <input
           type="text"
           value={value !== undefined ? value : ''}
@@ -183,7 +245,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
       )}
 
       {/* LONG TEXT */}
-      {field.fieldType === 'long_text' && (
+      {field.fieldType === 'long_text' && !isBodyMapField && (
         <textarea
           rows={3}
           value={value !== undefined ? value : ''}
@@ -194,7 +256,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
       )}
 
       {/* BOOLEAN */}
-      {field.fieldType === 'boolean' && (
+      {field.fieldType === 'boolean' && !isBodyMapField && (
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <div className="flex items-center space-x-2">
             <button

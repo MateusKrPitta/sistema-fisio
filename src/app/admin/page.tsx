@@ -650,7 +650,7 @@ export default function AdminCompaniesPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-y-auto">
+    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-950 overflow-y-auto">
       <Header
         title="Painel de Administração Multi-Empresas"
         subtitle="Gerenciamento master de clínicas, empresas e fisioterapeutas parceiros"
@@ -659,39 +659,39 @@ export default function AdminCompaniesPage() {
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
         {/* Top KPI Metrics Cards (3 Colunas) */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <Building2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Empresas Cadastradas</p>
-              <h3 className="text-2xl font-bold text-slate-800">{companies.length}</h3>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Empresas Cadastradas</p>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{companies.length}</h3>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Empresas Ativas</p>
-              <h3 className="text-2xl font-bold text-emerald-600">{totalActive}</h3>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Empresas Ativas</p>
+              <h3 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalActive}</h3>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
               <Users className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profissionais / Equipe</p>
-              <h3 className="text-2xl font-bold text-slate-800">{totalUsers}</h3>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profissionais / Equipe</p>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalUsers}</h3>
             </div>
           </div>
         </div>
 
         {/* Action Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="relative w-full sm:w-96">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
@@ -702,13 +702,13 @@ export default function AdminCompaniesPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
           </div>
 
           <button
             onClick={handleOpenCreateModal}
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-blue-600/20 transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Cadastrar Nova Empresa</span>
@@ -717,31 +717,31 @@ export default function AdminCompaniesPage() {
 
         {/* Companies Table */}
         {loading ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 flex flex-col items-center justify-center">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 flex flex-col items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-3" />
-            <p className="text-sm font-medium text-slate-500">Carregando empresas e clínicas...</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Carregando empresas e clínicas...</p>
           </div>
         ) : filteredCompanies.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-700">Nenhuma empresa encontrada</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-12 text-center shadow-xs">
+            <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-700 dark:text-slate-200">Nenhuma empresa encontrada</h3>
             <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
               Cadastre sua primeira empresa/clínica com administrador e fisioterapeutas para gerenciar.
             </p>
             <button
               onClick={handleOpenCreateModal}
-              className="mt-4 inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              className="mt-4 inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-colors cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Cadastrar Empresa</span>
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[650px]">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <th className="py-3.5 px-4 sm:px-6">Empresa / Clínica</th>
                     <th className="py-3.5 px-4">Plano & Limites</th>
                     <th className="py-3.5 px-4">CNPJ & CREFITO</th>
@@ -749,16 +749,16 @@ export default function AdminCompaniesPage() {
                     <th className="py-3.5 px-4 sm:px-6 text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                   {paginatedCompanies.map((comp) => {
                     const uCount = Number(comp.usersCount) || Number(comp.$extras?.users_count) || comp.users?.length || 0;
 
                     return (
-                      <tr key={comp.id} className="hover:bg-slate-50/80 transition-colors">
+                      <tr key={comp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
                         {/* Company Name & Logo & Status */}
                         <td className="py-3.5 px-4 sm:px-6">
                           <div className="flex items-center space-x-3 min-w-0">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
                               {comp.logoUrl ? (
                                 <img src={comp.logoUrl} alt={comp.name} className="w-full h-full object-cover" />
                               ) : (
@@ -766,16 +766,16 @@ export default function AdminCompaniesPage() {
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold text-slate-800 text-xs sm:text-sm truncate">
+                              <p className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate">
                                 {comp.name}
                               </p>
                               <span
                                 className={`inline-flex items-center px-2 py-0.5 mt-0.5 rounded-md text-[10px] font-bold ${
                                   comp.status === 'active'
-                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                     : comp.status === 'suspended'
-                                    ? 'bg-red-50 text-red-700 border border-red-200'
-                                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                    ? 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
                                 }`}
                               >
                                 {comp.status === 'active' ? '● Ativa' : comp.status === 'suspended' ? '● Suspensa' : '● Inativa'}
@@ -788,28 +788,28 @@ export default function AdminCompaniesPage() {
                         <td className="py-3.5 px-4">
                           {comp.plan === 'silver' ? (
                             <div className="space-y-0.5">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shadow-2xs">
                                 🥈 Prata
                               </span>
-                              <p className="text-[10px] text-slate-500 font-medium">
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                                 Até {comp.maxPhysios ?? 3} fisios + {comp.maxSecretaries ?? 1} sec.
                               </p>
                             </div>
                           ) : comp.plan === 'gold' ? (
                             <div className="space-y-0.5">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs">
                                 🥇 Ouro
                               </span>
-                              <p className="text-[10px] text-amber-700 font-medium">
+                              <p className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
                                 Acessos Ilimitados
                               </p>
                             </div>
                           ) : (
                             <div className="space-y-0.5">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-orange-50 text-orange-800 border border-orange-200 shadow-2xs">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-orange-50 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800 shadow-2xs">
                                 🥉 Bronze
                               </span>
-                              <p className="text-[10px] text-slate-500 font-medium">
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                                 1 Fisioterapeuta (Solo)
                               </p>
                             </div>
@@ -820,12 +820,12 @@ export default function AdminCompaniesPage() {
                         <td className="py-3.5 px-4">
                           <div className="space-y-0.5">
                             {comp.cnpj ? (
-                              <p className="font-mono text-slate-700 font-medium">{maskCnpj(comp.cnpj)}</p>
+                              <p className="font-mono text-slate-700 dark:text-slate-300 font-medium">{maskCnpj(comp.cnpj)}</p>
                             ) : (
                               <span className="text-slate-400 italic">Sem CNPJ</span>
                             )}
                             {comp.crefito && (
-                              <p className="text-[11px] text-slate-500">
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                 <span className="font-semibold text-slate-400">CREFITO:</span> {comp.crefito}
                               </p>
                             )}
@@ -836,13 +836,13 @@ export default function AdminCompaniesPage() {
                         <td className="py-3.5 px-4">
                           <div className="space-y-1">
                             {comp.email && (
-                              <p className="flex items-center space-x-1.5 text-slate-700 truncate max-w-[220px]">
+                              <p className="flex items-center space-x-1.5 text-slate-700 dark:text-slate-300 truncate max-w-[220px]">
                                 <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                 <span className="truncate">{comp.email}</span>
                               </p>
                             )}
                             {comp.phone ? (
-                              <p className="flex items-center space-x-1.5 text-slate-600 font-mono text-[11px]">
+                              <p className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
                                 <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                 <span>{maskPhone(comp.phone)}</span>
                               </p>
@@ -857,7 +857,7 @@ export default function AdminCompaniesPage() {
                           <div className="flex items-center justify-end space-x-1.5">
                             <button
                               onClick={() => handleOpenEditModal(comp, 'team')}
-                              className="inline-flex items-center space-x-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                              className="inline-flex items-center space-x-1.5 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                               title="Gerenciar Profissionais da Clínica"
                             >
                               <Users className="w-3.5 h-3.5" />
@@ -889,7 +889,7 @@ export default function AdminCompaniesPage() {
             </div>
 
             {/* Pagination Controls & Footer Summary */}
-            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div className="px-4 sm:px-6 py-3.5 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
               <div>
                 Mostrando{' '}
                 <b>
@@ -906,7 +906,7 @@ export default function AdminCompaniesPage() {
                   <button
                     onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                     disabled={safeCurrentPage === 1}
-                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-700 transition-colors cursor-pointer flex items-center space-x-1"
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer flex items-center space-x-1"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     <span>Anterior</span>
@@ -919,7 +919,7 @@ export default function AdminCompaniesPage() {
                       className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         safeCurrentPage === pageNum
                           ? 'bg-blue-600 text-white shadow-xs'
-                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                       }`}
                     >
                       {pageNum}
@@ -929,7 +929,7 @@ export default function AdminCompaniesPage() {
                   <button
                     onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                     disabled={safeCurrentPage === totalPages}
-                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-700 transition-colors cursor-pointer flex items-center space-x-1"
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer flex items-center space-x-1"
                   >
                     <span>Próximo</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -944,21 +944,21 @@ export default function AdminCompaniesPage() {
       {/* Main Modal: Create or Edit Company with Tabs */}
       <AnimatePresence>
         {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-4xl w-full overflow-hidden my-6 flex flex-col max-h-[90vh]"
+              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-4xl w-full overflow-hidden my-6 flex flex-col max-h-[90vh]"
             >
               {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between shrink-0">
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 flex items-center justify-between shrink-0">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-slate-800">
+                    <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
                       {editingCompany ? editingCompany.name : 'Cadastrar Nova Empresa & Administrador'}
                     </h3>
                     <p className="text-xs text-slate-400">
@@ -968,7 +968,7 @@ export default function AdminCompaniesPage() {
                 </div>
                 <button
                   onClick={() => setModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -976,14 +976,14 @@ export default function AdminCompaniesPage() {
 
               {/* Navigation Tabs (When editing existing company) */}
               {editingCompany && (
-                <div className="flex items-center border-b border-slate-200 bg-slate-50/50 px-6 pt-2 shrink-0">
+                <div className="flex items-center border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 px-6 pt-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => setActiveTab('info')}
                     className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 flex items-center space-x-2 cursor-pointer ${
                       activeTab === 'info'
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
                     <Building2 className="w-4 h-4" />
@@ -1000,13 +1000,13 @@ export default function AdminCompaniesPage() {
                     }}
                     className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 flex items-center space-x-2 cursor-pointer ${
                       activeTab === 'team'
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
                     <Users className="w-4 h-4" />
                     <span>Profissionais / Equipe</span>
-                    <span className="ml-1.5 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-extrabold">
+                    <span className="ml-1.5 bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-extrabold">
                       {companyMembers.length}
                     </span>
                   </button>

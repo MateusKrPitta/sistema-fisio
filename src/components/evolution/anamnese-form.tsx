@@ -84,7 +84,6 @@ export function AnamneseForm({ patientId, appointmentId }: { patientId: string, 
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     qp: '',
-    hda: '',
     hmp: '',
     hf: '',
     obs: '',
@@ -99,7 +98,6 @@ export function AnamneseForm({ patientId, appointmentId }: { patientId: string, 
     
     let notesHtml = '';
     if (formData.qp) notesHtml += `<strong>QP (Queixa Principal):</strong><br/>${formData.qp}<br/><br/>`;
-    if (formData.hda) notesHtml += `<strong>HDA (História da Doença Atual):</strong><br/>${formData.hda}<br/><br/>`;
     if (formData.hmp) notesHtml += `<strong>HMP (História Médica Pregressa):</strong><br/>${formData.hmp}<br/><br/>`;
     if (formData.hf) notesHtml += `<strong>HF (Histórico Familiar):</strong><br/>${formData.hf}<br/><br/>`;
     if (formData.obs) notesHtml += `<strong>Observações:</strong><br/>${formData.obs}`;
@@ -148,15 +146,9 @@ export function AnamneseForm({ patientId, appointmentId }: { patientId: string, 
 
       <div className="space-y-6">
         <RichTextEditor 
-          label="Queixa principal (QP) / Motivo da avaliação:" 
+          label="Queixa principal (QP) / Motivo da consulta:" 
           value={formData.qp} 
           onChange={(val) => handleChange('qp', val)} 
-        />
-        
-        <RichTextEditor 
-          label="História da doença atual (HDA):" 
-          value={formData.hda} 
-          onChange={(val) => handleChange('hda', val)} 
         />
         
         <RichTextEditor 

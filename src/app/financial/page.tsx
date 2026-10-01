@@ -653,22 +653,22 @@ export default function FinancialPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-2.5">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 Gestão Financeira & Caixa
               </h1>
               <span
                 className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${
                   userPlan === 'gold'
-                    ? 'bg-amber-50 text-amber-800 border-amber-300'
+                    ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
                     : userPlan === 'silver'
-                    ? 'bg-slate-100 text-slate-800 border-slate-300'
-                    : 'bg-orange-50 text-orange-800 border-orange-200'
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700'
+                    : 'bg-orange-50 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800'
                 }`}
               >
                 Plano {userPlan.toUpperCase()}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Controle de entradas, saídas, repasses de equipe e fluxo de caixa da clínica
             </p>
           </div>
@@ -677,7 +677,7 @@ export default function FinancialPage() {
           <div className="flex items-center space-x-2.5">
             <button
               onClick={() => handleOpenNewModal('receita')}
-              className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-emerald-600/20 transition-all cursor-pointer"
+              className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Nova Receita</span>
@@ -686,7 +686,7 @@ export default function FinancialPage() {
             {isPlanAllowed && (
               <button
                 onClick={() => handleOpenNewModal('despesa')}
-                className="inline-flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-red-600/20 transition-all cursor-pointer"
+                className="inline-flex items-center space-x-2 bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-rose-600/20 transition-all cursor-pointer"
               >
                 <TrendingDown className="w-4 h-4" />
                 <span>Nova Despesa</span>
@@ -696,7 +696,7 @@ export default function FinancialPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center space-x-1.5 border-b border-slate-200/90 pb-px overflow-x-auto">
+        <div className="flex items-center space-x-1.5 border-b border-slate-200/90 dark:border-slate-800 pb-px overflow-x-auto">
           {[
             { id: 'overview', label: 'Visão Geral & Fluxo', icon: Layers, show: true },
             { id: 'receitas', label: 'Entradas (Receitas)', icon: TrendingUp, show: true },
@@ -716,11 +716,11 @@ export default function FinancialPage() {
                   }}
                   className={`inline-flex items-center space-x-2 px-4 py-3 border-b-2 font-extrabold text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer ${
                     isSelected
-                      ? 'border-blue-600 text-blue-600 bg-blue-50/50 rounded-t-xl'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/40 rounded-t-xl'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -779,39 +779,39 @@ export default function FinancialPage() {
           /* ========================================================================= */
           <div className="space-y-6">
             {/* Month Selector & Controls */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center space-x-3">
-                <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shadow-xs shrink-0">
+                <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shadow-xs shrink-0">
                   <Wallet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-base">
+                  <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">
                     Apuração da Folha: {monthNames[payrollMonth - 1]} / {payrollYear}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Cálculo automático de salários e comissões baseado nos atendimentos realizados
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center flex-wrap gap-2">
-                <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-xl border border-slate-200">
+                <div className="flex items-center space-x-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
                   <button
                     onClick={handlePrevMonth}
-                    className="p-1.5 text-slate-600 hover:bg-white hover:shadow-xs rounded-lg transition-all cursor-pointer"
+                    className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs rounded-lg transition-all cursor-pointer"
                     title="Mês Anterior"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button
                     onClick={handleCurrentMonth}
-                    className="px-3 py-1 text-xs font-bold text-slate-800 hover:bg-white hover:shadow-xs rounded-lg transition-all cursor-pointer"
+                    className="px-3 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs rounded-lg transition-all cursor-pointer"
                   >
                     {monthNames[payrollMonth - 1]} {payrollYear}
                   </button>
                   <button
                     onClick={handleNextMonth}
-                    className="p-1.5 text-slate-600 hover:bg-white hover:shadow-xs rounded-lg transition-all cursor-pointer"
+                    className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs rounded-lg transition-all cursor-pointer"
                     title="Próximo Mês"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -836,50 +836,50 @@ export default function FinancialPage() {
             {/* Payroll Summary Cards */}
             {payrollData && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
                     Total Folha Prevista
                   </span>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900">
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
                     {formatCurrency(payrollData.summary.totalPayrollAmount)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     {payrollData.summary.totalMembers} profissional(is) cadastrados
                   </span>
                 </div>
 
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
                     Repasses Já Baixados (Pagos)
                   </span>
-                  <p className="text-xl sm:text-2xl font-black text-emerald-600">
+                  <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
                     {formatCurrency(payrollData.summary.totalPaidAmount)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     Lançamentos confirmados no caixa
                   </span>
                 </div>
 
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
                     Repasses Pendentes
                   </span>
-                  <p className="text-xl sm:text-2xl font-black text-amber-600">
+                  <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
                     {formatCurrency(payrollData.summary.totalPendingAmount)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     Aguardando liquidação/fechamento
                   </span>
                 </div>
 
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
-                  <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
                     Atendimentos Realizados
                   </span>
-                  <p className="text-xl sm:text-2xl font-black text-blue-600">
+                  <p className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400">
                     {payrollData.summary.totalSessionsAttended} sessões
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     Concluídas no mês de apuração
                   </span>
                 </div>
@@ -887,7 +887,7 @@ export default function FinancialPage() {
             )}
 
             {/* Payroll Team Table */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
               {loadingPayroll ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-3 text-slate-400">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -895,8 +895,8 @@ export default function FinancialPage() {
                 </div>
               ) : !payrollData || payrollData.items.length === 0 ? (
                 <div className="py-16 text-center text-slate-400 space-y-2">
-                  <p className="text-sm font-semibold">Nenhum profissional encontrado na equipe.</p>
-                  <Link href="/team" className="text-xs font-bold text-blue-600 hover:underline">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nenhum profissional encontrado na equipe.</p>
+                  <Link href="/team" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
                     Ir para Gestão de Equipe
                   </Link>
                 </div>
@@ -904,7 +904,7 @@ export default function FinancialPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <tr className="bg-slate-50/70 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         <th className="py-4 px-6">Profissional</th>
                         <th className="py-4 px-4">Regra Salarial</th>
                         <th className="py-4 px-4">Sessões / Faturamento</th>
@@ -914,12 +914,23 @@ export default function FinancialPage() {
                         <th className="py-4 px-6 text-right">Ação</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs text-slate-700 dark:text-slate-300">
                       {payrollData.items.map((item) => {
                         const initial = (item.fullName || 'P').charAt(0).toUpperCase();
+                        const pDay = item.paymentDay || 5;
+                        const today = new Date();
+                        const currentYear = today.getFullYear();
+                        const currentMonth = today.getMonth() + 1;
+                        const currentDay = today.getDate();
+
+                        const isOverdue =
+                          item.launchStatus !== 'baixado' &&
+                          (payrollYear < currentYear ||
+                            (payrollYear === currentYear && payrollMonth < currentMonth) ||
+                            (payrollYear === currentYear && payrollMonth === currentMonth && currentDay > pDay));
 
                         return (
-                          <tr key={item.userId} className="hover:bg-slate-50/60 transition-colors">
+                          <tr key={item.userId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                             {/* Member */}
                             <td className="py-4 px-6">
                               <div className="flex items-center space-x-3">
@@ -927,10 +938,10 @@ export default function FinancialPage() {
                                   {initial}
                                 </div>
                                 <div>
-                                  <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">
+                                  <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
                                     {item.fullName}
                                   </h4>
-                                  <span className="text-[10px] text-slate-400 font-mono">
+                                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                                     {item.role === 'clinic_admin'
                                       ? 'Administrador(a)'
                                       : item.role === 'secretary'
@@ -943,7 +954,7 @@ export default function FinancialPage() {
 
                             {/* Compensation Rule */}
                             <td className="py-4 px-4">
-                              <span className="font-semibold text-slate-700 block">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300 block">
                                 {item.compensationType === 'fixed'
                                   ? 'Salário Fixo Mensal'
                                   : item.compensationType === 'pro_labore'
@@ -954,19 +965,19 @@ export default function FinancialPage() {
                                   ? `${item.commissionPercentage}% por sessão`
                                   : 'Misto (Fixo + Sessões)'}
                               </span>
-                              <span className="text-[10px] text-slate-400 font-medium">
-                                {item.calculationDetails}
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium block">
+                                {item.calculationDetails} • Pagamento Dia {pDay}
                               </span>
                             </td>
 
                             {/* Sessions & Revenue */}
                             <td className="py-4 px-4">
                               <div className="space-y-0.5">
-                                <span className="font-bold text-slate-900 block">
+                                <span className="font-bold text-slate-900 dark:text-slate-100 block">
                                   {item.sessionCount} sessão(ões)
                                 </span>
                                 {item.grossRevenue > 0 && (
-                                  <span className="text-[10px] text-slate-400 block font-medium">
+                                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-medium">
                                     Bruto: {formatCurrency(item.grossRevenue)}
                                   </span>
                                 )}
@@ -975,7 +986,7 @@ export default function FinancialPage() {
 
                             {/* Calculated Net Amount */}
                             <td className="py-4 px-4">
-                              <span className="text-sm font-black text-slate-900 block">
+                              <span className="text-sm font-black text-slate-900 dark:text-slate-100 block">
                                 {formatCurrency(item.calculatedAmount)}
                               </span>
                             </td>
@@ -986,13 +997,13 @@ export default function FinancialPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleCopyPix(item.pixKey!, item.userId)}
-                                  className="inline-flex items-center space-x-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 text-[11px] font-mono transition-colors cursor-pointer"
+                                  className="inline-flex items-center space-x-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg text-slate-700 dark:text-slate-200 text-[11px] font-mono transition-colors cursor-pointer"
                                   title="Clique para copiar a chave PIX"
                                 >
                                   {copiedPixId === item.userId ? (
                                     <>
-                                      <Check className="w-3 h-3 text-emerald-600" />
-                                      <span className="text-emerald-700 font-bold">Copiado!</span>
+                                      <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                      <span className="text-emerald-700 dark:text-emerald-400 font-bold">Copiado!</span>
                                     </>
                                   ) : (
                                     <>
@@ -1002,24 +1013,29 @@ export default function FinancialPage() {
                                   )}
                                 </button>
                               ) : (
-                                <span className="text-slate-400 italic text-[11px]">Sem chave PIX</span>
+                                <span className="text-slate-400 dark:text-slate-500 italic text-[11px]">Sem chave PIX</span>
                               )}
                             </td>
 
                             {/* Status */}
                             <td className="py-4 px-4">
                               {item.launchStatus === 'baixado' ? (
-                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-300">
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                   <span>Pago / Baixado</span>
                                 </span>
+                              ) : isOverdue ? (
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-50 text-rose-800 border border-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 shadow-2xs animate-pulse">
+                                  <AlertCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                                  <span>Atrasado (Dia {pDay})</span>
+                                </span>
                               ) : item.launchStatus === 'pendente' ? (
-                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300">
-                                  <Clock className="w-3 h-3 text-amber-600" />
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                                  <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                                   <span>Lançado (Pendente)</span>
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
                                   <span>Não Lançado</span>
                                 </span>
                               )}
@@ -1031,7 +1047,7 @@ export default function FinancialPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleDarBaixa(item.financialRecordId!)}
-                                  className="inline-flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                                  className="inline-flex items-center space-x-1 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
                                 >
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   <span>Dar Baixa</span>
@@ -1060,7 +1076,7 @@ export default function FinancialPage() {
                                       toast.error(err.response?.data?.error || 'Erro ao gerar lançamento.');
                                     }
                                   }}
-                                  className="inline-flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                                  className="inline-flex items-center space-x-1 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
                                 >
                                   <PlusCircle className="w-3.5 h-3.5" />
                                   <span>Lançar Saída</span>
@@ -1085,73 +1101,73 @@ export default function FinancialPage() {
             {isPlanAllowed ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Saldo Líquido */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
                       Saldo Líquido
                     </span>
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${summary.saldoLiquido >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${summary.saldoLiquido >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400'}`}>
                       <DollarSign className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className={`text-xl sm:text-2xl font-black ${summary.saldoLiquido >= 0 ? 'text-slate-900' : 'text-rose-600'}`}>
+                  <p className={`text-xl sm:text-2xl font-black ${summary.saldoLiquido >= 0 ? 'text-slate-900 dark:text-slate-100' : 'text-rose-600 dark:text-rose-400'}`}>
                     {formatCurrency(summary.saldoLiquido)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
                     Receitas Baixadas (-) Despesas
                   </span>
                 </div>
 
                 {/* Total Receitas Baixadas */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                       Receitas Recebidas
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                       <TrendingUp className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className="text-xl sm:text-2xl font-black text-emerald-600">
+                  <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
                     {formatCurrency(summary.totalBaixado)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
                     {summary.sessoesBaixadasCount} atendimento(s) pagos
                   </span>
                 </div>
 
                 {/* Total Despesas Baixadas */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-red-600 dark:text-rose-400 uppercase tracking-wider">
                       Total Despesas Pagas
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-rose-950/60 text-red-600 dark:text-rose-400 flex items-center justify-center">
                       <TrendingDown className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className="text-xl sm:text-2xl font-black text-red-600">
+                  <p className="text-xl sm:text-2xl font-black text-red-600 dark:text-rose-400">
                     {formatCurrency(summary.totalDespesas)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
                     Custos operacionais e salários
                   </span>
                 </div>
 
                 {/* Receitas Pendentes */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                       Receitas a Receber
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                       <Clock className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className="text-xl sm:text-2xl font-black text-amber-600">
+                  <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
                     {formatCurrency(summary.totalPendente)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
                     Aguardando confirmação de baixa
                   </span>
                 </div>
@@ -1159,55 +1175,55 @@ export default function FinancialPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Total Receitas Baixadas */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                       Receitas Recebidas
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                       <TrendingUp className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className="text-xl sm:text-2xl font-black text-emerald-600">
+                  <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
                     {formatCurrency(summary.totalBaixado)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
                     {summary.sessoesBaixadasCount} atendimento(s) pagos
                   </span>
                 </div>
 
                 {/* Receitas Pendentes */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                       Receitas a Receber
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                       <Clock className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className="text-xl sm:text-2xl font-black text-amber-600">
+                  <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
                     {formatCurrency(summary.totalPendente)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
                     Aguardando confirmação de baixa
                   </span>
                 </div>
 
                 {/* Faturamento Previsto Total */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-1">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                       Total Previsto
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                       <DollarSign className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className="text-xl sm:text-2xl font-black text-blue-600">
+                  <p className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400">
                     {formatCurrency(summary.totalBaixado + summary.totalPendente)}
                   </p>
-                  <span className="text-[11px] text-slate-500 font-medium block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
                     Recebidas + a receber no período
                   </span>
                 </div>
@@ -1215,10 +1231,10 @@ export default function FinancialPage() {
             )}
 
             {/* Filter & Period Bar */}
-            <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center flex-wrap gap-2">
                 {/* Period Selector Buttons */}
-                <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-xl border border-slate-200">
+                <div className="flex items-center space-x-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
                   <button
                     onClick={() => {
                       setPeriod('month');
@@ -1229,7 +1245,7 @@ export default function FinancialPage() {
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       period === 'month' && !filterStartDate
                         ? 'bg-blue-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:bg-slate-100'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                     }`}
                   >
                     Mensal
@@ -1244,7 +1260,7 @@ export default function FinancialPage() {
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       period === 'today'
                         ? 'bg-blue-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:bg-slate-100'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                     }`}
                   >
                     Hoje
@@ -1259,7 +1275,7 @@ export default function FinancialPage() {
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       period === 'week'
                         ? 'bg-blue-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:bg-slate-100'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                     }`}
                   >
                     Semana
@@ -1274,7 +1290,7 @@ export default function FinancialPage() {
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       period === 'all'
                         ? 'bg-blue-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:bg-slate-100'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                     }`}
                   >
                     Todos
@@ -1282,22 +1298,22 @@ export default function FinancialPage() {
                 </div>
 
                 {period === 'month' && !filterStartDate && (
-                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-xl border border-slate-200">
+                  <div className="flex items-center space-x-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
                     <button
                       onClick={handlePrevMonth}
-                      className="p-1 text-slate-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                      className="p-1 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
                       onClick={handleCurrentMonth}
-                      className="px-2.5 py-0.5 text-xs font-bold text-slate-800 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                      className="px-2.5 py-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                     >
                       {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                     </button>
                     <button
                       onClick={handleNextMonth}
-                      className="p-1 text-slate-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                      className="p-1 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -1347,8 +1363,8 @@ export default function FinancialPage() {
                   }}
                   className={`relative inline-flex items-center justify-center space-x-2 px-3.5 py-1.5 rounded-xl font-semibold text-xs transition-all shrink-0 border cursor-pointer ${
                     (filterStartDate || filterEndDate || filterTypeAdvanced !== 'todos' || filterPhysios.length > 0)
-                      ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 shadow-sm'
-                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
+                      ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 shadow-sm'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-100'
                   }`}
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -1375,7 +1391,7 @@ export default function FinancialPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar paciente, título..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-1.5 text-xs font-medium text-slate-800 focus:bg-white focus:border-blue-500 outline-hidden"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-4 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 outline-hidden"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </form>
@@ -1384,32 +1400,32 @@ export default function FinancialPage() {
             {/* Active Advanced Filters Pills Bar */}
             {(filterStartDate || filterEndDate || filterTypeAdvanced !== 'todos' || filterPhysios.length > 0) && (
               <div className="flex items-center gap-2 flex-wrap px-1">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Filtros:</span>
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Filtros:</span>
                 {(filterStartDate || filterEndDate) && (
-                  <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-[11px] font-bold px-2.5 py-1 rounded-full border border-blue-200">
+                  <span className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[11px] font-bold px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-700">
                     <CalendarDays className="w-3 h-3" />
                     {filterStartDate ? filterStartDate.split('-').reverse().join('/') : '...'}
                     {' → '}
                     {filterEndDate ? filterEndDate.split('-').reverse().join('/') : '...'}
-                    <button type="button" onClick={() => { setFilterStartDate(''); setFilterEndDate(''); setPage(1); }} className="ml-0.5 hover:text-blue-900 cursor-pointer">
+                    <button type="button" onClick={() => { setFilterStartDate(''); setFilterEndDate(''); setPage(1); }} className="ml-0.5 hover:text-blue-900 dark:hover:text-blue-100 cursor-pointer">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
                 )}
                 {filterTypeAdvanced !== 'todos' && (
-                  <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded-full border border-amber-200">
+                  <span className="inline-flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-700">
                     {filterTypeAdvanced === 'receita' ? <ArrowDownCircle className="w-3 h-3" /> : <ArrowUpCircle className="w-3 h-3" />}
                     {filterTypeAdvanced === 'receita' ? 'Entrada (Receita)' : 'Saída (Despesa)'}
-                    <button type="button" onClick={() => { setFilterTypeAdvanced('todos'); setPage(1); }} className="ml-0.5 hover:text-amber-900 cursor-pointer">
+                    <button type="button" onClick={() => { setFilterTypeAdvanced('todos'); setPage(1); }} className="ml-0.5 hover:text-amber-900 dark:hover:text-amber-100 cursor-pointer">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
                 )}
                 {filterPhysios.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-full border border-emerald-200">
+                  <span className="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-700">
                     <UserIcon className="w-3 h-3" />
                     {filterPhysios.length} funcionário(s)
-                    <button type="button" onClick={() => { setFilterPhysios([]); setPage(1); }} className="ml-0.5 hover:text-emerald-900 cursor-pointer">
+                    <button type="button" onClick={() => { setFilterPhysios([]); setPage(1); }} className="ml-0.5 hover:text-emerald-900 dark:hover:text-emerald-100 cursor-pointer">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -1425,7 +1441,7 @@ export default function FinancialPage() {
                     setCategoryFilter('all');
                     setPage(1);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-full transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 px-2 py-1 rounded-full transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   Limpar todos
@@ -1434,7 +1450,7 @@ export default function FinancialPage() {
             )}
 
             {/* Transactions Table / List */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
               {loading ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-3 text-slate-400">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -1442,8 +1458,8 @@ export default function FinancialPage() {
                 </div>
               ) : records.length === 0 ? (
                 <div className="py-16 text-center text-slate-400 space-y-2">
-                  <p className="text-sm font-semibold">Nenhum lançamento financeiro encontrado.</p>
-                  <p className="text-xs">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nenhum lançamento financeiro encontrado.</p>
+                  <p className="text-xs text-slate-400">
                     Altere os filtros ou adicione uma nova {isPlanAllowed ? 'receita/despesa' : 'receita'}.
                   </p>
                 </div>
@@ -1451,7 +1467,7 @@ export default function FinancialPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <tr className="bg-slate-50/70 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         <th className="py-4 px-6">Data</th>
                         <th className="py-4 px-4">Descrição / Origem</th>
                         <th className="py-4 px-4">Tipo & Categoria</th>
@@ -1461,33 +1477,33 @@ export default function FinancialPage() {
                         <th className="py-4 px-6 text-right">Ações</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs text-slate-700 dark:text-slate-300">
                       {records.map((r) => {
                         const isReceita = r.type === 'receita';
                         const patientName = r.patient?.fullName || r.patient?.name;
                         const recipientName = r.recipientUser?.fullName || (r.recipientUser as any)?.full_name;
 
                         return (
-                          <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                          <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                             {/* Date */}
-                            <td className="py-4 px-6 font-mono font-semibold text-slate-600 text-xs">
+                            <td className="py-4 px-6 font-mono font-semibold text-slate-600 dark:text-slate-400 text-xs">
                               {r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('pt-BR') : '-'}
                             </td>
 
                             {/* Description */}
                             <td className="py-4 px-4">
                               <div className="space-y-0.5">
-                                <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">
+                                <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
                                   {r.title}
                                 </h4>
                                 {patientName && (
-                                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                                  <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
                                     <UserIcon className="w-3 h-3" />
                                     Paciente: {patientName}
                                   </span>
                                 )}
                                 {recipientName && (
-                                  <span className="text-[11px] text-indigo-600 flex items-center gap-1 font-semibold">
+                                  <span className="text-[11px] text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-semibold">
                                     <Wallet className="w-3 h-3" />
                                     Destinatário: {recipientName}
                                   </span>
@@ -1501,8 +1517,8 @@ export default function FinancialPage() {
                                 <span
                                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
                                     isReceita
-                                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                      : 'bg-red-50 text-red-700 border border-red-200'
+                                      ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                                      : 'bg-red-50 dark:bg-rose-950/50 text-red-700 dark:text-rose-400 border border-red-200 dark:border-rose-800'
                                   }`}
                                 >
                                   {isReceita ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
@@ -1513,7 +1529,7 @@ export default function FinancialPage() {
                             </td>
 
                             {/* Payment Method */}
-                            <td className="py-4 px-4 uppercase font-mono text-[11px] text-slate-500 font-bold">
+                            <td className="py-4 px-4 uppercase font-mono text-[11px] text-slate-500 dark:text-slate-400 font-bold">
                               {r.paymentMethod || 'PIX'}
                             </td>
 
@@ -1521,7 +1537,7 @@ export default function FinancialPage() {
                             <td className="py-4 px-4">
                               <span
                                 className={`text-sm font-black ${
-                                  isReceita ? 'text-emerald-700' : 'text-red-600'
+                                  isReceita ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-rose-400'
                                 }`}
                               >
                                 {isReceita ? '+' : '-'} {formatCurrency(r.amount)}
@@ -1539,7 +1555,7 @@ export default function FinancialPage() {
                                 {r.status !== 'baixado' && r.status !== 'cancelado' && (
                                   <button
                                     onClick={() => handleDarBaixa(r.id)}
-                                    className="inline-flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                                    className="inline-flex items-center space-x-1 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
                                     title="Dar Baixa"
                                   >
                                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1549,7 +1565,7 @@ export default function FinancialPage() {
 
                                 <button
                                   onClick={() => handleDeleteRecord(r.id)}
-                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
                                   title="Excluir Lançamento"
                                 >
                                   <Trash2 className="w-4 h-4" />

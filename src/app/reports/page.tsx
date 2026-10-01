@@ -13,6 +13,8 @@ import {
   ChevronRight,
   X,
   Star,
+  Sparkles,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   PatientItem,
@@ -21,6 +23,7 @@ import {
 } from '@/lib/clinical-report-engine';
 import { ClinicalReportModal } from '@/components/reports/clinical-report-modal';
 import { SatisfactionModal } from '@/components/reports/satisfaction-modal';
+import { EvolutionReportModal } from '@/components/reports/evolution-report-modal';
 
 export default function ReportsPage() {
   const [patients, setPatients] = useState<PatientItem[]>([]);
@@ -39,6 +42,10 @@ export default function ReportsPage() {
 
   // Selected Patient for Satisfaction (NPS) Modal
   const [satisfactionPatient, setSatisfactionPatient] = useState<PatientItem | null>(null);
+
+  // Evolution Report Modal State
+  const [evolutionModalOpen, setEvolutionModalOpen] = useState(false);
+  const [evolutionPatient, setEvolutionPatient] = useState<PatientItem | null>(null);
 
   // Debounce search query
   useEffect(() => {
@@ -145,7 +152,7 @@ export default function ReportsPage() {
             </p>
           </div>
 
-          {/* Search Box */}
+          {/* Right Actions: Search Box */}
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
             <input
@@ -155,13 +162,13 @@ export default function ReportsPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Buscar paciente por nome ou CPF..."
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all shadow-2xs"
+              placeholder="Buscar por nome ou CPF..."
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all shadow-2xs"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -242,9 +249,20 @@ export default function ReportsPage() {
                             )}
                           </td>
 
-                          {/* Action: Open Report & Open Satisfaction */}
+                          {/* Actions */}
                           <td className="py-4 px-6 text-right">
                             <div className="flex items-center justify-end space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEvolutionPatient(patient);
+                                  setEvolutionModalOpen(true);
+                                }}
+                                className="p-2 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
+                                title="Relatório de Evoluções com IA & Gráfico"
+                              >
+                                <Sparkles className="w-5 h-5" />
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => setSatisfactionPatient(patient)}
@@ -257,7 +275,7 @@ export default function ReportsPage() {
                                 type="button"
                                 onClick={() => handleOpenReport(patient)}
                                 className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
-                                title="Ver Relatório Clínico"
+                                title="Ver Relatório Clínico por Escalas"
                               >
                                 <TrendingUp className="w-5 h-5" />
                               </button>
@@ -287,13 +305,24 @@ export default function ReportsPage() {
                       </div>
 
                       <div className="flex items-center justify-between text-xs pt-1">
-                        <div className="text-[11px] text-slate-500 truncate max-w-[180px]">
+                        <div className="text-[11px] text-slate-500 truncate max-w-[150px]">
                           <span className="font-semibold">Resp: </span>
                           <span className="italic">
                             {evaluators.length > 0 ? evaluators[0] : 'Dra. Milene Salmazo'}
                           </span>
                         </div>
                         <div className="flex items-center space-x-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEvolutionPatient(patient);
+                              setEvolutionModalOpen(true);
+                            }}
+                            className="p-2 text-indigo-500 hover:text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors cursor-pointer"
+                            title="Evoluções com IA"
+                          >
+                            <Sparkles className="w-5 h-5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => setSatisfactionPatient(patient)}
@@ -379,6 +408,17 @@ export default function ReportsPage() {
         isOpen={!!satisfactionPatient}
         onClose={() => setSatisfactionPatient(null)}
         patient={satisfactionPatient}
+      />
+
+      {/* EVOLUTION REPORT (IA) MODAL */}
+      <EvolutionReportModal
+        isOpen={evolutionModalOpen}
+        onClose={() => {
+          setEvolutionModalOpen(false);
+          setEvolutionPatient(null);
+        }}
+        patient={evolutionPatient}
+        patientsList={patients}
       />
     </>
   );

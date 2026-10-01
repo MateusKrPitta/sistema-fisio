@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Phone,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  User as UserIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/toast-context';
@@ -153,13 +154,19 @@ function EvolutionsContent() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const patientsLoadedRef = useRef(false);
+  const isFetchingPatientsRef = useRef(false);
+
   // Load lightweight list of patients
-  const loadPatients = async () => {
+  const loadPatients = async (force = false) => {
+    if (!force && (patientsLoadedRef.current || isFetchingPatientsRef.current)) return;
+    isFetchingPatientsRef.current = true;
     setLoading(true);
     try {
       const res = await api.get('/patients?limit=100');
       const data = Array.isArray(res) ? res : res.data || [];
       setPatients(data);
+      patientsLoadedRef.current = true;
     } catch {
       toast({
         title: 'Erro ao carregar pacientes',
@@ -168,6 +175,7 @@ function EvolutionsContent() {
       });
     } finally {
       setLoading(false);
+      isFetchingPatientsRef.current = false;
     }
   };
 
@@ -513,12 +521,16 @@ function EvolutionsContent() {
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
                     <th className="p-4 pl-6">Nome do Paciente</th>
                     <th className="p-4">Contato / CPF</th>
+                    <th className="p-4">Fisioterapeuta Responsável</th>
                     <th className="p-4 pr-6 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paginatedPatients.map((patient) => {
                     const patientName = patient.fullName || patient.name || `Paciente #${patient.id}`;
+                    const physioName = patient.user?.fullName || patient.user?.name || patient.user?.email?.split('@')[0];
+                    const physioCrefito = patient.user?.crefito;
+
                     return (
                       <tr
                         key={patient.id}
@@ -542,6 +554,28 @@ function EvolutionsContent() {
                               <p className="text-[11px] text-slate-400 font-mono">CPF: {patient.cpf}</p>
                             )}
                           </div>
+                        </td>
+
+                        <td className="p-4">
+                          {physioName ? (
+                            <div className="flex items-center space-x-2.5">
+                              <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-xs flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-800">
+                                <UserIcon className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 text-xs truncate max-w-[180px]">
+                                  {physioName}
+                                </p>
+                                {physioCrefito && (
+                                  <p className="text-[10px] text-slate-400 font-mono">
+                                    CREFITO: {physioCrefito}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">Não atribuído</span>
+                          )}
                         </td>
 
                         <td className="p-4 pr-6 text-right">

@@ -15,9 +15,11 @@ import {
   Save,
   BookmarkCheck,
   Edit3,
+  FileDown,
 } from 'lucide-react';
 import { ScaleSession, formatDateTime } from '@/lib/clinical-report-engine';
 import { useToast } from '@/components/toast-context';
+import { AiToneReports } from '@/lib/pdf-report-generator';
 
 interface SavedReportData {
   id: number;
@@ -35,6 +37,8 @@ interface AiCopilotCardProps {
   scaleKey: string;
   scaleTitle: string;
   sessions: ScaleSession[];
+  onPdfExport?: (reportText: string, toneLabel: string, allReports?: AiToneReports) => void;
+  onReportChange?: (reportText: string, toneLabel: string, allReports?: AiToneReports) => void;
 }
 
 export function AiCopilotCard({
@@ -44,6 +48,8 @@ export function AiCopilotCard({
   scaleKey,
   scaleTitle,
   sessions,
+  onPdfExport,
+  onReportChange,
 }: AiCopilotCardProps) {
   const { toast } = useToast();
   const [aiLoading, setAiLoading] = useState(false);
@@ -60,6 +66,33 @@ export function AiCopilotCard({
   const displayedReportText = isEditing
     ? editedText
     : savedReport?.reportText || aiReportsCache[currentKey] || '';
+
+  const toneLabels: Record<string, string> = {
+    patient_friendly: 'Paciente / Família',
+    clinical: 'Laudo Técnico Fisioterapêutico',
+    therapeutic_goals: 'Metas & Conduta Clínica',
+  };
+
+  const getAllCurrentReports = (): AiToneReports => {
+    const pf =
+      aiTone === 'patient_friendly'
+        ? (isEditing ? editedText : displayedReportText)
+        : (savedReportsMap[`${scaleKey}_patient_friendly`]?.reportText || aiReportsCache[`${scaleKey}_patient_friendly`] || '');
+    const cl =
+      aiTone === 'clinical'
+        ? (isEditing ? editedText : displayedReportText)
+        : (savedReportsMap[`${scaleKey}_clinical`]?.reportText || aiReportsCache[`${scaleKey}_clinical`] || '');
+    const tg =
+      aiTone === 'therapeutic_goals'
+        ? (isEditing ? editedText : displayedReportText)
+        : (savedReportsMap[`${scaleKey}_therapeutic_goals`]?.reportText || aiReportsCache[`${scaleKey}_therapeutic_goals`] || '');
+
+    return {
+      patient_friendly: pf,
+      clinical: cl,
+      therapeutic_goals: tg,
+    };
+  };
 
   // Load all previously saved reports for this patient on mount or patient change
   useEffect(() => {
@@ -84,6 +117,22 @@ export function AiCopilotCard({
     const existing = savedReportsMap[currentKey]?.reportText || aiReportsCache[currentKey] || '';
     setEditedText(existing);
   }, [currentKey, savedReportsMap, aiReportsCache]);
+
+  const lastSentReportRef = React.useRef<{ text: string; tone: string }>({ text: '', tone: '' });
+
+  // Notify parent component about current report text and all available tone reports
+  useEffect(() => {
+    const toneLabel = toneLabels[aiTone] || 'Parecer';
+    if (
+      lastSentReportRef.current.text !== displayedReportText ||
+      lastSentReportRef.current.tone !== toneLabel
+    ) {
+      lastSentReportRef.current = { text: displayedReportText, tone: toneLabel };
+      if (onReportChange) {
+        onReportChange(displayedReportText, toneLabel, getAllCurrentReports());
+      }
+    }
+  });
 
   const handleGenerateAiReport = async () => {
     setAiLoading(true);
@@ -178,29 +227,29 @@ export function AiCopilotCard({
   const hasReport = Boolean(displayedReportText.trim() || isEditing);
 
   return (
-    <div className="bg-gradient-to-br from-indigo-900/90 via-slate-900 to-blue-950 text-white rounded-3xl p-5 sm:p-6 border border-indigo-500/30 shadow-lg space-y-4 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="bg-gradient-to-br from-indigo-900/90 via-slate-900 to-blue-950 text-white rounded-3xl p-5 sm:p-6 border border-indigo-500/30 shadow-lg space-y-4 relative overflow-hidden print:bg-white print:text-slate-900 print:border print:border-slate-300 print:shadow-none print:p-4 print:rounded-xl break-inside-avoid page-break-avoid">
+      <div className="absolute top-0 right-0 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4 relative z-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 print:border-slate-200 pb-4 relative z-10">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-cyan-500/20 shrink-0">
-            <Sparkles className="w-5 h-5 text-amber-200" />
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-cyan-500/20 shrink-0 print:bg-blue-600 print:shadow-none">
+            <Sparkles className="w-5 h-5 text-amber-200 print:text-white" />
           </div>
           <div>
-            <h4 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
-              <span>Assistente IA • Parecer Humanizado</span>
-              <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-bold border border-cyan-500/30">
+            <h4 className="font-extrabold text-sm sm:text-base text-white print:text-slate-950 flex items-center gap-2">
+              <span>Assistente IA • Parecer Clínico Final</span>
+              <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-bold border border-cyan-500/30 print:hidden">
                 Gemini 1.5
               </span>
             </h4>
-            <p className="text-xs text-slate-300">
-              Análise inteligente e acolhedora da evolução nesta escala com opção de gravação no prontuário
+            <p className="text-xs text-slate-300 print:text-slate-600">
+              Análise e considerações clínicas finais da evolução do paciente nesta escala
             </p>
           </div>
         </div>
 
-        {/* Tone Toggle Pills */}
-        <div className="flex items-center bg-white/10 p-1 rounded-2xl border border-white/10 shrink-0 self-start sm:self-auto">
+        {/* Tone Toggle Pills (Screen Only) */}
+        <div className="print:hidden flex items-center bg-white/10 p-1 rounded-2xl border border-white/10 shrink-0 self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setAiTone('patient_friendly')}
@@ -239,19 +288,19 @@ export function AiCopilotCard({
       {/* AI Content Box */}
       <div className="relative z-10">
         {hasReport ? (
-          <div className="space-y-3.5 bg-white/5 border border-white/10 rounded-2xl p-4.5 backdrop-blur-xs">
+          <div className="space-y-3.5 bg-white/5 print:bg-slate-50 border border-white/10 print:border-slate-200 rounded-2xl print:rounded-xl p-4.5 backdrop-blur-xs">
             {/* Status Header Badge if Saved */}
-            <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+            <div className="flex items-center justify-between gap-2 border-b border-white/10 print:border-slate-200 pb-2.5">
               {savedReport ? (
-                <span className="inline-flex items-center space-x-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-                  <BookmarkCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="inline-flex items-center space-x-1.5 bg-emerald-500/20 print:bg-emerald-50 text-emerald-300 print:text-emerald-800 border border-emerald-500/30 print:border-emerald-300 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                  <BookmarkCheck className="w-3.5 h-3.5 text-emerald-400 print:text-emerald-700" />
                   <span>
                     Gravado no Prontuário • {savedReport.updatedAt ? formatDateTime(savedReport.updatedAt) : 'Salvo'}
                   </span>
                 </span>
               ) : (
-                <span className="inline-flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="inline-flex items-center space-x-1.5 bg-amber-500/20 print:bg-amber-50 text-amber-300 print:text-amber-800 border border-amber-500/30 print:border-amber-300 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 print:text-amber-700" />
                   <span>Parecer gerado (Ainda não salvo)</span>
                 </span>
               )}
@@ -266,7 +315,7 @@ export function AiCopilotCard({
                     setIsEditing(false);
                   }
                 }}
-                className="text-[11px] text-cyan-300 hover:text-cyan-200 flex items-center space-x-1 hover:underline cursor-pointer"
+                className="print:hidden text-[11px] text-cyan-300 hover:text-cyan-200 flex items-center space-x-1 hover:underline cursor-pointer"
               >
                 <Edit3 className="w-3 h-3" />
                 <span>{isEditing ? 'Cancelar Edição' : 'Editar Texto'}</span>
@@ -283,18 +332,18 @@ export function AiCopilotCard({
                 placeholder="Edite o parecer clínico..."
               />
             ) : (
-              <p className="text-xs sm:text-sm text-slate-100 leading-relaxed whitespace-pre-wrap font-medium">
+              <p className="text-xs sm:text-sm text-slate-100 print:text-slate-900 leading-relaxed whitespace-pre-wrap font-medium">
                 {displayedReportText}
               </p>
             )}
 
             {/* Actions Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10 text-xs">
-              <span className="text-[11px] text-slate-400 italic">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10 print:border-slate-200 text-xs">
+              <span className="text-[11px] text-slate-400 print:text-slate-600 italic">
                 Baseado nas {sessions.length} avaliações da escala.
               </span>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="print:hidden flex flex-wrap items-center gap-2">
                 {/* Save Button */}
                 <button
                   type="button"
@@ -310,6 +359,19 @@ export function AiCopilotCard({
                   )}
                   <span>{isSaving ? 'Salvando...' : savedReport ? 'Atualizar Laudo' : 'Salvar Laudo'}</span>
                 </button>
+
+                {/* PDF Export with all available tones */}
+                {onPdfExport && (
+                  <button
+                    type="button"
+                    onClick={() => onPdfExport(displayedReportText, toneLabels[aiTone] || 'Parecer', getAllCurrentReports())}
+                    className="inline-flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer shadow-xs"
+                    title="Baixar PDF Oficial incluindo todos os pareceres gerados"
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    <span>Baixar PDF</span>
+                  </button>
+                )}
 
                 {/* Copy Button */}
                 <button
@@ -347,7 +409,7 @@ export function AiCopilotCard({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+          <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
             <div className="space-y-0.5">
               <p className="text-xs font-bold text-white">
                 Deseja gerar uma análise humanizada em texto para este paciente?
@@ -381,4 +443,3 @@ export function AiCopilotCard({
     </div>
   );
 }
-

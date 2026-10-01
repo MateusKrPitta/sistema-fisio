@@ -253,7 +253,7 @@ export default function NewPatientFormRecordPage() {
     {
       value: 'standard_anamnese',
       label: 'Anamnese Fisioterapêutica',
-      sublabel: 'Queixa principal, HDA, histórico clínico e antecedentes',
+      sublabel: 'Queixa principal, histórico clínico e antecedentes',
       badge: 'Modelo Clínico',
       category: 'Geral',
     },

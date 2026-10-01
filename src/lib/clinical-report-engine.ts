@@ -134,7 +134,21 @@ export const normalizeScaleKey = (rawKey: string, title?: string): string => {
   if (s.includes('berg') || s.includes('bbs') || s.includes('equilíbrio funcional')) return 'berg';
   if (s.includes('barthel') || s.includes('avd')) return 'barthel';
   if (s.includes('tug') || s.includes('timed up and go')) return 'tug';
-  if (s.includes('eva') || s.includes('intensidade da dor')) return 'eva_dor';
+  if (
+    s.includes('eva') ||
+    s.includes('intensidade da dor') ||
+    s.includes('body map') ||
+    s.includes('mapeamento de dor') ||
+    s.includes('pain_map') ||
+    s.includes('painmap') ||
+    s.includes('pontos de dor') ||
+    s.includes('pontos e mapeamento de dor') ||
+    (s.includes('dor') && !s.includes('postural') && !s.includes('mrc') && !s.includes('goniometria'))
+  ) {
+    return 'eva_dor';
+  }
+  if (s.includes('força muscular') || (s.includes('mrc') && !s.includes('dispneia') && !s.includes('mmrc'))) return 'forca_muscular_mrc';
+  if (s.includes('mmrc') || (s.includes('dispneia') && !s.includes('tc6'))) return 'mmrc';
   if (s.includes('bioimpedância') || s.includes('bioimpedancia')) return 'bioimpedancia';
   if (s.includes('peak flow') || s.includes('pcf') || s.includes('pico de fluxo')) return 'peak_flow';
   if (s.includes('goniometria') || s.includes('amplitude articular')) return 'goniometria';
@@ -151,6 +165,19 @@ export const resolveFieldInfo = (
   const cleanKey = rawKey.toLowerCase().trim();
   const valStr = String(rawVal).toLowerCase();
 
+  // 0. Check exact dictionary match FIRST from presets if available
+  const dictEntry = GLOBAL_FIELD_DICT[cleanKey];
+  if (dictEntry) {
+    const normKey = normalizeScaleKey(dictEntry.scaleTitle.toLowerCase().trim(), dictEntry.scaleTitle);
+    return {
+      scaleKey: normKey,
+      scaleTitle: dictEntry.scaleTitle,
+      category: dictEntry.category,
+      label: dictEntry.label,
+      unit: dictEntry.unit,
+    };
+  }
+
   // Extract trailing field index if key has format 'timestamp_1' or 'timestamp 1' or 'mod_1'
   const matchTrailingIndex = rawKey.match(/(?:_|\s+)(\d+)$/);
   const fieldIndex = matchTrailingIndex ? parseInt(matchTrailingIndex[1], 10) : null;
@@ -161,10 +188,8 @@ export const resolveFieldInfo = (
     cleanKey.includes('espasticidade') ||
     valStr.includes('aumento no tônus') ||
     valStr.includes('adm') ||
-    valStr.includes('espasticidade') ||
     cleanKey.includes('segmento') ||
-    cleanKey.includes('membro avaliado') ||
-    cleanKey.includes('grupo muscular')
+    cleanKey.includes('membro avaliado')
   ) {
     let label = 'Grau de Espasticidade (Membro Avaliado)';
     if (
@@ -229,7 +254,7 @@ export const resolveFieldInfo = (
   }
 
   // 4. TC6 (Caminhada)
-  if (cleanKey.includes('tc6') || cleanKey.includes('spo2') || cleanKey.includes('fc basal') || cleanKey.includes('distância total') || cleanKey.includes('dispneia basal') || cleanKey.includes('fadiga basal')) {
+  if (cleanKey.includes('tc6') || cleanKey.includes('distância total') || cleanKey.includes('dispneia basal') || cleanKey.includes('fadiga basal')) {
     return {
       scaleKey: 'tc6',
       scaleTitle: 'Teste de Caminhada de 6 Minutos (TC6)',
@@ -239,7 +264,7 @@ export const resolveFieldInfo = (
   }
 
   // 5. Bioimpedância
-  if (cleanKey.includes('bioimpedância') || cleanKey.includes('bioimpedancia') || cleanKey.includes('gordura corporal') || cleanKey.includes('massa magra') || cleanKey.includes('massa muscular') || cleanKey.includes('tmb')) {
+  if (cleanKey.includes('bioimpedância') || cleanKey.includes('bioimpedancia') || cleanKey.includes('gordura corporal') || cleanKey.includes('massa magra') || cleanKey.includes('tmb')) {
     return {
       scaleKey: 'bioimpedancia',
       scaleTitle: 'Avaliação por Bioimpedância',
@@ -266,8 +291,7 @@ export const resolveFieldInfo = (
     cleanKey.includes('rolar para') ||
     cleanKey.includes('sentar-se') ||
     valStr.includes('incapaz de fazer sem assistência') ||
-    valStr.includes('capaz de completar a tarefa normalmente') ||
-    valStr.includes('usa os braços para manter-se')
+    valStr.includes('capaz de completar a tarefa normalmente')
   ) {
     let label = 'Controle de Tronco';
     if (cleanKey.includes('afetado') || fieldIndex === 1) label = 'Rolar para o lado afetado';
@@ -289,11 +313,7 @@ export const resolveFieldInfo = (
     cleanKey.includes('bbs') ||
     cleanKey.includes('degrau') ||
     cleanKey.includes('tandem') ||
-    cleanKey.includes('unipodal') ||
-    cleanKey.includes('alcançar a frente') ||
-    cleanKey.includes('olhos fechados') ||
-    cleanKey.includes('girar 360') ||
-    cleanKey.includes('pegar um objeto')
+    cleanKey.includes('unipodal')
   ) {
     let label = rawKey;
     if (fieldIndex) {
@@ -325,19 +345,80 @@ export const resolveFieldInfo = (
     };
   }
 
-  // 9. EVA (Dor)
+  // 9. DOR / ESCALA EVA / BODY MAP
   if (
-    cleanKey.includes('eva') ||
-    cleanKey.includes('dor') ||
-    cleanKey.includes('escala visual analógica') ||
-    cleanKey.includes('intensidade da dor')
+    cleanKey === 'painscale' ||
+    cleanKey === 'pain_scale' ||
+    cleanKey.includes('intensidade da dor') ||
+    cleanKey.includes('escala eva') ||
+    cleanKey === 'eva' ||
+    cleanKey === 'dor (eva)' ||
+    cleanKey.includes('nível de dor') ||
+    cleanKey.includes('nivel de dor')
   ) {
     return {
       scaleKey: 'eva_dor',
       scaleTitle: 'Escala Visual Analógica (EVA - Dor)',
-      category: 'Geral',
+      category: 'Dor',
       label: 'Intensidade da Dor (EVA 0 a 10)',
       unit: '/10',
+    };
+  }
+
+  if (
+    cleanKey === 'markers' ||
+    cleanKey.includes('body map') ||
+    cleanKey.includes('regiões anatômicas') ||
+    cleanKey.includes('regioes anatomicas') ||
+    cleanKey.includes('pontos de dor')
+  ) {
+    return {
+      scaleKey: 'eva_dor',
+      scaleTitle: 'Mapeamento Anatômico e Pontos de Dor (Body Map)',
+      category: 'Dor',
+      label: 'Pontos Marcados no Body Map',
+    };
+  }
+
+  if (
+    cleanKey === 'paincharacteristics' ||
+    cleanKey.includes('característica da dor') ||
+    cleanKey.includes('caracteristica da dor') ||
+    cleanKey.includes('tipo / característica') ||
+    cleanKey.includes('tipo de dor')
+  ) {
+    return {
+      scaleKey: 'eva_dor',
+      scaleTitle: 'Mapeamento Anatômico e Pontos de Dor (Body Map)',
+      category: 'Dor',
+      label: 'Tipo / Característica da Dor',
+    };
+  }
+
+  if (cleanKey.includes('irradiação') || cleanKey.includes('irradiacao')) {
+    return {
+      scaleKey: 'eva_dor',
+      scaleTitle: 'Mapeamento Anatômico e Pontos de Dor (Body Map)',
+      category: 'Dor',
+      label: 'Irradiação da Dor',
+    };
+  }
+
+  if (cleanKey.includes('fatores de piora') || cleanKey.includes('fatores de melhora')) {
+    return {
+      scaleKey: 'eva_dor',
+      scaleTitle: 'Mapeamento Anatômico e Pontos de Dor (Body Map)',
+      category: 'Dor',
+      label: 'Fatores de Piora e Melhora',
+    };
+  }
+
+  if (cleanKey === 'totalpoints' || cleanKey === 'total_points') {
+    return {
+      scaleKey: 'eva_dor',
+      scaleTitle: 'Mapeamento Anatômico e Pontos de Dor (Body Map)',
+      category: 'Dor',
+      label: 'Total de Pontos de Dor',
     };
   }
 
@@ -390,26 +471,13 @@ export const resolveFieldInfo = (
   }
 
   // 13. Goniometria
-  if (cleanKey.includes('goniometria') || cleanKey.includes('flexão') || cleanKey.includes('extensão') || cleanKey.includes('abdução') || cleanKey.includes('°')) {
+  if (cleanKey.includes('goniometria') || cleanKey.includes('°')) {
     return {
       scaleKey: 'goniometria',
       scaleTitle: 'Goniometria e Amplitude Articular',
       category: 'Goniometria',
       label: rawKey,
       unit: '°',
-    };
-  }
-
-  // Fallback: Global preset dictionary match
-  const dictEntry = GLOBAL_FIELD_DICT[cleanKey];
-  if (dictEntry) {
-    const normKey = normalizeScaleKey(dictEntry.scaleTitle.toLowerCase().trim(), dictEntry.scaleTitle);
-    return {
-      scaleKey: normKey,
-      scaleTitle: dictEntry.scaleTitle,
-      category: dictEntry.category,
-      label: dictEntry.label,
-      unit: dictEntry.unit,
     };
   }
 
@@ -468,7 +536,45 @@ export const parseScaleGroupsFromRecords = (patientRecords: EvaluationRecord[]):
       const rawVal = rawAnswers[rawKey];
       if (rawVal === undefined || rawVal === null || rawVal === '') return;
 
-      const valStr = typeof rawVal === 'boolean' ? (rawVal ? 'Sim' : 'Não') : String(rawVal);
+      // Cleanly format array / object / primitive values
+      let valStr = '';
+      if (typeof rawVal === 'boolean') {
+        valStr = rawVal ? 'Sim' : 'Não';
+      } else if (Array.isArray(rawVal)) {
+        if (rawVal.length === 0) {
+          valStr = '0 pontos marcados';
+        } else if (typeof rawVal[0] === 'object' && rawVal[0] !== null) {
+          const regionNames = rawVal
+            .map((m: any) => m.region || (m.viewId ? `Vista ${m.viewId}` : null))
+            .filter(Boolean);
+          if (regionNames.length > 0) {
+            valStr = `${rawVal.length} ponto(s) marcado(s) (${Array.from(new Set(regionNames)).join(', ')})`;
+          } else {
+            valStr = `${rawVal.length} ponto(s) marcado(s)`;
+          }
+        } else {
+          valStr = rawVal.join(', ');
+        }
+      } else if (typeof rawVal === 'string' && rawVal.startsWith('[') && rawVal.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(rawVal);
+          if (Array.isArray(parsed)) {
+            if (parsed.length === 0) {
+              valStr = '0 pontos marcados';
+            } else if (typeof parsed[0] === 'object' && parsed[0] !== null) {
+              valStr = `${parsed.length} ponto(s) marcado(s)`;
+            } else {
+              valStr = parsed.join(', ');
+            }
+          } else {
+            valStr = rawVal;
+          }
+        } catch {
+          valStr = rawVal;
+        }
+      } else {
+        valStr = String(rawVal);
+      }
 
       let resolved = resolveFieldInfo(rawKey, rawVal);
       const normKey = normalizeScaleKey(resolved.scaleKey, resolved.scaleTitle);
@@ -587,14 +693,42 @@ export const parseScaleGroupsFromRecords = (patientRecords: EvaluationRecord[]):
             : 'Comprometimento Severo da Estabilidade de Tronco';
       }
 
-      // 5. EVA Dor
+      // 5. EVA Dor Calculations
       else if (scaleKey === 'eva_dor') {
-        const dorItem = items.find((i) => i.label.toLowerCase().includes('dor') || i.label.toLowerCase().includes('eva'));
+        // Priority 1: Specifically find the item with the numeric EVA score (0-10)
+        const dorItem =
+          items.find((i) => {
+            const l = i.label.toLowerCase();
+            return (
+              l.includes('intensidade') ||
+              l.includes('escala eva') ||
+              l === 'eva' ||
+              l.includes('(eva') ||
+              l === 'painscale' ||
+              l === 'pain_scale'
+            );
+          }) ||
+          items.find((i) => {
+            const valNum = Number(String(i.value).trim().replace(',', '.'));
+            return !isNaN(valNum) && valNum >= 0 && valNum <= 10 && !Array.isArray(i.value);
+          });
+
         if (dorItem) {
-          const num = Number(dorItem.value.replace(/[^\d.]/g, ''));
-          calculatedScore = `${num} / 10`;
-          clinicalInterp =
-            num === 0 ? 'Sem Dor (0/10)' : num <= 3 ? 'Dor Leve (1-3/10)' : num <= 6 ? 'Dor Moderada (4-6/10)' : 'Dor Intensa / Severa (7-10/10)';
+          const cleanVal = String(dorItem.value).replace(/[^\d.]/g, '');
+          const num = cleanVal !== '' ? parseFloat(cleanVal) : NaN;
+          if (!isNaN(num) && num >= 0 && num <= 10) {
+            calculatedScore = `${num} / 10`;
+            clinicalInterp =
+              num === 0
+                ? 'Sem Dor (0/10)'
+                : num <= 3
+                ? `Dor Leve (${num}/10) - Impacto mínimo nas AVDs`
+                : num <= 6
+                ? `Dor Moderada (${num}/10) - Limitação funcional moderada`
+                : num <= 8
+                ? `Dor Intensa / Severa (${num}/10) - Limitação importante de movimentos`
+                : `Dor Máxima / Insuportável (${num}/10) - Incapacidade funcional aguda`;
+          }
         }
       }
 
@@ -687,3 +821,97 @@ export const parseScaleGroupsFromRecords = (patientRecords: EvaluationRecord[]):
     sessions: Array.from(data.sessionsMap.values()),
   }));
 };
+
+export interface EvaluationSessionScale {
+  scaleKey: string;
+  scaleTitle: string;
+  category: string;
+  scoreSummary?: string;
+  clinicalInterpretation?: string;
+  items: { label: string; value: string; unit?: string }[];
+  previousSessionScore?: string;
+}
+
+export interface EvaluationSessionDetail {
+  recordId: number;
+  recordIndex: number;
+  sessionTitle: string;
+  recordDate: string;
+  formattedDate: string;
+  evaluatorName: string;
+  evaluatorCrefito?: string;
+  notes?: string;
+  isSigned: boolean;
+  signatureImage?: string;
+  signedAt?: string;
+  signedByName?: string;
+  scales: EvaluationSessionScale[];
+  modulesCount?: number;
+}
+
+export const aggregateRecordsByEvaluationSession = (
+  patientRecords: EvaluationRecord[],
+  parsedScaleGroups: ParsedScaleGroup[]
+): EvaluationSessionDetail[] => {
+  const sortedRecords = [...patientRecords].sort((a, b) => {
+    const da = new Date(a.recordDate || a.record_date || a.createdAt || 0).getTime();
+    const db = new Date(b.recordDate || b.record_date || b.createdAt || 0).getTime();
+    return da - db;
+  });
+
+  return sortedRecords.map((record, rIdx) => {
+    const rawDate = record.recordDate || record.record_date || record.createdAt;
+    const formattedDate = formatDate(rawDate);
+    const evaluator = record.user?.fullName || 'Fisioterapeuta';
+    const crefito = record.user?.crefito;
+    const isSigned =
+      record.signatureStatus === 'signed' ||
+      record.signature_status === 'signed' ||
+      Boolean(record.signatureImage || record.signature_image);
+    const sigImg = record.signatureImage || record.signature_image;
+    const sAt = record.signedAt || record.signed_at;
+    const sBy = record.signedByName || record.signed_by_name;
+
+    const scalesInThisSession: EvaluationSessionScale[] = [];
+
+    parsedScaleGroups.forEach((group) => {
+      const sessionInScale = group.sessions.find((s) => s.recordId === record.id);
+      if (sessionInScale && sessionInScale.items.length > 0) {
+        const currentIdxInGroup = group.sessions.findIndex((s) => s.recordId === record.id);
+        const previousSession = currentIdxInGroup > 0 ? group.sessions[currentIdxInGroup - 1] : undefined;
+
+        scalesInThisSession.push({
+          scaleKey: group.scaleKey,
+          scaleTitle: group.scaleTitle,
+          category: group.category,
+          scoreSummary: sessionInScale.scoreSummary,
+          clinicalInterpretation: sessionInScale.clinicalInterpretation,
+          items: sessionInScale.items,
+          previousSessionScore: previousSession?.scoreSummary,
+        });
+      }
+    });
+
+    const fallbackCount = (record.template as any)?.modulesCount || 
+      (record.template?.title ? record.template.title.split('+').length : 1);
+    const calculatedModulesCount = scalesInThisSession.length > 0 ? scalesInThisSession.length : fallbackCount;
+
+    return {
+      recordId: record.id,
+      recordIndex: rIdx,
+      sessionTitle: rIdx === 0 ? '1ª Avaliação Inicial' : `${rIdx + 1}ª Reavaliação`,
+      recordDate: rawDate || '',
+      formattedDate,
+      evaluatorName: evaluator,
+      evaluatorCrefito: crefito,
+      notes: record.notes,
+      isSigned,
+      signatureImage: sigImg,
+      signedAt: sAt,
+      signedByName: sBy,
+      scales: scalesInThisSession,
+      modulesCount: calculatedModulesCount,
+    };
+  });
+};
+

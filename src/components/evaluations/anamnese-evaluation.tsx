@@ -86,7 +86,6 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
   const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     qp: '',
-    hda: '',
     hmp: '',
     hf: '',
     obs: '',
@@ -104,7 +103,6 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
       const answers = {
         evaluationType: 'anamnese',
         qp: formData.qp,
-        hda: formData.hda,
         hmp: formData.hmp,
         hf: formData.hf,
         obs: formData.obs,
@@ -156,17 +154,10 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
 
         <div className="space-y-5">
           <RichTextEditor 
-            label="Queixa principal (QP) / Motivo da avaliação:" 
+            label="Queixa principal (QP) / Motivo da consulta:" 
             value={formData.qp} 
-            placeholder="Ex: Dor lombar há 2 semanas que irradia para o membro inferior direito..."
+            placeholder="Ex: Dor lombar há 2 semanas que irradia para o membro inferior direito, início após esforço..."
             onChange={(val) => handleChange('qp', val)} 
-          />
-          
-          <RichTextEditor 
-            label="História da doença atual (HDA):" 
-            value={formData.hda} 
-            placeholder="Ex: Início súbito após esforço físico, piora ao sentar-se por longos períodos..."
-            onChange={(val) => handleChange('hda', val)} 
           />
           
           <RichTextEditor 

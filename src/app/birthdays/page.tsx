@@ -132,7 +132,7 @@ export default function BirthdaysPage() {
         subtitle="Notificações automáticas de aniversariantes do dia e envio de felicitações"
       />
 
-      <main className="flex-1 p-4 sm:p-6 md:p-8 pb-20 space-y-6 overflow-y-auto max-w-full">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
         {/* Today's Birthday Banner Notification */}
         {todayList.length > 0 && (
           <motion.div
@@ -168,7 +168,7 @@ export default function BirthdaysPage() {
                   setActiveTab('today');
                   if (todayList[0]) handleSendWhatsappGreeting(todayList[0]);
                 }}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:shadow-xl transition-all text-xs sm:text-sm flex items-center justify-center space-x-2 border border-emerald-300/50"
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:shadow-xl transition-all text-xs sm:text-sm flex items-center justify-center space-x-2 border border-emerald-300/50 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-slate-950 fill-current" />
                 <span>Enviar Parabéns pelo WhatsApp</span>
@@ -178,15 +178,15 @@ export default function BirthdaysPage() {
         )}
 
         {/* Tab & Search Control Bar */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
           {/* Navigation Tabs */}
-          <div className="flex items-center space-x-1.5 bg-slate-100 p-1.5 rounded-xl text-xs font-semibold text-slate-600">
+          <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400">
             <button
               onClick={() => setActiveTab('today')}
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 cursor-pointer ${
                 activeTab === 'today'
-                  ? 'bg-white text-blue-600 shadow-xs font-bold'
-                  : 'hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                  : 'hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <Cake className="w-4 h-4 text-rose-500" />
@@ -198,10 +198,10 @@ export default function BirthdaysPage() {
 
             <button
               onClick={() => setActiveTab('month')}
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 cursor-pointer ${
                 activeTab === 'month'
-                  ? 'bg-white text-blue-600 shadow-xs font-bold'
-                  : 'hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                  : 'hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <Calendar className="w-4 h-4 text-amber-500" />
@@ -210,10 +210,10 @@ export default function BirthdaysPage() {
 
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 cursor-pointer ${
                 activeTab === 'all'
-                  ? 'bg-white text-blue-600 shadow-xs font-bold'
-                  : 'hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                  : 'hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <Users className="w-4 h-4 text-purple-500" />
@@ -229,7 +229,7 @@ export default function BirthdaysPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Filtrar por nome..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all"
             />
           </div>
         </div>
@@ -241,9 +241,9 @@ export default function BirthdaysPage() {
             <p className="text-xs font-semibold text-slate-400">Buscando aniversariantes do sistema...</p>
           </div>
         ) : displayedList.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 text-center space-y-3 shadow-xs">
-            <Gift className="w-12 h-12 text-slate-300 mx-auto" />
-            <h3 className="text-lg font-bold text-slate-700">Nenhum aniversariante encontrado</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8 sm:p-12 text-center space-y-3 shadow-xs">
+            <Gift className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+            <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200">Nenhum aniversariante encontrado</h3>
             <p className="text-sm text-slate-400">
               {activeTab === 'today'
                 ? 'Nenhum paciente fazendo aniversário hoje.'
@@ -262,15 +262,15 @@ export default function BirthdaysPage() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  className={`rounded-2xl p-5 sm:p-6 border shadow-sm transition-all flex flex-col justify-between space-y-4 relative ${
+                  className={`rounded-3xl p-5 sm:p-6 border shadow-xs transition-all flex flex-col justify-between space-y-4 relative ${
                     isToday
-                      ? 'bg-gradient-to-b from-amber-50/90 to-white border-amber-300 shadow-amber-500/10 hover:border-amber-400'
-                      : 'bg-white border-slate-200 hover:border-blue-300'
+                      ? 'bg-gradient-to-b from-amber-50/90 dark:from-amber-950/30 to-white dark:to-slate-900 border-amber-300 dark:border-amber-800/80 shadow-amber-500/10 hover:border-amber-400'
+                      : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
                   }`}
                 >
                   {/* Today Badge */}
                   {isToday && (
-                    <div className="absolute top-3 right-3 bg-amber-500 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full shadow-xs flex items-center space-x-1">
+                    <div className="absolute top-3.5 right-3.5 bg-amber-500 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full shadow-xs flex items-center space-x-1">
                       <Sparkles className="w-3 h-3" />
                       <span>Aniversário Hoje!</span>
                     </div>
@@ -282,32 +282,32 @@ export default function BirthdaysPage() {
                         className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0 shadow-xs ${
                           isToday
                             ? 'bg-gradient-to-tr from-amber-500 to-rose-500 text-white'
-                            : 'bg-blue-50 text-blue-600 border border-blue-100'
+                            : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800'
                         }`}
                       >
                         {name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-bold text-slate-800 text-base truncate">{name}</h4>
-                        <p className="text-xs text-slate-500 flex items-center space-x-1 mt-0.5">
-                          <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base truncate">{name}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center space-x-1 mt-0.5">
+                          <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                           <span>{formatDate(patient.birthdate || patient.birthDate)}</span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                       {patient.ageToComplete !== undefined && (
                         <p className="flex items-center justify-between">
-                          <span className="text-slate-400">Idade a completar:</span>
-                          <strong className="text-slate-800 font-bold bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                          <span className="text-slate-400 dark:text-slate-500">Idade a completar:</span>
+                          <strong className="text-slate-800 dark:text-slate-200 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md text-[11px]">
                             {patient.ageToComplete} anos
                           </strong>
                         </p>
                       )}
                       <p className="flex items-center justify-between">
-                        <span className="text-slate-400">Telefone:</span>
-                        <span className="font-mono text-slate-700">{patient.phone || 'Não informado'}</span>
+                        <span className="text-slate-400 dark:text-slate-500">Telefone:</span>
+                        <span className="font-mono text-slate-700 dark:text-slate-300">{patient.phone || 'Não informado'}</span>
                       </p>
                     </div>
                   </div>
@@ -315,10 +315,10 @@ export default function BirthdaysPage() {
                   {/* Action Button: WhatsApp Congratulations */}
                   <button
                     onClick={() => handleSendWhatsappGreeting(patient)}
-                    className={`w-full font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 text-xs shadow-xs transition-all ${
+                    className={`w-full font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 text-xs shadow-xs transition-all cursor-pointer ${
                       isToday
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-                        : 'bg-slate-900 hover:bg-slate-800 text-white'
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                        : 'bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white'
                     }`}
                   >
                     <MessageCircle className="w-4 h-4 text-emerald-400 fill-current" />

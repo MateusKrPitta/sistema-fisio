@@ -19,12 +19,32 @@ import {
   Save,
   Loader2,
   Check,
+  Layers,
 } from 'lucide-react';
 import { CustomField, CLINICAL_PRESETS, ClinicalPreset } from '@/lib/clinical-presets';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/toast-context';
 import { FieldRenderer } from './field-renderer';
+import { InteractivePainBodyMap } from '@/components/interactive-pain-body-map';
+import { stripHtml } from '@/components/reports/evolution-report-modal';
+
+export function formatTemplateTitle(title?: string): { shortTitle: string; badges: string[]; count: number } {
+  if (!title) return { shortTitle: 'Avaliação Clínica', badges: [], count: 0 };
+  
+  const parts = title.split(' + ').map((s) => s.trim()).filter(Boolean);
+  if (parts.length <= 1) {
+    return { shortTitle: title, badges: parts, count: 1 };
+  }
+  if (parts.length === 2) {
+    return { shortTitle: `${parts[0]} + ${parts[1]}`, badges: parts, count: 2 };
+  }
+  return {
+    shortTitle: `Ficha Multidisciplinar (${parts.length} escalas)`,
+    badges: parts,
+    count: parts.length,
+  };
+}
 
 export interface ScaleGroup {
   id: string | number;
@@ -631,23 +651,39 @@ export const calculateScaleBadge = (
   if (
     scaleTitle.includes('eva') ||
     scaleTitle.includes('escala visual') ||
-    fields.some((f) => (f.label || '').toLowerCase().includes('eva') || (f.label || '').toLowerCase().includes('intensidade da dor'))
+    scaleTitle.includes('dor') ||
+    scaleTitle.includes('pain') ||
+    fields.some((f) => (f.label || '').toLowerCase().includes('eva') || (f.label || '').toLowerCase().includes('intensidade da dor') || f.fieldType === 'scale_0_10') ||
+    recAnswers.painScale !== undefined ||
+    recAnswers.pain_scale !== undefined
   ) {
-    const evaField = fields.find((f) => {
-      const l = (f.label || '').toLowerCase();
-      return l.includes('intensidade da dor') || l.includes('eva') || l.includes('dor');
-    });
-    if (evaField) {
-      const ans = getAnswerForField(evaField, recAnswers);
-      if (ans !== undefined && ans !== null && ans !== '') {
-        const num = parseFloat(String(ans).replace(',', '.'));
-        if (!isNaN(num)) {
-          return {
-            label: 'EVA',
-            score: `${num} / 10`,
-            badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
-          };
-        }
+    let rawAns = recAnswers.painScale ?? recAnswers.pain_scale;
+    if (rawAns === undefined || rawAns === null || rawAns === '') {
+      const evaField =
+        fields.find((f) => {
+          const l = (f.label || '').toLowerCase();
+          return l.includes('intensidade') || l.includes('escala eva') || (l.includes('eva') && !l.includes('reavalia'));
+        }) ||
+        fields.find((f) => f.fieldType === 'scale_0_10') ||
+        fields.find((f) => {
+          const l = (f.label || '').toLowerCase();
+          return l.includes('dor') && !l.includes('tipo') && !l.includes('caracter') && !l.includes('irradia') && !l.includes('ponto') && !l.includes('body');
+        });
+
+      if (evaField) {
+        rawAns = getAnswerForField(evaField, recAnswers);
+      }
+    }
+
+    if (rawAns !== undefined && rawAns !== null && rawAns !== '') {
+      const cleanVal = String(rawAns).replace(/[^\d.]/g, '');
+      const num = cleanVal !== '' ? parseFloat(cleanVal) : NaN;
+      if (!isNaN(num) && num >= 0 && num <= 10) {
+        return {
+          label: 'EVA',
+          score: `${num} / 10`,
+          badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+        };
       }
     }
   }
@@ -770,11 +806,66 @@ export function EvaluationHistoryList({
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [collapsedScales, setCollapsedScales] = useState<Record<string, boolean>>({});
+  const [loadedDetails, setLoadedDetails] = useState<Record<number, any>>({});
+  const [loadingDetailsIds, setLoadingDetailsIds] = useState<number[]>([]);
 
   // Inline scale editing state
   const [editingScaleKey, setEditingScaleKey] = useState<string | null>(null);
   const [editingAnswers, setEditingAnswers] = useState<Record<string, any>>({});
   const [savingScale, setSavingScale] = useState(false);
+
+  const fetchRecordDetails = async (recordId: number) => {
+    try {
+      const res = await api
+        .get(`/patients/${patient?.id}/form-records/${recordId}`)
+        .catch(() => api.get(`/form-records/${recordId}`));
+      const data = res?.data || res;
+      if (data && data.id) {
+        setLoadedDetails((prev) => ({ ...prev, [recordId]: data }));
+        if (data.answers) {
+          onRecordUpdated?.(recordId, data.answers);
+        }
+        return data;
+      }
+    } catch (err) {
+      console.error('Erro ao carregar detalhes completos da avaliação:', err);
+    }
+    return null;
+  };
+
+  const handleToggleAccordion = async (record: any) => {
+    const isCurrentlyExpanded = expandedRecordIds.includes(record.id);
+    onToggleExpand(record.id);
+
+    // If opening and details are not yet loaded:
+    const hasDetails = record.detailsLoaded || (record.answers && record.template?.modules?.length > 0) || loadedDetails[record.id];
+    if (!isCurrentlyExpanded && !hasDetails) {
+      setLoadingDetailsIds((prev) => [...prev, record.id]);
+      try {
+        await fetchRecordDetails(record.id);
+      } finally {
+        setLoadingDetailsIds((prev) => prev.filter((id) => id !== record.id));
+      }
+    }
+  };
+
+  const handleEditWholeRecord = async (record: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const effectiveRecord = loadedDetails[record.id] || record;
+    if (!effectiveRecord.answers || !effectiveRecord.detailsLoaded) {
+      setLoadingDetailsIds((prev) => [...prev, record.id]);
+      try {
+        const fullData = await fetchRecordDetails(record.id);
+        if (fullData) {
+          onStartEdit(fullData);
+          return;
+        }
+      } finally {
+        setLoadingDetailsIds((prev) => prev.filter((id) => id !== record.id));
+      }
+    }
+    onStartEdit(effectiveRecord);
+  };
 
   const toggleScaleCollapse = (key: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -788,7 +879,8 @@ export function EvaluationHistoryList({
     if (e) e.stopPropagation();
     const scaleKey = `${record.id}_${scale.id}`;
     setEditingScaleKey(scaleKey);
-    const currentAnswers = parseAnswers(record.answers);
+    const effectiveRecord = loadedDetails[record.id] || record;
+    const currentAnswers = parseAnswers(effectiveRecord.answers);
     setEditingAnswers({ ...currentAnswers });
 
     // Ensure scale sub-accordion is expanded
@@ -809,7 +901,8 @@ export function EvaluationHistoryList({
     setSavingScale(true);
 
     try {
-      const updatedAnswers = { ...parseAnswers(record.answers), ...editingAnswers };
+      const effectiveRecord = loadedDetails[record.id] || record;
+      const updatedAnswers = { ...parseAnswers(effectiveRecord.answers), ...editingAnswers };
 
       // Update via API
       await api.put(`/patients/${patient.id}/form-records/${record.id}`, {
@@ -817,7 +910,14 @@ export function EvaluationHistoryList({
       });
 
       // Update local record answers
-      record.answers = updatedAnswers;
+      effectiveRecord.answers = updatedAnswers;
+      setLoadedDetails((prev) => ({
+        ...prev,
+        [record.id]: {
+          ...(prev[record.id] || record),
+          answers: updatedAnswers,
+        },
+      }));
 
       toast({
         title: 'Escala Atualizada!',
@@ -874,24 +974,25 @@ export function EvaluationHistoryList({
     <div className="space-y-4">
       {formRecords.map((record, index) => {
         const isExpanded = expandedRecordIds.includes(record.id);
-        const isSigned = (record.signatureStatus || record.signature_status) === 'assinado';
-        const sigToken = record.signatureToken || record.signature_token;
-        const rDate = record.recordDate || record.record_date || record.createdAt;
+        const isLoadingThisRecord = loadingDetailsIds.includes(record.id);
+        const effectiveRecord = loadedDetails[record.id] || record;
+        const isSigned = (effectiveRecord.signatureStatus || effectiveRecord.signature_status) === 'assinado';
+        const sigToken = effectiveRecord.signatureToken || effectiveRecord.signature_token;
+        const rDate = effectiveRecord.recordDate || effectiveRecord.record_date || effectiveRecord.createdAt;
         const formattedDate = formatDateSafe(rDate);
-        const recordScales = extractScaleGroups(record.template);
-        const recAnswers = parseAnswers(record.answers);
-        const answersCount = Object.keys(recAnswers).length;
+        const recordScales = extractScaleGroups(effectiveRecord.template);
+        const recAnswers = parseAnswers(effectiveRecord.answers);
 
         let recordImages: string[] = [];
-        if (Array.isArray(record.images)) {
-          recordImages = record.images;
-        } else if (typeof record.images === 'string') {
+        if (Array.isArray(effectiveRecord.images)) {
+          recordImages = effectiveRecord.images;
+        } else if (typeof effectiveRecord.images === 'string') {
           try {
-            const parsed = JSON.parse(record.images);
+            const parsed = JSON.parse(effectiveRecord.images);
             if (Array.isArray(parsed)) recordImages = parsed;
           } catch {
-            if (record.images.startsWith('data:') || record.images.startsWith('http')) {
-              recordImages = [record.images];
+            if (effectiveRecord.images.startsWith('data:') || effectiveRecord.images.startsWith('http')) {
+              recordImages = [effectiveRecord.images];
             }
           }
         }
@@ -902,6 +1003,8 @@ export function EvaluationHistoryList({
           recordImages = [recAnswers.photoData];
         }
 
+        const imagesCount = effectiveRecord.imagesCount ?? recordImages.length;
+
         return (
           <div
             key={record.id}
@@ -909,7 +1012,7 @@ export function EvaluationHistoryList({
           >
             {/* Header Accordion */}
             <div
-              onClick={() => onToggleExpand(record.id)}
+              onClick={() => handleToggleAccordion(record)}
               className="p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/70 transition-colors select-none"
             >
               <div className="flex items-center space-x-3.5">
@@ -942,23 +1045,38 @@ export function EvaluationHistoryList({
                       <span>{isSigned ? 'Assinatura Registrada' : 'Assinatura Pendente'}</span>
                     </span>
 
-                    <span>•</span>
-                    <span>{answersCount} item(ns)</span>
-                    {recordImages.length > 0 && (
+                    {imagesCount > 0 && (
                       <>
                         <span>•</span>
                         <span className="inline-flex items-center gap-1 font-semibold text-blue-600">
                           <Camera className="w-3 h-3" />
-                          {recordImages.length} foto(s)
+                          {imagesCount} foto(s)
                         </span>
                       </>
                     )}
-                    {record.template?.title && (
-                      <>
-                        <span>•</span>
-                        <span className="font-semibold text-slate-700">{record.template.title}</span>
-                      </>
-                    )}
+                    {record.template?.title && (() => {
+                      const { shortTitle, badges, count } = formatTemplateTitle(record.template.title);
+                      if (count <= 1) {
+                        return (
+                          <>
+                            <span>•</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">{shortTitle}</span>
+                          </>
+                        );
+                      }
+                      return (
+                        <>
+                          <span>•</span>
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/80 dark:border-indigo-800 text-[11px]"
+                            title={`Módulos aplicados:\n• ${badges.join('\n• ')}`}
+                          >
+                            <Layers className="w-3 h-3 text-indigo-500 shrink-0" />
+                            <span>{count} escalas / módulos</span>
+                          </span>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -991,10 +1109,7 @@ export function EvaluationHistoryList({
 
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStartEdit(record);
-                  }}
+                  onClick={(e) => handleEditWholeRecord(record, e)}
                   className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
                   title="Editar Toda a Avaliação"
                 >
@@ -1016,7 +1131,15 @@ export function EvaluationHistoryList({
                 )}
 
                 <div className="p-2 text-slate-400">
-                  {isExpanded ? <ChevronUp className="w-5 h-5 text-blue-600" /> : <ChevronDown className="w-5 h-5" />}
+                  {isExpanded ? (
+                    isLoadingThisRecord ? (
+                      <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                    ) : (
+                      <ChevronUp className="w-5 h-5 text-blue-600" />
+                    )
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
                 </div>
               </div>
             </div>
@@ -1030,7 +1153,15 @@ export function EvaluationHistoryList({
                   exit={{ opacity: 0, height: 0 }}
                   className="px-5 pb-6 sm:px-6 space-y-5 border-t border-slate-100 pt-5 bg-slate-50/40"
                 >
-                  {/* Status Banner */}
+                  {isLoadingThisRecord && !effectiveRecord.answers ? (
+                    <div className="p-10 flex flex-col items-center justify-center space-y-3 text-slate-500 bg-white rounded-2xl border border-slate-200">
+                      <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                      <span className="text-xs font-bold text-slate-700">Carregando detalhes clínicos e escalas da avaliação...</span>
+                      <span className="text-[11px] text-slate-400">Buscando dados sob demanda para máxima performance</span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Status Banner */}
                   <div
                     className={`p-4 rounded-2xl border flex items-center justify-between gap-3 ${
                       isSigned
@@ -1129,7 +1260,7 @@ export function EvaluationHistoryList({
                   {record.notes && (
                     <div className="bg-blue-50/60 border border-blue-200 rounded-2xl p-4 text-xs">
                       <span className="font-bold text-blue-950 block mb-1">Observações do Fisioterapeuta:</span>
-                      <p className="text-slate-700 whitespace-pre-wrap">{record.notes}</p>
+                      <p className="text-slate-700 whitespace-pre-wrap">{stripHtml(record.notes)}</p>
                     </div>
                   )}
 
@@ -1270,25 +1401,37 @@ export function EvaluationHistoryList({
                                               getAnswerForField(f, editingAnswers, fIdx) ??
                                               '';
 
+                                            const isFullWidth =
+                                              f.fieldType === 'long_text' ||
+                                              f.fieldType === 'body_map' ||
+                                              f.fieldType === 'scale_0_10' ||
+                                              (f.label &&
+                                                (f.label.toLowerCase().includes('observaç') ||
+                                                  f.label.toLowerCase().includes('conclus')));
+
                                             return (
-                                              <FieldRenderer
+                                              <div
                                                 key={fieldKey}
-                                                field={f}
-                                                value={currentVal}
-                                                onChange={(val) => {
-                                                  setEditingAnswers((prev) => {
-                                                    const updated = { ...prev };
-                                                    if (f.id) updated[String(f.id)] = val;
-                                                    if (f.label) updated[String(f.label)] = val;
-                                                    return updated;
-                                                  });
-                                                }}
-                                                index={fIdx}
-                                                allAnswers={editingAnswers}
-                                                onAnswerChange={(key, val) => {
-                                                  setEditingAnswers((prev) => ({ ...prev, [key]: val }));
-                                                }}
-                                              />
+                                                className={isFullWidth ? 'col-span-1 md:col-span-2' : 'col-span-1'}
+                                              >
+                                                <FieldRenderer
+                                                  field={f}
+                                                  value={currentVal}
+                                                  onChange={(val) => {
+                                                    setEditingAnswers((prev) => {
+                                                      const updated = { ...prev };
+                                                      if (f.id) updated[String(f.id)] = val;
+                                                      if (f.label) updated[String(f.label)] = val;
+                                                      return updated;
+                                                    });
+                                                  }}
+                                                  index={fIdx}
+                                                  allAnswers={editingAnswers}
+                                                  onAnswerChange={(key, val) => {
+                                                    setEditingAnswers((prev) => ({ ...prev, [key]: val }));
+                                                  }}
+                                                />
+                                              </div>
                                             );
                                           })}
                                       </div>
@@ -1331,18 +1474,56 @@ export function EvaluationHistoryList({
                                         const ansVal = getAnswerForField(f, recAnswers, fIdx);
                                         const hasAns = ansVal !== undefined && ansVal !== null && ansVal !== '';
 
+                                        const labelLower = (f.label || '').toLowerCase();
+                                        const isRightSide =
+                                          labelLower.includes('direito') ||
+                                          labelLower.includes(' dir.') ||
+                                          labelLower.endsWith(' - d') ||
+                                          labelLower.includes('(direito)');
+                                        const isLeftSide =
+                                          labelLower.includes('esquerdo') ||
+                                          labelLower.includes(' esq.') ||
+                                          labelLower.endsWith(' - e') ||
+                                          labelLower.includes('(esquerdo)');
+
+                                        const isFullWidth =
+                                          f.fieldType === 'long_text' ||
+                                          f.fieldType === 'body_map' ||
+                                          f.fieldType === 'scale_0_10' ||
+                                          (f.label &&
+                                            (f.label.toLowerCase().includes('observaç') ||
+                                              f.label.toLowerCase().includes('conclus')));
+
+                                        const cardBg = hasAns
+                                          ? isRightSide
+                                            ? 'bg-blue-50/25 border-blue-200/90 shadow-2xs'
+                                            : isLeftSide
+                                            ? 'bg-purple-50/25 border-purple-200/90 shadow-2xs'
+                                            : 'bg-white border-slate-200 shadow-2xs'
+                                          : 'bg-slate-50/50 border-dashed border-slate-200 opacity-60';
+
                                         return (
                                           <div
                                             key={keyById}
-                                            className={`p-4 rounded-xl border text-xs flex flex-col justify-between space-y-2 ${
-                                              hasAns
-                                                ? 'bg-white border-slate-200 shadow-2xs'
-                                                : 'bg-slate-50/50 border-dashed border-slate-200 opacity-60'
-                                            }`}
+                                            className={`${
+                                              isFullWidth ? 'col-span-1 md:col-span-2' : 'col-span-1'
+                                            } p-4 rounded-xl border text-xs flex flex-col justify-between space-y-2 ${cardBg}`}
                                           >
-                                            <span className="text-[11px] font-bold text-slate-600 leading-snug">
-                                              {f.label}
-                                            </span>
+                                            <div className="flex items-start justify-between gap-2">
+                                              <span className="text-[11px] font-bold text-slate-700 leading-snug">
+                                                {f.label}
+                                              </span>
+                                              {isRightSide && (
+                                                <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-blue-100 text-blue-800 border border-blue-200">
+                                                  Direito (D)
+                                                </span>
+                                              )}
+                                              {isLeftSide && (
+                                                <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-100 text-purple-800 border border-purple-200">
+                                                  Esquerdo (E)
+                                                </span>
+                                              )}
+                                            </div>
                                             <div className="font-black text-slate-900 text-sm">
                                               {hasAns ? (
                                                 Array.isArray(ansVal) ? (
@@ -1357,7 +1538,13 @@ export function EvaluationHistoryList({
                                                     ))}
                                                   </div>
                                                 ) : (
-                                                  <span className="text-blue-950 bg-blue-50 border border-blue-200 px-3 py-1 rounded-xl inline-block">
+                                                  <span
+                                                    className={
+                                                      isLeftSide
+                                                        ? 'text-purple-950 bg-purple-50 border border-purple-200 px-3 py-1 rounded-xl inline-block'
+                                                        : 'text-blue-950 bg-blue-50 border border-blue-200 px-3 py-1 rounded-xl inline-block'
+                                                    }
+                                                  >
                                                     {`${ansVal} ${f.unit || ''}`}
                                                   </span>
                                                 )
@@ -1377,7 +1564,71 @@ export function EvaluationHistoryList({
                         );
                       })}
                     </div>
-                  ) : null}
+                  ) : (
+                    /* Fallback for Standard Evaluations or records without template modules */
+                    <div className="space-y-4">
+                      {/* 1. Pain Map Standard Record */}
+                      {(recAnswers.evaluationType === 'pain_map' || Array.isArray(recAnswers.markers)) && (
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div>
+                              <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                                Mapeamento Anatômico e Pontos de Dor (Body Map)
+                              </h5>
+                            </div>
+                            {recAnswers.painScale !== undefined && (
+                              <span className="text-xs font-black text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-xl">
+                                Intensidade EVA: {recAnswers.painScale}/10
+                              </span>
+                            )}
+                          </div>
+
+                          <InteractivePainBodyMap
+                            markers={recAnswers.markers || []}
+                            readOnly={true}
+                            showInstructions={false}
+                          />
+
+                          {recAnswers.painCharacteristics && (
+                            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 text-xs">
+                              <span className="font-bold text-slate-700 block mb-1">Características e Irradiação:</span>
+                              <p className="text-slate-600">{recAnswers.painCharacteristics}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 2. Anamnese Standard Record */}
+                      {(recAnswers.qp || recAnswers.hda || recAnswers.hmp) && (
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+                          <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+                            Anamnese Clínica
+                          </h5>
+                          {recAnswers.qp && (
+                            <div className="text-xs bg-slate-50 p-3 rounded-xl border border-slate-200/70">
+                              <span className="font-bold text-slate-700 block mb-0.5">Queixa Principal (QP):</span>
+                              <p className="text-slate-600">{recAnswers.qp}</p>
+                            </div>
+                          )}
+                          {recAnswers.hda && (
+                            <div className="text-xs bg-slate-50 p-3 rounded-xl border border-slate-200/70">
+                              <span className="font-bold text-slate-700 block mb-0.5">História da Doença Atual (HDA):</span>
+                              <p className="text-slate-600">{recAnswers.hda}</p>
+                            </div>
+                          )}
+                          {recAnswers.hmp && (
+                            <div className="text-xs bg-slate-50 p-3 rounded-xl border border-slate-200/70">
+                              <span className="font-bold text-slate-700 block mb-0.5">História Médica Pregressa (HMP):</span>
+                              <p className="text-slate-600">{recAnswers.hmp}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                    </>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

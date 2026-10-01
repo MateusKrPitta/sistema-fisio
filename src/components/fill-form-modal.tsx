@@ -705,7 +705,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                             </div>
                           </div>
 
-                          <div className="p-6 sm:p-7 space-y-6">
+                          <div className="p-6 sm:p-7 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                             {scaleGroup.fields
                               .filter((f: CustomField) => {
                                 const labelLower = (f.label || '').toLowerCase();
@@ -726,16 +726,28 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                                 const currentVal =
                                   answers[answerKey] !== undefined ? answers[answerKey] : answers[String(f.label)];
 
+                                const isFullWidth =
+                                  f.fieldType === 'long_text' ||
+                                  f.fieldType === 'body_map' ||
+                                  f.fieldType === 'scale_0_10' ||
+                                  (f.label &&
+                                    (f.label.toLowerCase().includes('observaç') ||
+                                      f.label.toLowerCase().includes('conclus')));
+
                                 return (
-                                  <FieldRenderer
+                                  <div
                                     key={answerKey}
-                                    field={f}
-                                    value={currentVal}
-                                    onChange={(val) => setAnswers((prev) => ({ ...prev, [answerKey]: val, [String(f.label)]: val }))}
-                                    allAnswers={answers}
-                                    onAnswerChange={(key, val) => setAnswers((prev) => ({ ...prev, [key]: val }))}
-                                    index={fIdx}
-                                  />
+                                    className={isFullWidth ? 'col-span-1 md:col-span-2' : 'col-span-1'}
+                                  >
+                                    <FieldRenderer
+                                      field={f}
+                                      value={currentVal}
+                                      onChange={(val) => setAnswers((prev) => ({ ...prev, [answerKey]: val, [String(f.label)]: val }))}
+                                      allAnswers={answers}
+                                      onAnswerChange={(key, val) => setAnswers((prev) => ({ ...prev, [key]: val }))}
+                                      index={fIdx}
+                                    />
+                                  </div>
                                 );
                               })}
                           </div>

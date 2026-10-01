@@ -25,6 +25,7 @@ import {
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
 import { ImageLightbox } from '@/components/image-lightbox';
+import { InteractivePainBodyMap } from '@/components/interactive-pain-body-map';
 
 export default function PatientReportsPage() {
   const { user } = useAuth();
@@ -43,7 +44,7 @@ export default function PatientReportsPage() {
 
     Promise.all([
       api.get(`/patients/${patientId}`).catch(() => null),
-      api.get(`/patients/${patientId}/form-records`).catch(() => null),
+      api.get(`/patients/${patientId}/form-records?full=true`).catch(() => null),
     ])
       .then(([patientRes, recordsRes]) => {
         if (patientRes) setPatient(patientRes);
@@ -345,7 +346,14 @@ export default function PatientReportsPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
                         {Object.entries(r.answers || {})
-                          .filter(([key]) => key !== 'photoData' && key !== 'deviations' && key !== 'markers')
+                          .filter(
+                            ([key]) =>
+                              key !== 'photoData' &&
+                              key !== 'deviations' &&
+                              key !== 'markers' &&
+                              key !== 'evaluationType' &&
+                              key !== 'images'
+                          )
                           .map(([key, val]) => (
                             <div key={key} className="bg-white p-2.5 rounded-lg border border-slate-200">
                               <p className="text-slate-500 font-semibold text-[10px] uppercase truncate" title={fieldMap[key] || key}>
@@ -355,6 +363,18 @@ export default function PatientReportsPage() {
                             </div>
                           ))}
                       </div>
+
+                      {/* Interactive Pain Body Map in Report */}
+                      {Array.isArray(r.answers?.markers) && r.answers.markers.length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-slate-200/60">
+                          <p className="text-xs font-bold text-slate-700">Mapeamento dos Pontos de Dor:</p>
+                          <InteractivePainBodyMap
+                            markers={r.answers.markers}
+                            readOnly={true}
+                            showInstructions={false}
+                          />
+                        </div>
+                      )}
 
                       {/* Attached Evaluation Photos Gallery */}
                       {recordImages.length > 0 && (
