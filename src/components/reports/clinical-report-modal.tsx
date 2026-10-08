@@ -198,7 +198,7 @@ export function ClinicalReportModal({
                 </div>
                 <div>
                   <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                    Prontuário & Avaliações: {patient.name}
+                    Prontuário e Avaliações: {patient.name}
                   </h2>
                   <div className="flex items-center flex-wrap gap-x-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
                     <span>

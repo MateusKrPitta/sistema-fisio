@@ -277,7 +277,7 @@ export const resolveFieldInfo = (
   if (cleanKey.includes('peak flow') || cleanKey.includes('pcf') || cleanKey.includes('pico de fluxo')) {
     return {
       scaleKey: 'peak_flow',
-      scaleTitle: 'Peak Flow & Pico de Fluxo Tosse',
+      scaleTitle: 'Peak Flow e Pico de Fluxo Tosse',
       category: 'Cardiorrespiratória',
       label: rawKey,
       unit: 'L/min',
@@ -340,7 +340,7 @@ export const resolveFieldInfo = (
     return {
       scaleKey: 'berg',
       scaleTitle: 'Escala de Equilíbrio Funcional de Berg (BBS)',
-      category: 'Geriatria & Equilíbrio',
+      category: 'Geriatria e Equilíbrio',
       label,
     };
   }
@@ -444,7 +444,7 @@ export const resolveFieldInfo = (
     return {
       scaleKey: 'tug',
       scaleTitle: 'Timed Up and Go (TUG)',
-      category: 'Geriatria & Equilíbrio',
+      category: 'Geriatria e Equilíbrio',
       label,
       unit,
     };
@@ -455,7 +455,7 @@ export const resolveFieldInfo = (
     return {
       scaleKey: 'barthel',
       scaleTitle: 'Índice de Barthel (AVDs)',
-      category: 'Geriatria & Equilíbrio',
+      category: 'Geriatria e Equilíbrio',
       label: rawKey,
     };
   }
@@ -465,7 +465,7 @@ export const resolveFieldInfo = (
     return {
       scaleKey: 'postural',
       scaleTitle: 'Avaliação Postural Global',
-      category: 'Postura & Biomecânica',
+      category: 'Postura e Biomecânica',
       label: rawKey,
     };
   }

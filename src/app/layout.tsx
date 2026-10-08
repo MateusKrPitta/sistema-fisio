@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/toast-context";
 import { LayoutShell } from "@/components/layout-shell";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PwaManager } from "@/components/pwa/pwa-manager";
+import { InteractiveTour } from "@/components/interactive-tour";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "FisMovie - Portal de Fisioterapia & Gestão Clínica",
+  title: "FisMovie - Portal de Fisioterapia e Gestão Clínica",
   description: "FisMovie - Sistema web profissional para avaliação fisioterapêutica e gestão de pacientes.",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -46,6 +47,8 @@ export const metadata: Metadata = {
     apple: "/icons/apple-touch-icon.png",
   },
 };
+
+import { ModuleTutorialModal } from "@/components/module-tutorial-modal";
 
 export default function RootLayout({
   children,
@@ -64,6 +67,8 @@ export default function RootLayout({
             <ToastProvider>
               <LayoutShell>{children}</LayoutShell>
               <PwaManager />
+              <InteractiveTour />
+              <ModuleTutorialModal />
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

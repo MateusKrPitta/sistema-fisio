@@ -58,6 +58,8 @@ import { CurrencyInput, formatCurrency } from '@/components/currency-input';
 import { CustomSelect, SelectOption } from '@/components/custom-select';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+
 
 interface FinancialRecord {
   id: number;
@@ -118,9 +120,17 @@ interface PayrollItem {
 export default function FinancialPage() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const searchParams = useSearchParams();
 
   // Active Main Tab: 'overview' | 'receitas' | 'despesas' | 'payroll'
   const [activeTab, setActiveTab] = useState<'overview' | 'receitas' | 'despesas' | 'payroll'>('overview');
+
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (tabParam && ['overview', 'receitas', 'despesas', 'payroll'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [searchParams]);
 
   // Plan info
   const [userPlan, setUserPlan] = useState<string>(
@@ -542,7 +552,7 @@ export default function FinancialPage() {
       case 'salario':
         return <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-md text-[10px] font-bold">💼 Salário/Repasse</span>;
       case 'aluguel':
-        return <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md text-[10px] font-bold">🏢 Aluguel & Contas</span>;
+        return <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md text-[10px] font-bold">🏢 Aluguel e Contas</span>;
       case 'insumos':
         return <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-md text-[10px] font-bold">🩺 Insumos/Materiais</span>;
       case 'marketing':
@@ -591,20 +601,20 @@ export default function FinancialPage() {
 
   const filterCategoryOptions: SelectOption[] = [
     { value: 'all', label: 'Categoria: Todas' },
-    { value: 'salario', label: 'Salários & Repasses', icon: <Briefcase className="w-3.5 h-3.5 text-indigo-500" /> },
-    { value: 'aluguel', label: 'Aluguel & Contas', icon: <Building2 className="w-3.5 h-3.5 text-sky-500" /> },
-    { value: 'insumos', label: 'Insumos & Materiais', icon: <Stethoscope className="w-3.5 h-3.5 text-emerald-500" /> },
-    { value: 'marketing', label: 'Marketing & Software', icon: <Laptop className="w-3.5 h-3.5 text-purple-500" /> },
-    { value: 'impostos', label: 'Impostos & Taxas', icon: <Landmark className="w-3.5 h-3.5 text-amber-500" /> },
+    { value: 'salario', label: 'Salários e Repasses', icon: <Briefcase className="w-3.5 h-3.5 text-indigo-500" /> },
+    { value: 'aluguel', label: 'Aluguel e Contas', icon: <Building2 className="w-3.5 h-3.5 text-sky-500" /> },
+    { value: 'insumos', label: 'Insumos e Materiais', icon: <Stethoscope className="w-3.5 h-3.5 text-emerald-500" /> },
+    { value: 'marketing', label: 'Marketing e Software', icon: <Laptop className="w-3.5 h-3.5 text-purple-500" /> },
+    { value: 'impostos', label: 'Impostos e Taxas', icon: <Landmark className="w-3.5 h-3.5 text-amber-500" /> },
     { value: 'outros', label: 'Outras Despesas', icon: <Package className="w-3.5 h-3.5 text-slate-500" /> },
   ];
 
   const modalCategoryOptions: SelectOption[] = [
-    { value: 'salario', label: 'Salários & Repasses', sublabel: 'Equipe clínica e pró-labore', icon: <Briefcase className="w-4 h-4 text-indigo-600" /> },
-    { value: 'aluguel', label: 'Aluguel & Contas Básicas', sublabel: 'Condomínio, energia, internet e água', icon: <Building2 className="w-4 h-4 text-sky-600" /> },
-    { value: 'insumos', label: 'Insumos & Materiais Clínicos', sublabel: 'Descartáveis, luvas, agulhas e cremes', icon: <Stethoscope className="w-4 h-4 text-emerald-600" /> },
-    { value: 'marketing', label: 'Marketing & Softwares', sublabel: 'Anúncios, licenças e plataformas', icon: <Laptop className="w-4 h-4 text-purple-600" /> },
-    { value: 'impostos', label: 'Impostos, Taxas & DAS', sublabel: 'Tributos municipais/federais e taxas', icon: <Landmark className="w-4 h-4 text-amber-600" /> },
+    { value: 'salario', label: 'Salários e Repasses', sublabel: 'Equipe clínica e pró-labore', icon: <Briefcase className="w-4 h-4 text-indigo-600" /> },
+    { value: 'aluguel', label: 'Aluguel e Contas Básicas', sublabel: 'Condomínio, energia, internet e água', icon: <Building2 className="w-4 h-4 text-sky-600" /> },
+    { value: 'insumos', label: 'Insumos e Materiais Clínicos', sublabel: 'Descartáveis, luvas, agulhas e cremes', icon: <Stethoscope className="w-4 h-4 text-emerald-600" /> },
+    { value: 'marketing', label: 'Marketing e Softwares', sublabel: 'Anúncios, licenças e plataformas', icon: <Laptop className="w-4 h-4 text-purple-600" /> },
+    { value: 'impostos', label: 'Impostos, Taxas e DAS', sublabel: 'Tributos municipais/federais e taxas', icon: <Landmark className="w-4 h-4 text-amber-600" /> },
     { value: 'outros', label: 'Outras Despesas Operacionais', sublabel: 'Gastos operacionais diversos', icon: <Package className="w-4 h-4 text-slate-500" /> },
   ];
 
@@ -645,7 +655,7 @@ export default function FinancialPage() {
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-950 overflow-y-auto">
       <Header
-        title="Financeiro & Fluxo de Caixa"
+        title="Financeiro e Fluxo de Caixa"
         subtitle="Controle de receitas, saídas e fechamento de folha de pagamento"
       />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7 w-full">
@@ -654,7 +664,7 @@ export default function FinancialPage() {
           <div>
             <div className="flex items-center space-x-2.5">
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                Gestão Financeira & Caixa
+                Gestão Financeira e Caixa
               </h1>
               <span
                 className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${
@@ -698,10 +708,10 @@ export default function FinancialPage() {
         {/* Navigation Tabs */}
         <div className="flex items-center space-x-1.5 border-b border-slate-200/90 dark:border-slate-800 pb-px overflow-x-auto">
           {[
-            { id: 'overview', label: 'Visão Geral & Fluxo', icon: Layers, show: true },
+            { id: 'overview', label: 'Visão Geral e Fluxo', icon: Layers, show: true },
             { id: 'receitas', label: 'Entradas (Receitas)', icon: TrendingUp, show: true },
             { id: 'despesas', label: 'Saídas (Despesas)', icon: TrendingDown, show: isPlanAllowed },
-            { id: 'payroll', label: 'Folha & Repasses de Equipe', icon: Wallet, show: isPlanAllowed },
+            { id: 'payroll', label: 'Folha e Repasses', icon: Wallet, show: isPlanAllowed },
           ]
             .filter((tab) => tab.show)
             .map((tab) => {
@@ -734,10 +744,10 @@ export default function FinancialPage() {
             <div className="max-w-2xl space-y-4 relative z-10">
               <div className="inline-flex items-center space-x-2 bg-amber-400/20 text-amber-300 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Exclusivo para Planos Prata & Ouro</span>
+                <span>Exclusivo para Planos Prata e Ouro</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Controle Completo de Saídas, Despesas & Folha de Pagamento
+                Controle Completo de Saídas, Despesas e Folha de Pagamento
               </h2>
               <p className="text-sm text-slate-300 leading-relaxed">
                 Faça o upgrade da sua clínica para os planos **Prata** ou **Ouro** e desbloqueie o gerenciamento de contas a pagar, comissões automáticas por sessão de atendimento, fechamento de folha de secretárias e fisioterapeutas em 1 clique e gráficos de lucratividade.
@@ -828,7 +838,7 @@ export default function FinancialPage() {
                   ) : (
                     <CheckCircle2 className="w-4 h-4 text-white" />
                   )}
-                  <span>Fechar Folha & Lançar no Financeiro</span>
+                  <span>Fechar Folha e Lançar no Financeiro</span>
                 </button>
               </div>
             </div>
@@ -1470,7 +1480,7 @@ export default function FinancialPage() {
                       <tr className="bg-slate-50/70 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         <th className="py-4 px-6">Data</th>
                         <th className="py-4 px-4">Descrição / Origem</th>
-                        <th className="py-4 px-4">Tipo & Categoria</th>
+                        <th className="py-4 px-4">Tipo e Categoria</th>
                         <th className="py-4 px-4">Forma de Pagamento</th>
                         <th className="py-4 px-4">Valor</th>
                         <th className="py-4 px-4">Status</th>
@@ -1808,7 +1818,7 @@ export default function FinancialPage() {
                     }`}
                   >
                     {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                    <span>Salvar Lançamento</span>
+                    <span>{submitting ? 'Salvando...' : 'Salvar'}</span>
                   </button>
                 </div>
               </form>

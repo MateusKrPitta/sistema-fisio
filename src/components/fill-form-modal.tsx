@@ -599,7 +599,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                             : `${formRecords.length + 1}ª Reavaliação Clínica do Paciente`}
                         </h4>
                         <p className={`text-xs ${editingRecord ? 'text-amber-800' : 'text-blue-700'} mt-0.5`}>
-                          Adicione as escalas desejadas, preencha os testes e clique em &quot;Salvar Avaliação&quot;.
+                          Adicione as escalas desejadas, preencha os testes e clique em &quot;Salvar&quot;.
                         </p>
                       </div>
                     </div>
@@ -808,7 +808,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    <span>Salvar Avaliação</span>
+                    <span>Salvar</span>
                   </>
                 )}
               </button>

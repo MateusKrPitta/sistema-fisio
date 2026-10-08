@@ -410,7 +410,7 @@ export default function CustomModulesPage() {
       { id: Date.now() + 1, label: 'Queixa Principal (QP) / Motivo da Consulta', fieldType: 'long_text', isRequired: false, helpText: 'Motivo principal da procura pelo atendimento fisioterapêutico' },
       { id: Date.now() + 2, label: 'História Médica Pregressa (HMP)', fieldType: 'long_text', isRequired: false, helpText: 'Cirurgias, comorbidades (HAS, DM), medicamentos em uso e internações' },
       { id: Date.now() + 3, label: 'Histórico Familiar (HF)', fieldType: 'long_text', isRequired: false, helpText: 'Histórico de doenças crônicas ou hereditárias na família' },
-      { id: Date.now() + 4, label: 'Observações Gerais & Diagnóstico Funcional', fieldType: 'long_text', isRequired: false, helpText: 'Parecer clínico inicial e objetivos terapêuticos' }
+      { id: Date.now() + 4, label: 'Observações Gerais e Diagnóstico Funcional', fieldType: 'long_text', isRequired: false, helpText: 'Parecer clínico inicial e objetivos terapêuticos' }
     ];
   };
 
@@ -1581,10 +1581,10 @@ export default function CustomModulesPage() {
                         }}
                         options={[
                           { value: 'Geral', label: 'Geral' },
-                          { value: 'Postura & Biomecânica', label: 'Postura & Biomecânica' },
+                          { value: 'Postura e Biomecânica', label: 'Postura e Biomecânica' },
                           { value: 'Controle de Tronco', label: 'Controle de Tronco' },
                           { value: 'Neurologia', label: 'Neurologia' },
-                          { value: 'Geriatria & Equilíbrio', label: 'Geriatria & Equilíbrio' },
+                          { value: 'Geriatria e Equilíbrio', label: 'Geriatria e Equilíbrio' },
                           { value: 'Cardiorrespiratória', label: 'Cardiorrespiratória' },
                           { value: 'Composição Corporal', label: 'Composição Corporal' },
                           { value: 'Membros Superiores e Inferiores', label: 'Membros Superiores e Inferiores' },
@@ -1617,7 +1617,7 @@ export default function CustomModulesPage() {
                             { label: 'Qualidade de Vida (SF-36)', action: loadSF36Preset },
                             { label: 'Qualidade do Sono (PSQI)', action: loadPSQIPreset }
                           ],
-                          'Postura & Biomecânica': [
+                          'Postura e Biomecânica': [
                             { label: 'Avaliação Postural (Anterior, Posterior e Lateral)', action: loadPosturePreset }
                           ],
                           'Controle de Tronco': [
@@ -1627,7 +1627,7 @@ export default function CustomModulesPage() {
                             { label: 'Escala de Glasgow', action: loadGlasgowScalePreset },
                             { label: 'Escala de Ashworth', action: loadAshworthScalePreset }
                           ],
-                          'Geriatria & Equilíbrio': [
+                          'Geriatria e Equilíbrio': [
                             { label: 'Escala de Berg', action: loadBergScalePreset },
                             { label: 'Teste TUG (Timed Up and Go)', action: loadTUGScalePreset },
                             { label: 'Índice de Barthel', action: loadBarthelScalePreset }
@@ -1827,7 +1827,7 @@ export default function CustomModulesPage() {
                       className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-xs flex items-center space-x-1.5"
                     >
                       <Check className="w-4 h-4" />
-                      <span>Salvar Avaliação</span>
+                      <span>Salvar</span>
                     </button>
                   </div>
                 </form>
@@ -2248,7 +2248,7 @@ export default function CustomModulesPage() {
                     ) : (
                       <Check className="w-4 h-4" />
                     )}
-                    <span>Salvar Alterações</span>
+                    <span>{savingEvolution ? 'Salvando...' : 'Salvar'}</span>
                   </button>
                 </div>
               </form>

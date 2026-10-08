@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FisMovie - Fisioterapia & Gestão Clínica",
+    name: "FisMovie - Fisioterapia e Gestão Clínica",
     short_name: "FisMovie",
     description: "Sistema profissional para avaliação fisioterapêutica, agendamentos e prontuário de pacientes.",
     start_url: "/",

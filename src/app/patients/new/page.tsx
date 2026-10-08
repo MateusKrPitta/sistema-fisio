@@ -336,7 +336,7 @@ export default function NewPatientPage() {
           <div className="space-y-4">
             <h3 className="font-bold text-slate-800 text-base sm:text-lg border-b border-slate-100 pb-3 flex items-center space-x-2">
               <User className="w-5 h-5 text-blue-600" />
-              <span>Dados Pessoais & Contato</span>
+              <span>Dados Pessoais e Contato</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -717,7 +717,7 @@ export default function NewPatientPage() {
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Salvar Paciente & Lançar na Agenda</span>
+                  <span>Salvar</span>
                 </>
               )}
             </button>

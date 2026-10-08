@@ -175,7 +175,7 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
           />
           
           <RichTextEditor 
-            label="Observações Gerais & Diagnóstico Funcional:" 
+            label="Observações Gerais e Diagnóstico Funcional:" 
             value={formData.obs} 
             placeholder="Ex: Paciente orientado quanto à ergonomia e alívio de sobrecarga..."
             onChange={(val) => handleChange('obs', val)} 
@@ -198,7 +198,7 @@ export function AnamneseEvaluation({ patientId, recordDate, onSuccess }: { patie
             className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-sm transition-all cursor-pointer"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span>Salvar Avaliação</span>
+            <span>{saving ? 'Salvando...' : 'Salvar'}</span>
           </button>
         </div>
       </div>

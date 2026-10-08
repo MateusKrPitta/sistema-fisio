@@ -61,3 +61,18 @@ export function maskCep(value: string): string {
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
+export function maskCurrency(value: string | number): string {
+  if (value === undefined || value === null || value === '') return '';
+  const digits = String(value).replace(/\D/g, '');
+  if (!digits) return '';
+  const numberValue = Number(digits) / 100;
+  return numberValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export function parseCurrencyToNumber(value: string | number): number {
+  if (typeof value === 'number') return value;
+  if (!value) return 0;
+  const clean = String(value).replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+  return parseFloat(clean) || 0;
+}
+

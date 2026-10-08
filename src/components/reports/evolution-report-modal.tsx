@@ -26,6 +26,7 @@ import {
   EvolutionChartPoint,
   EvolutionSessionItem,
 } from '@/lib/pdf-report-generator';
+import { CustomSelect } from '@/components/custom-select';
 
 interface EvolutionReportModalProps {
   isOpen: boolean;
@@ -308,20 +309,22 @@ export function EvolutionReportModal({
                 <span>Paciente</span>
               </label>
               {patientsList.length > 0 && !initialPatient ? (
-                <select
+                <CustomSelect
                   value={selectedPatient?.id || ''}
-                  onChange={(e) => {
-                    const found = patientsList.find((p) => String(p.id) === e.target.value);
+                  onChange={(val) => {
+                    const found = patientsList.find((p) => String(p.id) === String(val));
                     if (found) setSelectedPatient(found);
                   }}
-                  className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs"
-                >
-                  {patientsList.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} (CPF: {p.cpf})
-                    </option>
-                  ))}
-                </select>
+                  options={patientsList.map((p) => ({
+                    value: p.id,
+                    label: p.name,
+                    sublabel: p.cpf ? `CPF: ${p.cpf}` : undefined,
+                    avatarLetter: p.name.charAt(0).toUpperCase(),
+                  }))}
+                  placeholder="Selecione um paciente..."
+                  searchable={true}
+                  searchPlaceholder="Buscar paciente por nome..."
+                />
               ) : (
                 <div className="bg-white dark:bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs">
                   <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
@@ -385,7 +388,7 @@ export function EvolutionReportModal({
                     tone === 'patient_friendly' ? 'bg-rose-600 text-white shadow-2xs' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
                   }`}
                 >
-                  Paciente & Família
+                  Paciente e Família
                 </button>
                 <button
                   type="button"
@@ -394,7 +397,7 @@ export function EvolutionReportModal({
                     tone === 'goals' ? 'bg-amber-600 text-white shadow-2xs' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
                   }`}
                 >
-                  Metas & Condutas
+                  Metas e Condutas
                 </button>
               </div>
             </div>

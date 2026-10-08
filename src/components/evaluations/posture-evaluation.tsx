@@ -112,7 +112,7 @@ export function PostureEvaluation({ patientId, recordDate, onSuccess }: { patien
             <UserCheck className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-800">Avaliação Postural & Fotometria</h3>
+            <h3 className="text-base font-bold text-slate-800">Avaliação Postural e Fotometria</h3>
             <p className="text-xs text-slate-500">Mapeamento biomecânico e registro de desvios e alinhamentos corporais</p>
           </div>
         </div>
@@ -182,7 +182,7 @@ export function PostureEvaluation({ patientId, recordDate, onSuccess }: { patien
             className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-sm transition-all cursor-pointer"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span>Salvar Avaliação</span>
+            <span>{saving ? 'Salvando...' : 'Salvar'}</span>
           </button>
         </div>
       </div>

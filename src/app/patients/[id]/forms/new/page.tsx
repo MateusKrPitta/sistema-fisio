@@ -237,10 +237,10 @@ export default function NewPatientFormRecordPage() {
 
   const allCategories = [
     'Todas',
-    'Postura & Biomecânica',
+    'Postura e Biomecânica',
     'Controle de Tronco',
     'Neurologia',
-    'Geriatria & Equilíbrio',
+    'Geriatria e Equilíbrio',
     'Cardiorrespiratória',
     'Composição Corporal',
     'Membros Superiores e Inferiores',
@@ -266,10 +266,10 @@ export default function NewPatientFormRecordPage() {
     },
     {
       value: 'standard_posture',
-      label: 'Avaliação Postural & Fotometria',
+      label: 'Avaliação Postural e Fotometria',
       sublabel: 'Checklist de desvios anatômicos e registro por fotos',
       badge: 'Modelo Clínico',
-      category: 'Postura & Biomecânica',
+      category: 'Postura e Biomecânica',
     },
     ...templates.map((t) => ({
       value: String(t.id),
@@ -742,7 +742,7 @@ export default function NewPatientFormRecordPage() {
                     className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md transition-all cursor-pointer"
                   >
                     {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                    <span>Salvar Avaliação</span>
+                    <span>{saving ? 'Salvando...' : 'Salvar'}</span>
                   </button>
                 </div>
               </form>

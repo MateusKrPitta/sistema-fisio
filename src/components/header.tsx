@@ -11,7 +11,12 @@ import {
   Building2,
   Mail,
   Award,
-  ShieldCheck
+  ShieldCheck,
+  LifeBuoy,
+  Compass,
+  HelpCircle,
+  CreditCard,
+  Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -110,7 +115,22 @@ export function Header({
         </div>
       </div>
 
-      <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
+      <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+        {/* Module Guide Help Button */}
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('open-module-tutorial'));
+            }
+          }}
+          title="Guia e Recursos desta Tela"
+          className="p-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors relative flex items-center justify-center cursor-pointer"
+          aria-label="Abrir Guia desta Tela"
+        >
+          <HelpCircle className="w-5 h-5 text-blue-600 dark:text-cyan-400" />
+        </button>
+
         <ThemeToggle />
 
         {/* Birthday Notification Button */}
@@ -135,6 +155,7 @@ export function Header({
         {shouldShowNewPatient && (
           <Link
             href="/patients/new"
+            data-tour="header-new-patient"
             prefetch={false}
             className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow-sm transition-all duration-200 shrink-0 cursor-pointer"
           >
@@ -152,8 +173,9 @@ export function Header({
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
+            data-tour="header-user-menu"
             className="flex items-center space-x-2.5 text-sm p-1.5 -mr-1.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700 select-none group"
-            title="Minha Conta & Opções"
+            title="Minha Conta e Opções"
           >
             <div className="text-right hidden md:block">
               <p className="font-bold text-slate-800 dark:text-slate-100 truncate max-w-[160px] text-xs sm:text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -243,17 +265,78 @@ export function Header({
                   </div>
                 </div>
 
-                {/* Logout Button Action */}
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl transition-all border border-rose-200/80 dark:border-rose-900/50 cursor-pointer shadow-2xs hover:shadow-xs active:scale-98"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sair da Conta (Logout)</span>
-                </button>
+                {/* Action Links */}
+                <div className="space-y-2">
+                  {/* Painel Geral (Apenas para Super Administrador Master) */}
+                  {user?.role === 'superadmin' && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <Building2 className="w-4 h-4 text-purple-500 shrink-0" />
+                        <span>Painel Master do Sistema</span>
+                      </div>
+                      <span className="text-[10px] text-purple-600 dark:text-purple-400 font-bold uppercase">Admin</span>
+                    </Link>
+                  )}
+
+                  {/* Minha Equipe (Apenas para Administrador de Clínica) */}
+                  {user?.role === 'clinic_admin' && (
+                    <Link
+                      href="/team"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <Users className="w-4 h-4 text-indigo-500 shrink-0" />
+                        <span>Minha Equipe</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-medium">Gestão</span>
+                    </Link>
+                  )}
+
+                  {/* Minha Assinatura (Apenas para Administrador de Clínica) */}
+                  {user?.role === 'clinic_admin' && (
+                    <Link
+                      href="/subscription"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <CreditCard className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Minha Assinatura</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase">Plano</span>
+                    </Link>
+                  )}
+
+                  {/* Support Link Button */}
+                  <Link
+                    href="/support"
+                    onClick={() => setDropdownOpen(false)}
+                    className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <LifeBuoy className="w-4 h-4 text-blue-500 shrink-0" />
+                      <span>Central de Suporte e Ajuda</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium">Suporte</span>
+                  </Link>
+
+                  {/* Logout Button Action */}
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      logout();
+                    }}
+                    className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl transition-all border border-rose-200/80 dark:border-rose-900/50 cursor-pointer shadow-2xs hover:shadow-xs active:scale-98 mt-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sair da Conta (Logout)</span>
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

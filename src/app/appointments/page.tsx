@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Header } from '@/components/header';
 import { api } from '@/lib/api';
 import Link from 'next/link';
+import { CustomSelect, SelectOption } from '@/components/custom-select';
 import {
   Calendar,
   Clock,
@@ -51,7 +52,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/toast-context';
-import { CustomSelect } from '@/components/custom-select';
 import { CalendarViews, CalendarEvent } from '@/components/calendar/CalendarViews';
 
 const QUICK_CLINICAL_CHIPS = [
@@ -135,6 +135,7 @@ interface PatientOption {
   fullName?: string;
   name?: string;
   phone?: string;
+  cpf?: string;
 }
 
 // Custom Styled Patient Selector Component
@@ -147,100 +148,25 @@ function PatientSelect({
   selected: string;
   onSelect: (name: string) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const filtered = patients.filter((p) => {
-    const pName = p.fullName || p.name || '';
-    return pName.toLowerCase().includes(search.toLowerCase());
+  const options: SelectOption[] = patients.map((p) => {
+    const pName = p.fullName || p.name || `Paciente #${p.id}`;
+    return {
+      value: pName,
+      label: pName,
+      sublabel: p.cpf ? `CPF: ${p.cpf}` : undefined,
+      avatarLetter: pName.charAt(0).toUpperCase(),
+    };
   });
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none flex items-center justify-between transition-all shadow-xs"
-      >
-        {selected ? (
-          <div className="flex items-center space-x-2.5 truncate">
-            <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 font-bold text-xs flex items-center justify-center shrink-0 border border-blue-200">
-              {selected.charAt(0).toUpperCase()}
-            </div>
-            <span className="font-semibold text-slate-800 truncate">{selected}</span>
-          </div>
-        ) : (
-          <span className="text-slate-400">Selecione o paciente cadastrado...</span>
-        )}
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-blue-600' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 space-y-2 max-h-64 flex flex-col">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar paciente por nome..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-              autoFocus
-            />
-          </div>
-
-          <div className="overflow-y-auto flex-1 space-y-1">
-            {filtered.length === 0 ? (
-              <div className="p-3 text-xs text-center text-slate-400">Nenhum paciente encontrado</div>
-            ) : (
-              filtered.map((p) => {
-                const pName = p.fullName || p.name || `Paciente #${p.id}`;
-                const isSelected = selected === pName;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => {
-                      onSelect(pName);
-                      setIsOpen(false);
-                      setSearch('');
-                    }}
-                    className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between rounded-xl transition-colors ${
-                      isSelected
-                        ? 'bg-blue-600 text-white font-semibold shadow-sm'
-                        : 'text-slate-700 hover:bg-slate-100/80'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2.5 truncate">
-                      <div
-                        className={`w-6 h-6 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
-                          isSelected ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-600 border border-blue-100'
-                        }`}
-                      >
-                        {pName.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="truncate">{pName}</span>
-                    </div>
-                    {isSelected && <Check className="w-4 h-4 text-white shrink-0 ml-2" />}
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+    <CustomSelect
+      value={selected}
+      onChange={(val) => onSelect(String(val))}
+      options={options}
+      placeholder="Selecione o paciente cadastrado..."
+      searchable={true}
+      searchPlaceholder="Buscar paciente por nome..."
+    />
   );
 }
 
@@ -842,7 +768,7 @@ export default function AppointmentsPage() {
     api.put(`/appointments/${selectedApp.id}`, { status: statusApiValue }).catch(() => {});
 
     toast({
-      title: 'Status & Financeiro Atualizados!',
+      title: 'Status e Financeiro Atualizados!',
       description: `Atendimento de ${selectedApp.patientName} alterado para "${newStatus}".`,
       type: 'info',
     });
@@ -1138,8 +1064,8 @@ export default function AppointmentsPage() {
 
       <main className="flex-1 p-3 sm:p-4 pb-20 space-y-4 overflow-y-auto max-w-full">
         {/* Header Action & Filter Bar */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
-          <div className="flex flex-wrap items-center gap-3 flex-1">
+        <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 w-full">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
             {/* View Mode Toggle Switch */}
             <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center space-x-1 shrink-0 border border-slate-200/80 dark:border-slate-700">
               {[
@@ -1168,7 +1094,7 @@ export default function AppointmentsPage() {
 
             {/* Fisioterapeuta Filter */}
             {uniquePhysios.length > 0 && (
-              <div className="shrink-0 min-w-[200px]">
+              <div className="shrink-0 w-44 sm:w-48 min-w-[160px]">
                 <CustomSelect
                   size="sm"
                   value={selectedPhysioFilter}
@@ -1184,7 +1110,7 @@ export default function AppointmentsPage() {
               </div>
             )}
 
-            <div className="relative flex-1 min-w-[200px] max-w-xs">
+            <div data-tour="appointments-search" className="relative flex-1 min-w-[140px] max-w-xs">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
@@ -1226,8 +1152,9 @@ export default function AppointmentsPage() {
 
           <button
             type="button"
+            data-tour="appointments-new-btn"
             onClick={openNewAppointmentModal}
-            className="w-full md:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all shrink-0 cursor-pointer"
+            className="w-full xl:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all shrink-0 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Agendar Novo Atendimento</span>
@@ -1284,14 +1211,16 @@ export default function AppointmentsPage() {
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
           </div>
         ) : (
-          <CalendarViews
-            events={filteredAppointments as CalendarEvent[]}
-            viewMode={viewMode}
-            currentDate={currentDate}
-            onDateChange={setCurrentDate}
-            onEventClick={(ev: any) => openDetails(ev)}
-            onEventReschedule={handleEventReschedule}
-          />
+          <div data-tour="appointments-calendar-grid">
+            <CalendarViews
+              events={filteredAppointments as CalendarEvent[]}
+              viewMode={viewMode}
+              currentDate={currentDate}
+              onDateChange={setCurrentDate}
+              onEventClick={(ev: any) => openDetails(ev)}
+              onEventReschedule={handleEventReschedule}
+            />
+          </div>
         )}
 
         {/* Modal Agendamento */}
@@ -1724,7 +1653,7 @@ export default function AppointmentsPage() {
                             type="submit"
                             className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg shadow-xs cursor-pointer"
                           >
-                            Salvar Alterações
+                            Salvar
                           </button>
                         </div>
                       </form>
@@ -1989,7 +1918,7 @@ export default function AppointmentsPage() {
                           ) : (
                             <>
                               <Save className="w-4 h-4" />
-                              <span>Salvar e Concluir Evolução</span>
+                              <span>Salvar</span>
                             </>
                           )}
                         </button>

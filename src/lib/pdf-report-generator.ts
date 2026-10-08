@@ -58,7 +58,7 @@ export function generateClinicalReportPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(255, 255, 255);
-  doc.text('FISIOMOVIE • GESTÃO & AVALIAÇÃO CLÍNICA', margin, 11);
+  doc.text('FISIOMOVIE • GESTÃO E AVALIAÇÃO CLÍNICA', margin, 11);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
@@ -388,7 +388,7 @@ export function generateClinicalReportPdf({
   if (hasMultipleTones && aiToneReports) {
     if (aiToneReports.patient_friendly?.trim()) {
       renderOpinionBox(
-        'PARECER PARA O PACIENTE & FAMÍLIA',
+        'PARECER PARA O PACIENTE E FAMÍLIA',
         aiToneReports.patient_friendly,
         [225, 29, 72] // Rose
       );
@@ -402,7 +402,7 @@ export function generateClinicalReportPdf({
     }
     if (aiToneReports.therapeutic_goals?.trim()) {
       renderOpinionBox(
-        'METAS TERAPÊUTICAS & CONDUTA CLÍNICA',
+        'METAS TERAPÊUTICAS E CONDUTA CLÍNICA',
         aiToneReports.therapeutic_goals,
         [217, 119, 6] // Amber
       );
@@ -509,7 +509,7 @@ export function generateEvolutionReportPdf({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(148, 163, 184); // Slate 400
-  doc.text('Relatório Consolidado de Evolução Clínica & Análise IA', margin, 18);
+  doc.text('Relatório Consolidado de Evolução Clínica e Análise IA', margin, 18);
 
   const emissionDate = new Date().toLocaleDateString('pt-BR');
   doc.setFontSize(8);
@@ -558,7 +558,7 @@ export function generateEvolutionReportPdf({
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(15, 23, 42);
-    doc.text('GRÁFICO DE EVOLUÇÃO TEMPORAL (EVA & RECUPERAÇÃO FUNCIONAL)', chartX + 4, chartY + 6);
+    doc.text('GRÁFICO DE EVOLUÇÃO TEMPORAL (EVA E RECUPERAÇÃO FUNCIONAL)', chartX + 4, chartY + 6);
 
     // Legend
     doc.setFont('helvetica', 'bold');
@@ -720,7 +720,7 @@ export function generateEvolutionReportPdf({
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(30, 64, 175); // Blue 800
-    doc.text('CONDUTA & PRÓXIMOS PASSOS', colBX + 3, currentY + 5.5);
+    doc.text('CONDUTA E PRÓXIMOS PASSOS', colBX + 3, currentY + 5.5);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
@@ -771,7 +771,7 @@ export function generateEvolutionReportPdf({
 
     autoTable(doc, {
       startY: currentY,
-      head: [['Data', 'Dor (EVA)', 'Anotações & Condutas da Sessão']],
+      head: [['Data', 'Dor (EVA)', 'Anotações e Condutas da Sessão']],
       body: tableRows,
       theme: 'grid',
       headStyles: {

@@ -477,7 +477,7 @@ export default function FormTemplatesPage() {
                       className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md shadow-blue-500/20 flex items-center space-x-1.5 cursor-pointer transition-all"
                     >
                       <Check className="w-4 h-4" />
-                      <span>Salvar Avaliação</span>
+                      <span>Salvar</span>
                     </button>
                   </div>
                 </form>

@@ -34,7 +34,8 @@ import {
   UploadCloud,
   ChevronLeft,
   ChevronRight,
-  Maximize2
+  Maximize2,
+  Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/toast-context';
@@ -197,6 +198,31 @@ export default function NewEvolutionPage() {
     }
   };
 
+  const handleCopyPreviousEvolution = (notesHtml: string) => {
+    if (!notesHtml) return;
+
+    if (editorRef.current) {
+      editorRef.current.innerHTML = notesHtml;
+      setEvolutionNotes(notesHtml);
+      editorRef.current.focus();
+    }
+
+    try {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = notesHtml;
+      const plainText = tempDiv.textContent || tempDiv.innerText || '';
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(plainText.trim()).catch(() => {});
+      }
+    } catch {}
+
+    toast({
+      title: 'Copiado',
+      description: 'Evolução anterior copiada para o formulário!',
+      type: 'success',
+    });
+  };
+
   // Image handling
   const handleFilesSelected = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -329,14 +355,26 @@ export default function NewEvolutionPage() {
           </button>
 
           {previousEvolutions.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowHistory(!showHistory)}
-              className="inline-flex items-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer w-fit"
-            >
-              <History className="w-4 h-4" />
-              <span>{showHistory ? 'Ocultar Histórico' : `Ver Histórico de Evoluções (${previousEvolutions.length})`}</span>
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => handleCopyPreviousEvolution(previousEvolutions[0].notes)}
+                className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                title="Copiar texto da última evolução realizada para o formulário"
+              >
+                <Copy className="w-4 h-4" />
+                <span>Copia</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowHistory(!showHistory)}
+                className="inline-flex items-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer w-fit"
+              >
+                <History className="w-4 h-4" />
+                <span>{showHistory ? 'Ocultar Histórico' : `Ver Histórico de Evoluções (${previousEvolutions.length})`}</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -599,7 +637,7 @@ export default function NewEvolutionPage() {
                   className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-8 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all cursor-pointer"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  <span>Salvar Evolução</span>
+                  <span>{saving ? 'Salvando...' : 'Salvar'}</span>
                 </button>
               </div>
             </div>
@@ -631,7 +669,20 @@ export default function NewEvolutionPage() {
                               <Calendar className="w-3.5 h-3.5 text-slate-400" />
                               {app.date ? app.date.split('T')[0].split('-').reverse().join('/') : 'Data não informada'}
                             </span>
-                            <span className="text-slate-400 font-mono">{app.startTime || ''}</span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-slate-400 font-mono">{app.startTime || ''}</span>
+                              {app.notes && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyPreviousEvolution(app.notes)}
+                                  className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold border border-blue-200 transition-all cursor-pointer shadow-2xs"
+                                  title="Copiar anotações desta evolução para o formulário"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>Copia</span>
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           {app.notes && (

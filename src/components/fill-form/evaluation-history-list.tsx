@@ -1371,7 +1371,7 @@ export function EvaluationHistoryList({
                                           Editando respostas de: {scale.title}
                                         </span>
                                         <span className="text-[11px] text-blue-700">
-                                          Altere os valores e clique em Salvar Escala abaixo.
+                                          Altere os valores e clique em Salvar abaixo.
                                         </span>
                                       </div>
 
@@ -1460,7 +1460,7 @@ export function EvaluationHistoryList({
                                           ) : (
                                             <>
                                               <Save className="w-3.5 h-3.5" />
-                                              <span>Salvar Escala</span>
+                                              <span>Salvar</span>
                                             </>
                                           )}
                                         </button>

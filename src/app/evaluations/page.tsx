@@ -107,7 +107,7 @@ export default function AllEvaluationsPage() {
       <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
         {/* Action & Filter Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <div className="relative w-full sm:w-80 md:w-96">
+          <div data-tour="evaluations-search" className="relative w-full sm:w-80 md:w-96">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -123,6 +123,7 @@ export default function AllEvaluationsPage() {
 
           <Link
             href="/patients"
+            data-tour="evaluations-new-btn"
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all shrink-0 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
@@ -145,7 +146,7 @@ export default function AllEvaluationsPage() {
             </p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden flex flex-col">
+          <div data-tour="evaluations-table" className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden flex flex-col">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[650px]">
                 <thead>

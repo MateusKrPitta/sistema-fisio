@@ -187,7 +187,7 @@ export function PainMapEvaluation({
             className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-sm transition-all cursor-pointer hover:shadow-md"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span>Salvar Avaliação de Dor</span>
+            <span>{saving ? 'Salvando...' : 'Salvar'}</span>
           </button>
         </div>
       </div>

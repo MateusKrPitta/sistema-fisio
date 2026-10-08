@@ -222,7 +222,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 text-base sm:text-lg">Plano de Atendimento & Agenda</h3>
+                <h3 className="font-bold text-slate-800 text-base sm:text-lg">Plano de Atendimento e Agenda</h3>
                 <p className="text-xs text-slate-500">Sessões programadas e histórico de horários do paciente</p>
               </div>
             </div>

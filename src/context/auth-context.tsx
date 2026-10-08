@@ -16,6 +16,12 @@ export interface CompanyInfo {
   plan?: 'bronze' | 'silver' | 'gold';
   maxPhysios?: number | null;
   maxSecretaries?: number | null;
+  subscriptionStatus?: 'trial' | 'active' | 'past_due' | 'suspended' | 'cancelled' | 'canceled' | 'exempt';
+  dueDay?: number | null;
+  monthlyPrice?: number | null;
+  trialEndsAt?: string | null;
+  nextBillingDate?: string | null;
+  lastPaymentDate?: string | null;
 }
 
 export interface User {

@@ -28,10 +28,40 @@ import {
   Layers,
   Sparkles,
   Eye,
-  EyeOff
+  EyeOff,
+  DollarSign,
+  CreditCard,
+  Settings,
+  AlertTriangle,
+  Clock,
+  Zap,
+  QrCode,
+  ChevronDown,
+  Plus,
+  Check,
+  Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { maskPhone, maskCpfCnpj, maskCnpj, maskCrefito } from '@/lib/masks';
+import { maskPhone, maskCpfCnpj, maskCnpj, maskCrefito, maskCurrency, parseCurrencyToNumber } from '@/lib/masks';
+import { SubscriptionsTab } from '@/components/admin/subscriptions-tab';
+import { MercadoPagoSettingsTab } from '@/components/admin/mercadopago-settings-tab';
+import { CustomSelect, SelectOption } from '@/components/custom-select';
+
+const invoiceStatusOptions: SelectOption[] = [
+  { value: 'pending', label: 'Pendente', colorDot: 'bg-amber-500' },
+  { value: 'paid', label: 'Pago', colorDot: 'bg-emerald-500' },
+  { value: 'overdue', label: 'Atrasado', colorDot: 'bg-rose-500' },
+  { value: 'canceled', label: 'Cancelado', colorDot: 'bg-slate-400' },
+];
+
+const subscriptionStatusOptions: SelectOption[] = [
+  { value: 'exempt', label: '👑 Isenta de Cobrança', sublabel: 'Cortesia / Vitalícia / VIP', colorDot: 'bg-purple-500' },
+  { value: 'trial', label: 'Em Teste (Trial)', sublabel: 'Período gratuito de avaliação', colorDot: 'bg-blue-500' },
+  { value: 'active', label: 'Ativa', sublabel: 'Pagamento em dia', colorDot: 'bg-emerald-500' },
+  { value: 'past_due', label: 'Atrasada', sublabel: 'Aguardando pagamento', colorDot: 'bg-rose-500' },
+  { value: 'suspended', label: 'Suspensa', sublabel: 'Acesso bloqueado', colorDot: 'bg-red-600' },
+  { value: 'canceled', label: 'Cancelada', sublabel: 'Contrato cancelado', colorDot: 'bg-slate-400' },
+];
 
 interface InitialPhysio {
   fullName: string;
@@ -62,6 +92,13 @@ interface CompanyWithStats extends CompanyInfo {
   users?: TeamMember[];
   usersCount?: number;
   patientsCount?: number;
+  subscriptionStatus?: 'trial' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'exempt';
+  trialEndsAt?: string | null;
+  dueDay?: number | null;
+  monthlyPrice?: number | null;
+  nextBillingDate?: string | null;
+  lastPaymentDate?: string | null;
+  subscriptionInvoices?: any[];
   $extras?: {
     users_count?: number;
     patients_count?: number;
@@ -72,6 +109,9 @@ interface CompanyWithStats extends CompanyInfo {
 export default function AdminCompaniesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Main Page Tabs: companies | subscriptions | settings
+  const [mainTab, setMainTab] = useState<'companies' | 'subscriptions' | 'settings'>('companies');
 
   const [companies, setCompanies] = useState<CompanyWithStats[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +125,7 @@ export default function AdminCompaniesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingCompany, setEditingCompany] = useState<CompanyWithStats | null>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'team'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'team' | 'billing'>('info');
 
   // Form State - Company
   const [companyName, setCompanyName] = useState('');
@@ -99,6 +139,17 @@ export default function AdminCompaniesPage() {
   const [plan, setPlan] = useState<'bronze' | 'silver' | 'gold'>('bronze');
   const [maxPhysios, setMaxPhysios] = useState<string>('1');
   const [maxSecretaries, setMaxSecretaries] = useState<string>('0');
+
+  // Form State - Subscription & Billing
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'trial' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'exempt'>('trial');
+  const [dueDay, setDueDay] = useState<string>('10');
+  const [monthlyPrice, setMonthlyPrice] = useState<string>('99.00');
+  const [trialEndsAt, setTrialEndsAt] = useState<string>('');
+  const [companyInvoices, setCompanyInvoices] = useState<any[]>([]);
+  const [updatingInvoiceId, setUpdatingInvoiceId] = useState<number | null>(null);
+  const [statusModalInvoice, setStatusModalInvoice] = useState<any | null>(null);
+  const [newInvoiceStatus, setNewInvoiceStatus] = useState<string>('pending');
+  const [savingInvoiceStatus, setSavingInvoiceStatus] = useState(false);
 
   // Initial Admin Account Form (When creating new company)
   const [adminName, setAdminName] = useState('');
@@ -199,6 +250,11 @@ export default function AdminCompaniesPage() {
     setPlan('bronze');
     setMaxPhysios('1');
     setMaxSecretaries('0');
+    setSubscriptionStatus('trial');
+    setDueDay('10');
+    setMonthlyPrice('99,00');
+    setTrialEndsAt('');
+    setCompanyInvoices([]);
     setAdminName('');
     setAdminEmail('');
     setAdminPassword('');
@@ -216,7 +272,7 @@ export default function AdminCompaniesPage() {
     setModalOpen(true);
   };
 
-  const handleOpenEditModal = async (comp: CompanyWithStats, tab: 'info' | 'team' = 'info') => {
+  const handleOpenEditModal = async (comp: CompanyWithStats, tab: 'info' | 'team' | 'billing' = 'info') => {
     if (!comp?.id) return;
     setEditingCompany(comp);
     setActiveTab(tab);
@@ -231,6 +287,11 @@ export default function AdminCompaniesPage() {
     setPlan(comp.plan || 'bronze');
     setMaxPhysios(comp.maxPhysios === null ? '' : String(comp.maxPhysios ?? 1));
     setMaxSecretaries(comp.maxSecretaries === null ? '' : String(comp.maxSecretaries ?? 0));
+    setSubscriptionStatus(comp.subscriptionStatus || 'trial');
+    setDueDay(String(comp.dueDay ?? 10));
+    setMonthlyPrice(comp.monthlyPrice ? maskCurrency(Math.round(Number(comp.monthlyPrice) * 100)) : '99,00');
+    setTrialEndsAt(comp.trialEndsAt ? String(comp.trialEndsAt).split('T')[0] : '');
+    setCompanyInvoices(comp.subscriptionInvoices || []);
     setCompanyMembers([]);
     setMemberPage(1);
     setMemberSearch('');
@@ -254,6 +315,11 @@ export default function AdminCompaniesPage() {
         setPlan(data.plan || 'bronze');
         setMaxPhysios(data.maxPhysios === null ? '' : String(data.maxPhysios ?? 1));
         setMaxSecretaries(data.maxSecretaries === null ? '' : String(data.maxSecretaries ?? 0));
+        setSubscriptionStatus(data.subscriptionStatus || 'trial');
+        setDueDay(String(data.dueDay ?? 10));
+        setMonthlyPrice(data.monthlyPrice ? maskCurrency(Math.round(Number(data.monthlyPrice) * 100)) : '99,00');
+        setTrialEndsAt(data.trialEndsAt ? String(data.trialEndsAt).split('T')[0] : '');
+        setCompanyInvoices(data.subscriptionInvoices || []);
       }
     } catch {
       // Ignora erro e continua com dados locais
@@ -374,6 +440,124 @@ export default function AdminCompaniesPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleUpdateInvoiceStatus = async (invoiceId: number, newStatus: string) => {
+    setUpdatingInvoiceId(invoiceId);
+    try {
+      await api.put(`/subscription-invoices/${invoiceId}/status`, { status: newStatus });
+      setCompanyInvoices((prev) =>
+        prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: newStatus } : inv))
+      );
+      if (newStatus === 'paid') {
+        setSubscriptionStatus('active');
+      }
+      fetchCompanies();
+      const statusLabels: Record<string, string> = {
+        paid: 'Pago',
+        overdue: 'Atrasado',
+        pending: 'Pendente',
+        canceled: 'Cancelado',
+      };
+      toast.success(`Status da fatura alterado para "${statusLabels[newStatus] || newStatus}" com sucesso!`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.response?.data?.error || err.message || 'Erro ao alterar status da fatura.');
+    } finally {
+      setUpdatingInvoiceId(null);
+    }
+  };
+
+  const handleQuickMarkAsPaid = async (invoiceId: number) => {
+    try {
+      await api.put(`/subscription-invoices/${invoiceId}/status`, { status: 'paid' });
+      setCompanyInvoices((prev) =>
+        prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: 'paid' } : inv))
+      );
+      setSubscriptionStatus('active');
+      fetchCompanies();
+      toast.success('Fatura marcada como PAGA e clínica ativada com sucesso!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Erro ao registrar pagamento.');
+    }
+  };
+
+  const handleDeleteInvoice = async (invoiceId: number) => {
+    if (!window.confirm('Deseja realmente excluir esta fatura?')) return;
+    try {
+      await api.delete(`/subscription-invoices/${invoiceId}`);
+      setCompanyInvoices((prev) => prev.filter((inv) => inv.id !== invoiceId));
+      toast.success('Fatura removida com sucesso!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Erro ao excluir fatura.');
+    }
+  };
+
+  const [editingInvoiceAmountId, setEditingInvoiceAmountId] = useState<number | null>(null);
+  const [tempInvoiceAmount, setTempInvoiceAmount] = useState<string>('');
+  const [savingInvoiceAmount, setSavingInvoiceAmount] = useState(false);
+
+  const handleStartEditInvoiceAmount = (inv: any) => {
+    setEditingInvoiceAmountId(inv.id);
+    const amountVal = Number(inv.amount || 0);
+    setTempInvoiceAmount(maskCurrency(Math.round(amountVal * 100)));
+  };
+
+  const handleSaveInvoiceAmount = async (invoiceId: number) => {
+    const numAmount = parseCurrencyToNumber(tempInvoiceAmount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      toast.error('Informe um valor válido maior que zero.');
+      return;
+    }
+
+    setSavingInvoiceAmount(true);
+    try {
+      const res: any = await api.put(`/subscription-invoices/${invoiceId}`, {
+        amount: numAmount,
+        regeneratePix: true,
+      });
+      const updated = res?.invoice || res?.data || res;
+      setCompanyInvoices((prev) =>
+        prev.map((inv) => (inv.id === invoiceId ? { ...inv, amount: numAmount, ...updated } : inv))
+      );
+      toast.success(`Valor da fatura alterado para R$ ${numAmount.toFixed(2)} e Pix atualizado!`);
+      setEditingInvoiceAmountId(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Erro ao alterar valor da fatura.');
+    } finally {
+      setSavingInvoiceAmount(false);
+    }
+  };
+
+  const handleOpenStatusModal = (inv: any) => {
+    setStatusModalInvoice(inv);
+    setNewInvoiceStatus(inv.status);
+  };
+
+  const handleSaveInvoiceStatus = async () => {
+    if (!statusModalInvoice) return;
+    setSavingInvoiceStatus(true);
+    try {
+      await api.put(`/subscription-invoices/${statusModalInvoice.id}/status`, { status: newInvoiceStatus });
+      setCompanyInvoices((prev) =>
+        prev.map((inv) => (inv.id === statusModalInvoice.id ? { ...inv, status: newInvoiceStatus } : inv))
+      );
+      if (newInvoiceStatus === 'paid') {
+        setSubscriptionStatus('active');
+      }
+      fetchCompanies();
+      const statusLabels: Record<string, string> = {
+        paid: 'Pago',
+        overdue: 'Atrasado',
+        pending: 'Pendente',
+        canceled: 'Cancelado',
+      };
+      toast.success(`Status da fatura alterado para "${statusLabels[newInvoiceStatus] || newInvoiceStatus}" com sucesso!`);
+      setStatusModalInvoice(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.response?.data?.error || err.message || 'Erro ao alterar status da fatura.');
+    } finally {
+      setSavingInvoiceStatus(false);
+    }
+  };
+
   const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName.trim()) {
@@ -403,8 +587,12 @@ export default function AdminCompaniesPage() {
           plan,
           maxPhysios: maxPhysios === '' ? null : Number(maxPhysios),
           maxSecretaries: maxSecretaries === '' ? null : Number(maxSecretaries),
+          subscriptionStatus,
+          dueDay: dueDay ? Number(dueDay) : 10,
+          monthlyPrice: monthlyPrice ? parseCurrencyToNumber(monthlyPrice) : 99.0,
+          trialEndsAt: trialEndsAt || null,
         });
-        toast.success('Empresa atualizada com sucesso!');
+        toast.success('Empresa e mensalidade atualizadas com sucesso!');
       } else {
         // Create new company + admin + optional physios
         await api.post('/companies', {
@@ -419,6 +607,10 @@ export default function AdminCompaniesPage() {
           plan,
           maxPhysios: maxPhysios === '' ? null : Number(maxPhysios),
           maxSecretaries: maxSecretaries === '' ? null : Number(maxSecretaries),
+          subscriptionStatus,
+          dueDay: dueDay ? Number(dueDay) : 10,
+          monthlyPrice: monthlyPrice ? parseCurrencyToNumber(monthlyPrice) : (plan === 'gold' ? 249 : plan === 'silver' ? 149 : 99),
+          trialEndsAt: trialEndsAt || null,
           adminName: adminName.trim() || `Admin ${companyName.trim()}`,
           adminEmail: adminEmail.trim(),
           adminPassword,
@@ -657,63 +849,115 @@ export default function AdminCompaniesPage() {
       />
 
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
-        {/* Top KPI Metrics Cards (3 Colunas) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Empresas Cadastradas</p>
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{companies.length}</h3>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Empresas Ativas</p>
-              <h3 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalActive}</h3>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profissionais / Equipe</p>
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalUsers}</h3>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Bar */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="relative w-full sm:w-96">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Buscar por empresa, CNPJ ou e-mail..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            />
-          </div>
+        {/* Top Navigation Tabs */}
+        <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setMainTab('companies')}
+            className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              mainTab === 'companies'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Empresas e Clínicas</span>
+            <span
+              className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
+                mainTab === 'companies' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              {companies.length}
+            </span>
+          </button>
 
           <button
-            onClick={handleOpenCreateModal}
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+            type="button"
+            onClick={() => setMainTab('subscriptions')}
+            className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              mainTab === 'subscriptions'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
+            }`}
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>Cadastrar Nova Empresa</span>
+            <DollarSign className="w-4 h-4" />
+            <span>Mensalidades e Faturas</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMainTab('settings')}
+            className={`inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              mainTab === 'settings'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>Mercado Pago e Configurações</span>
           </button>
         </div>
+
+        {/* TAB 1: EMPRESAS & CLÍNICAS */}
+        {mainTab === 'companies' && (
+          <div className="space-y-6">
+            {/* Top KPI Metrics Cards (3 Colunas) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Empresas Cadastradas</p>
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{companies.length}</h3>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Empresas Ativas</p>
+                  <h3 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalActive}</h3>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profissionais / Equipe</p>
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalUsers}</h3>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Bar */}
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="relative w-full sm:w-96">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Buscar por empresa, CNPJ ou e-mail..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+              </div>
+
+              <button
+                onClick={handleOpenCreateModal}
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Cadastrar Nova Empresa</span>
+              </button>
+            </div>
 
         {/* Companies Table */}
         {loading ? (
@@ -739,24 +983,22 @@ export default function AdminCompaniesPage() {
         ) : (
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[650px]">
+              <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <th className="py-3.5 px-4 sm:px-6">Empresa / Clínica</th>
-                    <th className="py-3.5 px-4">Plano & Limites</th>
-                    <th className="py-3.5 px-4">CNPJ & CREFITO</th>
-                    <th className="py-3.5 px-4">Contato</th>
-                    <th className="py-3.5 px-4 sm:px-6 text-right">Ações</th>
+                    <th className="py-3.5 px-4 sm:px-6 whitespace-nowrap">Empresa / Clínica</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Plano</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">CNPJ e CREFITO</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Contato</th>
+                    <th className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                   {paginatedCompanies.map((comp) => {
-                    const uCount = Number(comp.usersCount) || Number(comp.$extras?.users_count) || comp.users?.length || 0;
-
                     return (
                       <tr key={comp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
                         {/* Company Name & Logo & Status */}
-                        <td className="py-3.5 px-4 sm:px-6">
+                        <td className="py-4 px-4 sm:px-6">
                           <div className="flex items-center space-x-3 min-w-0">
                             <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
                               {comp.logoUrl ? (
@@ -766,11 +1008,11 @@ export default function AdminCompaniesPage() {
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate">
+                              <p className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm truncate max-w-[220px]">
                                 {comp.name}
                               </p>
                               <span
-                                className={`inline-flex items-center px-2 py-0.5 mt-0.5 rounded-md text-[10px] font-bold ${
+                                className={`inline-flex items-center px-2 py-0.5 mt-1 rounded-md text-[10px] font-bold ${
                                   comp.status === 'active'
                                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                     : comp.status === 'suspended'
@@ -784,48 +1026,33 @@ export default function AdminCompaniesPage() {
                           </div>
                         </td>
 
-                        {/* Plano & Limites */}
-                        <td className="py-3.5 px-4">
+                        {/* Plano */}
+                        <td className="py-4 px-4 whitespace-nowrap">
                           {comp.plan === 'silver' ? (
-                            <div className="space-y-0.5">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shadow-2xs">
-                                🥈 Prata
-                              </span>
-                              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                                Até {comp.maxPhysios ?? 3} fisios + {comp.maxSecretaries ?? 1} sec.
-                              </p>
-                            </div>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shadow-2xs">
+                              🥈 Prata
+                            </span>
                           ) : comp.plan === 'gold' ? (
-                            <div className="space-y-0.5">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs">
-                                🥇 Ouro
-                              </span>
-                              <p className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
-                                Acessos Ilimitados
-                              </p>
-                            </div>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs">
+                              🥇 Ouro
+                            </span>
                           ) : (
-                            <div className="space-y-0.5">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-orange-50 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800 shadow-2xs">
-                                🥉 Bronze
-                              </span>
-                              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                                1 Fisioterapeuta (Solo)
-                              </p>
-                            </div>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-orange-50 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800 shadow-2xs">
+                              🥉 Bronze
+                            </span>
                           )}
                         </td>
 
                         {/* CNPJ & CREFITO */}
-                        <td className="py-3.5 px-4">
-                          <div className="space-y-0.5">
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <div className="space-y-1">
                             {comp.cnpj ? (
-                              <p className="font-mono text-slate-700 dark:text-slate-300 font-medium">{maskCnpj(comp.cnpj)}</p>
+                              <p className="font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">{maskCnpj(comp.cnpj)}</p>
                             ) : (
-                              <span className="text-slate-400 italic">Sem CNPJ</span>
+                              <span className="text-xs text-slate-400 italic">Sem CNPJ</span>
                             )}
                             {comp.crefito && (
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                              <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
                                 <span className="font-semibold text-slate-400">CREFITO:</span> {comp.crefito}
                               </p>
                             )}
@@ -833,41 +1060,41 @@ export default function AdminCompaniesPage() {
                         </td>
 
                         {/* Contato (Email & Telefone) */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-4 px-4 whitespace-nowrap">
                           <div className="space-y-1">
                             {comp.email && (
-                              <p className="flex items-center space-x-1.5 text-slate-700 dark:text-slate-300 truncate max-w-[220px]">
+                              <p className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-slate-300">
                                 <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                <span className="truncate">{comp.email}</span>
+                                <span className="font-medium">{comp.email}</span>
                               </p>
                             )}
                             {comp.phone ? (
-                              <p className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                              <p className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 font-mono text-xs">
                                 <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                 <span>{maskPhone(comp.phone)}</span>
                               </p>
                             ) : (
-                              !comp.email && <span className="text-slate-400 italic">Sem contato</span>
+                              !comp.email && <span className="text-xs text-slate-400 italic">Sem contato</span>
                             )}
                           </div>
                         </td>
 
                         {/* Ações */}
-                        <td className="py-3.5 px-4 sm:px-6 text-right">
+                        <td className="py-4 px-4 sm:px-6 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end space-x-1.5">
                             <button
                               onClick={() => handleOpenEditModal(comp, 'team')}
-                              className="inline-flex items-center space-x-1.5 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                              className="inline-flex items-center space-x-1.5 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-2xs"
                               title="Gerenciar Profissionais da Clínica"
                             >
                               <Users className="w-3.5 h-3.5" />
-                              <span>Equipe ({uCount})</span>
+                              <span>Equipe</span>
                             </button>
 
                             <button
                               onClick={() => handleOpenEditModal(comp, 'info')}
                               title="Editar Empresa"
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                             >
                               <Edit3 className="w-4 h-4" />
                             </button>
@@ -875,7 +1102,7 @@ export default function AdminCompaniesPage() {
                             <button
                               onClick={() => handleDeleteCompany(comp.id, comp.name)}
                               title="Excluir Empresa"
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -940,6 +1167,23 @@ export default function AdminCompaniesPage() {
           </div>
         )}
       </div>
+    )}
+
+        {/* TAB 2: MENSALIDADES & FATURAS */}
+        {mainTab === 'subscriptions' && (
+          <SubscriptionsTab
+            companies={companies.map((c) => ({
+              id: c.id,
+              name: c.name,
+              monthlyPrice: c.monthlyPrice ?? (c.plan === 'gold' ? 249 : c.plan === 'silver' ? 149 : 99),
+              dueDay: c.dueDay ?? 10,
+            }))}
+          />
+        )}
+
+        {/* TAB 3: CONFIGURAÇÕES MERCADO PAGO */}
+        {mainTab === 'settings' && <MercadoPagoSettingsTab />}
+      </div>
 
       {/* Main Modal: Create or Edit Company with Tabs */}
       <AnimatePresence>
@@ -959,7 +1203,7 @@ export default function AdminCompaniesPage() {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
-                      {editingCompany ? editingCompany.name : 'Cadastrar Nova Empresa & Administrador'}
+                      {editingCompany ? editingCompany.name : 'Cadastrar Nova Empresa e Administrador'}
                     </h3>
                     <p className="text-xs text-slate-400">
                       {editingCompany ? 'Gerencie os dados cadastrais e a equipe desta clínica' : 'Configure os dados da clínica e as credenciais de acesso'}
@@ -1010,6 +1254,38 @@ export default function AdminCompaniesPage() {
                       {companyMembers.length}
                     </span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('billing')}
+                    className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 flex items-center space-x-2 cursor-pointer ${
+                      activeTab === 'billing'
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    <span>Mensalidade e Assinatura</span>
+                    <span
+                      className={`ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        subscriptionStatus === 'exempt'
+                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
+                          : subscriptionStatus === 'active'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : subscriptionStatus === 'trial'
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-rose-100 text-rose-700'
+                      }`}
+                    >
+                      {subscriptionStatus === 'exempt'
+                        ? '👑 Isenta'
+                        : subscriptionStatus === 'active'
+                        ? 'Ativa'
+                        : subscriptionStatus === 'trial'
+                        ? 'Trial'
+                        : 'Atrasada / Suspensa'}
+                    </span>
+                  </button>
                 </div>
               )}
 
@@ -1026,7 +1302,7 @@ export default function AdminCompaniesPage() {
                           <input
                             type="text"
                             required
-                            placeholder="Ex: Clínica Fisioterapia & Saúde"
+                            placeholder="Ex: Clínica Fisioterapia e Saúde"
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden"
@@ -1093,7 +1369,7 @@ export default function AdminCompaniesPage() {
                           <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
                             <span className="flex items-center space-x-1.5">
                               <Sparkles className="w-4 h-4 text-amber-500" />
-                              <span>Plano de Assinatura & Limites de Acesso *</span>
+                              <span>Plano de Assinatura e Limites de Acesso *</span>
                             </span>
                           </label>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1464,7 +1740,7 @@ export default function AdminCompaniesPage() {
                         className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-blue-600/30 flex items-center space-x-2 transition-all cursor-pointer"
                       >
                         {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                        <span>{editingCompany ? 'Salvar Dados da Empresa' : 'Cadastrar Empresa & Acessos'}</span>
+                        <span>{saving ? 'Salvando...' : editingCompany ? 'Salvar' : 'Cadastrar Empresa e Acessos'}</span>
                       </button>
                     </div>
                   </form>
@@ -1724,6 +2000,339 @@ export default function AdminCompaniesPage() {
                       </div>
                     )}
                   </div>
+                )}
+
+                {/* TAB 3: MENSALIDADE & ASSINATURA DA CLÍNICA */}
+                {editingCompany && activeTab === 'billing' && (
+                  <form onSubmit={handleSaveCompany} className="space-y-6">
+                    {/* Status Overview Card */}
+                    <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                      <div className="flex items-center space-x-3.5 min-w-0">
+                        <div
+                          className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-xl font-bold border ${
+                            subscriptionStatus === 'exempt'
+                              ? 'bg-purple-100 dark:bg-purple-900/60 text-purple-600 border-purple-300'
+                              : subscriptionStatus === 'active'
+                              ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 border-emerald-300'
+                              : subscriptionStatus === 'trial'
+                              ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-600 border-amber-300'
+                              : 'bg-rose-100 dark:bg-rose-900/60 text-rose-600 border-rose-300'
+                          }`}
+                        >
+                          {subscriptionStatus === 'exempt' ? '👑' : subscriptionStatus === 'active' ? '✓' : subscriptionStatus === 'trial' ? '⏳' : '⚠'}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                            <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                              Status da Assinatura:
+                            </span>
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap shrink-0 ${
+                                subscriptionStatus === 'exempt'
+                                  ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
+                                  : subscriptionStatus === 'active'
+                                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                                  : subscriptionStatus === 'trial'
+                                  ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
+                                  : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
+                              }`}
+                            >
+                              {subscriptionStatus === 'exempt'
+                                ? '👑 Isenta de Cobrança'
+                                : subscriptionStatus === 'active'
+                                ? 'Ativa'
+                                : subscriptionStatus === 'trial'
+                                ? 'Em Teste (Trial)'
+                                : subscriptionStatus === 'past_due'
+                                ? 'Atrasada'
+                                : 'Suspensa'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            {subscriptionStatus === 'exempt'
+                              ? 'Esta clínica possui isenção total de cobranças e faturas do sistema.'
+                              : editingCompany.lastPaymentDate
+                              ? `Último pagamento confirmado em ${new Date(editingCompany.lastPaymentDate).toLocaleDateString('pt-BR')}`
+                              : 'Nenhum pagamento registrado ainda.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Quick Toggle Status */}
+                      <div className="flex items-center gap-2 shrink-0 flex-nowrap w-full lg:w-auto justify-start lg:justify-end overflow-x-auto">
+                        <button
+                          type="button"
+                          onClick={() => setSubscriptionStatus('exempt')}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center space-x-1 whitespace-nowrap shrink-0 ${
+                            subscriptionStatus === 'exempt'
+                              ? 'bg-purple-700 text-white ring-2 ring-purple-400/40'
+                              : 'bg-purple-600 hover:bg-purple-700 text-white'
+                          }`}
+                          title="Isentar clínica de qualquer cobrança ou mensalidade"
+                        >
+                          <span>👑 Isentar Cobrança</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSubscriptionStatus('active')}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0 ${
+                            subscriptionStatus === 'active'
+                              ? 'bg-emerald-700 text-white ring-2 ring-emerald-400/40'
+                              : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          }`}
+                        >
+                          Ativar Clínica
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSubscriptionStatus('suspended')}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap shrink-0 ${
+                            subscriptionStatus === 'suspended'
+                              ? 'bg-rose-700 text-white ring-2 ring-rose-400/40'
+                              : 'bg-rose-600 hover:bg-rose-700 text-white'
+                          }`}
+                        >
+                          Suspender
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Subscription Form Fields */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Status da Assinatura
+                        </label>
+                        <CustomSelect
+                          value={subscriptionStatus}
+                          onChange={(val) => setSubscriptionStatus(val)}
+                          options={subscriptionStatusOptions}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Dia de Vencimento Mensal
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="31"
+                          value={dueDay}
+                          onChange={(e) => setDueDay(e.target.value)}
+                          placeholder="10"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Valor da Mensalidade (R$)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-2 text-xs sm:text-sm font-bold text-slate-400">R$</span>
+                          <input
+                            type="text"
+                            value={monthlyPrice}
+                            onChange={(e) => setMonthlyPrice(maskCurrency(e.target.value))}
+                            placeholder="0,00"
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="sm:col-span-3 pt-2">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+                          <span>Data Limite do Período de Testes (Trial)</span>
+                          <span className="text-[11px] text-slate-400">Prorrogar dias grátis:</span>
+                        </label>
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                          <input
+                            type="date"
+                            value={trialEndsAt}
+                            onChange={(e) => setTrialEndsAt(e.target.value)}
+                            className="w-full sm:w-64 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100"
+                          />
+                          <div className="flex items-center space-x-2 w-full sm:w-auto">
+                            {[7, 14, 30].map((days) => (
+                              <button
+                                key={days}
+                                type="button"
+                                onClick={() => {
+                                  const d = new Date();
+                                  d.setDate(d.getDate() + days);
+                                  setTrialEndsAt(d.toISOString().split('T')[0]);
+                                  setSubscriptionStatus('trial');
+                                }}
+                                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                              >
+                                +{days} dias
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Clinic Invoices History */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center space-x-2">
+                          <DollarSign className="w-4 h-4 text-blue-600" />
+                          <span>Histórico de Faturas da Clínica</span>
+                        </h4>
+                      </div>
+
+                      {companyInvoices.length === 0 ? (
+                        <div className="p-6 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-xs text-slate-400">
+                          Nenhuma fatura gerada para esta clínica até o momento.
+                        </div>
+                      ) : (
+                        <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-visible">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 font-bold uppercase text-slate-500">
+                              <tr>
+                                <th className="p-3">Título</th>
+                                <th className="p-3">Valor</th>
+                                <th className="p-3">Vencimento</th>
+                                <th className="p-3">Status</th>
+                                <th className="p-3 text-right">Ações</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                              {companyInvoices.map((inv: any) => {
+                                const isPaid = inv.status === 'paid';
+                                return (
+                                  <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <td className="p-3 font-semibold">{inv.title}</td>
+                                    <td className="p-3 font-bold">
+                                      {editingInvoiceAmountId === inv.id ? (
+                                        <div className="flex items-center space-x-1">
+                                          <div className="relative">
+                                            <span className="absolute left-2 top-1.5 text-[11px] font-bold text-slate-400">R$</span>
+                                            <input
+                                              type="text"
+                                              autoFocus
+                                              value={tempInvoiceAmount}
+                                              onChange={(e) => setTempInvoiceAmount(maskCurrency(e.target.value))}
+                                              onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                  e.preventDefault();
+                                                  handleSaveInvoiceAmount(inv.id);
+                                                } else if (e.key === 'Escape') {
+                                                  setEditingInvoiceAmountId(null);
+                                                }
+                                              }}
+                                              className="w-24 bg-white dark:bg-slate-900 border border-blue-500 rounded-lg pl-7 pr-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:ring-1 focus:ring-blue-500"
+                                            />
+                                          </div>
+                                          <button
+                                            type="button"
+                                            disabled={savingInvoiceAmount}
+                                            onClick={() => handleSaveInvoiceAmount(inv.id)}
+                                            className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg cursor-pointer transition-colors shadow-2xs"
+                                            title="Salvar novo valor"
+                                          >
+                                            {savingInvoiceAmount ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => setEditingInvoiceAmountId(null)}
+                                            className="p-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg cursor-pointer transition-colors"
+                                            title="Cancelar"
+                                          >
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center space-x-1.5 group/val">
+                                          <span>R$ {Number(inv.amount).toFixed(2)}</span>
+                                          {!isPaid && (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleStartEditInvoiceAmount(inv)}
+                                              className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-md transition-colors cursor-pointer"
+                                              title="Editar valor desta fatura"
+                                            >
+                                              <Edit2 className="w-3 h-3" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="p-3">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('pt-BR') : '--'}</td>
+                                    <td className="p-3">
+                                      <div className="w-36">
+                                        <CustomSelect
+                                          size="xs"
+                                          placement="top"
+                                          value={inv.status}
+                                          disabled={updatingInvoiceId === inv.id}
+                                          onChange={(val) => handleUpdateInvoiceStatus(inv.id, val)}
+                                          options={invoiceStatusOptions}
+                                          triggerClassName={
+                                            inv.status === 'paid'
+                                              ? 'bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 font-bold'
+                                              : inv.status === 'overdue'
+                                              ? 'bg-rose-50/90 dark:bg-rose-950/50 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 font-bold'
+                                              : inv.status === 'canceled'
+                                              ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold'
+                                              : 'bg-amber-50/90 dark:bg-amber-950/50 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-bold'
+                                          }
+                                        />
+                                      </div>
+                                    </td>
+                                    <td className="p-3 text-right">
+                                      <div className="flex items-center justify-end space-x-1.5">
+                                        {!isPaid && (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleQuickMarkAsPaid(inv.id)}
+                                            className="inline-flex items-center space-x-1 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                                            title="Confirmar Recebimento / Dar Baixa"
+                                          >
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                            <span>Baixa</span>
+                                          </button>
+                                        )}
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteInvoice(inv.id)}
+                                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                                          title="Excluir Fatura"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer Submit Buttons */}
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setModalOpen(false)}
+                        className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-blue-600/30 flex items-center space-x-2 transition-all cursor-pointer"
+                      >
+                        {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                        <span>{saving ? 'Salvando...' : 'Salvar'}</span>
+                      </button>
+                    </div>
+                  </form>
                 )}
               </div>
             </motion.div>
@@ -2012,7 +2621,7 @@ export default function AdminCompaniesPage() {
                     className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-blue-600/30 flex items-center space-x-2 transition-all cursor-pointer"
                   >
                     {savingMember && <Loader2 className="w-4 h-4 animate-spin" />}
-                    <span>{editingMember ? 'Atualizar Profissional' : 'Adicionar Profissional'}</span>
+                    <span>{savingMember ? 'Salvando...' : editingMember ? 'Salvar' : 'Adicionar Profissional'}</span>
                   </button>
                 </div>
               </form>

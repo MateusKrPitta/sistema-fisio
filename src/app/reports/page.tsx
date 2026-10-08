@@ -135,7 +135,7 @@ export default function ReportsPage() {
   return (
     <>
       <Header
-        title="Relatórios Clínicos & Evolução"
+        title="Relatórios Clínicos e Evolução"
         subtitle="Consulte e gere laudos detalhados com base nas escalas específicas aplicadas a cada paciente"
       />
 
@@ -259,7 +259,7 @@ export default function ReportsPage() {
                                   setEvolutionModalOpen(true);
                                 }}
                                 className="p-2 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
-                                title="Relatório de Evoluções com IA & Gráfico"
+                                title="Relatório de Evoluções com IA e Gráfico"
                               >
                                 <Sparkles className="w-5 h-5" />
                               </button>
@@ -267,7 +267,7 @@ export default function ReportsPage() {
                                 type="button"
                                 onClick={() => setSatisfactionPatient(patient)}
                                 className="p-2 text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
-                                title="Pesquisas de Satisfação & NPS"
+                                title="Pesquisas de Satisfação e NPS"
                               >
                                 <Star className="w-5 h-5" />
                               </button>

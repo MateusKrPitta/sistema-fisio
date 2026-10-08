@@ -3,8 +3,11 @@ export const getApiUrl = () => {
     const url = process.env.NEXT_PUBLIC_API_URL.trim().replace(/\/+$/, '');
     return url.endsWith('/api/v1') ? url : `${url}/api/v1`;
   }
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return `${window.location.protocol}//${window.location.hostname}:3333/api/v1`;
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.endsWith('.local')) {
+      return `${window.location.protocol}//${host}:3333/api/v1`;
+    }
   }
   return 'https://api-fisio-production.up.railway.app/api/v1';
 };

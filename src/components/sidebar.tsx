@@ -17,7 +17,9 @@ import {
   ShieldCheck,
   BarChart3,
   Smartphone,
-  Download
+  Download,
+  LifeBuoy,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useLayout } from './layout-shell';
@@ -47,7 +49,7 @@ export function Sidebar() {
         {
           groupName: 'Super Administração',
           items: [
-            { label: 'Empresas & Clínicas', href: '/admin', icon: Building2 },
+            { label: 'Empresas e Clínicas', href: '/admin', icon: Building2 },
           ],
         },
       ];
@@ -64,7 +66,7 @@ export function Sidebar() {
           ],
         },
         {
-          groupName: 'Clínica & Avaliação',
+          groupName: 'Clínica e Avaliação',
           items: [
             { label: 'Avaliações', href: '/custom-forms/modules', icon: Layers },
             { label: 'Evoluções', href: '/evolutions', icon: Activity },
@@ -74,7 +76,6 @@ export function Sidebar() {
         {
           groupName: 'Gestão da Clínica',
           items: [
-            { label: 'Minha Equipe', href: '/team', icon: ShieldCheck },
             { label: 'Financeiro', href: '/financial', icon: DollarSign },
             { label: 'Aniversariantes', href: '/birthdays', icon: Gift },
           ],
@@ -112,7 +113,7 @@ export function Sidebar() {
         ],
       },
       {
-        groupName: 'Clínica & Avaliação',
+        groupName: 'Clínica e Avaliação',
         items: [
           { label: 'Avaliações', href: '/custom-forms/modules', icon: Layers },
           { label: 'Evoluções', href: '/evolutions', icon: Activity },
@@ -130,26 +131,12 @@ export function Sidebar() {
 
   const navGroups = getNavGroups();
 
-  const getRoleBadgeLabel = () => {
-    switch (userRole) {
-      case 'superadmin':
-        return 'Super Administrador';
-      case 'clinic_admin':
-        return user?.company?.name || 'Administrador da Clínica';
-      case 'secretary':
-        return 'Secretária / Recepção';
-      case 'physiotherapist':
-      default:
-        return 'Fisioterapeuta';
-    }
-  };
+  const isSupportActive = pathname === '/support';
 
   const renderSidebarInner = (isMobile = false) => (
-    <aside
-      className="w-64 bg-slate-900 text-slate-100 flex flex-col h-full border-r border-slate-800 shrink-0 select-none z-30 overflow-hidden"
-    >
+    <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col h-full border-r border-slate-800 shrink-0 select-none z-30 overflow-hidden">
       {/* Brand Header */}
-      <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between shrink-0">
+      <div data-tour="sidebar-brand" className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3 min-w-0">
           <motion.div
             whileHover={{ scale: 1.05, rotate: 5 }}
@@ -186,15 +173,15 @@ export function Sidebar() {
         {/* Mobile Close Button */}
         <button
           onClick={closeMobileMenu}
-          className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors shrink-0"
+          className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
           aria-label="Fechar menu"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Navigation Groups */}
-      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+      {/* Navigation Groups with no-scrollbar */}
+      <nav className="flex-1 px-3 py-3 space-y-3 overflow-y-auto no-scrollbar">
         {navGroups.map((group) => (
           <div key={group.groupName} className="space-y-1">
             <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400/90 mb-1">
@@ -214,9 +201,10 @@ export function Sidebar() {
                 : pathname === item.href || pathname.startsWith(item.href);
 
               return (
-                <motion.div key={item.href} whileHover={{ x: 3 }} whileTap={{ scale: 0.98 }}>
+                <motion.div key={item.href} whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}>
                   <Link
                     href={item.href}
+                    data-tour={`sidebar-nav-${item.href}`}
                     prefetch={false}
                     onClick={closeMobileMenu}
                     className={`flex items-center space-x-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
@@ -235,20 +223,49 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Botão de Instalação PWA */}
-      <div className="px-3 pb-2 pt-1">
+      {/* Modern Fixed Bottom Action Section */}
+      <div className="p-3 border-t border-slate-800/80 space-y-1.5 shrink-0 bg-slate-900/95">
+        {/* Suporte e Ajuda */}
+        <Link
+          href="/support"
+          data-tour="sidebar-support"
+          prefetch={false}
+          onClick={closeMobileMenu}
+          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-semibold transition-all group cursor-pointer ${
+            isSupportActive
+              ? 'bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-600/30'
+              : 'bg-slate-800/40 hover:bg-slate-800 border-slate-800 text-slate-300 hover:text-white'
+          }`}
+          title="Central de Suporte e Atendimento"
+        >
+          <div className="flex items-center gap-2.5">
+            <LifeBuoy
+              className={`w-4 h-4 transition-transform group-hover:rotate-45 ${
+                isSupportActive ? 'text-white' : 'text-cyan-400'
+              }`}
+            />
+            <span className="truncate">Suporte e Ajuda</span>
+          </div>
+          <span className="flex h-2 w-2 relative" title="Canal Ativo">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+        </Link>
+
+        {/* Botão de Instalação PWA */}
         <button
           onClick={() => {
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('open-pwa-install'));
             }
           }}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-950/40 hover:bg-blue-900/40 border border-blue-500/20 text-blue-400 hover:text-blue-300 transition group cursor-pointer"
+          data-tour="sidebar-pwa"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-950/30 hover:bg-blue-900/40 border border-blue-500/20 text-blue-400 hover:text-blue-300 text-xs font-semibold transition group cursor-pointer"
           title="Instalar FisMovie no celular ou computador"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Smartphone className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-semibold">Instalar Aplicativo</span>
+            <span className="truncate">Instalar Aplicativo</span>
           </div>
           <Download className="w-3.5 h-3.5 text-blue-400/70 group-hover:translate-y-0.5 transition-transform" />
         </button>

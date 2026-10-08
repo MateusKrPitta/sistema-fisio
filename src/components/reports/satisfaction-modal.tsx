@@ -459,7 +459,7 @@ export const SatisfactionModal: React.FC<SatisfactionModalProps> = ({
                               <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center mb-1">
                                   <Building2 className="w-3.5 h-3.5 mr-1 text-purple-500" />
-                                  Estrutura & Recepção
+                                  Estrutura e Recepção
                                 </span>
                                 {renderStars(survey.structureRating)}
                               </div>
@@ -492,7 +492,7 @@ export const SatisfactionModal: React.FC<SatisfactionModalProps> = ({
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
               <span className="text-xs text-slate-400 font-medium">
-                FisMovie • Gestão de Satisfação & Qualidade
+                FisMovie • Gestão de Satisfação e Qualidade
               </span>
               <button
                 type="button"

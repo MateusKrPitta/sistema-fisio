@@ -835,7 +835,7 @@ export default function PatientsListPage() {
       <main className="flex-1 p-4 sm:p-6 md:p-8 pb-20 space-y-6 overflow-y-auto max-w-full">
         {/* Control Bar: Search & New Patient Action */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="relative w-full sm:w-80 md:w-96">
+          <div className="relative w-full sm:w-80 md:w-96" data-tour="patients-search">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
               type="text"
@@ -852,6 +852,7 @@ export default function PatientsListPage() {
             </span>
             <Link
               href="/patients/new"
+              data-tour="patients-new-btn"
               prefetch={false}
               className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all shrink-0"
             >
@@ -874,7 +875,7 @@ export default function PatientsListPage() {
             <p className="text-sm text-slate-400">Tente buscar por outro termo ou cadastre um novo paciente.</p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div data-tour="patients-table" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <>
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
@@ -1140,7 +1141,7 @@ export default function PatientsListPage() {
                       ) : (
                         <Save className="w-4 h-4" />
                       )}
-                      <span>Salvar Alterações</span>
+                      <span>Salvar</span>
                     </button>
                   </div>
 
@@ -1418,7 +1419,7 @@ export default function PatientsListPage() {
                         </div>
 
                         <div className="bg-blue-50/80 p-5 rounded-xl border border-blue-200 space-y-2">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-800">Resumo de Sessões & Faturamento</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-800">Resumo de Sessões e Faturamento</p>
                           <div className="space-y-1.5 text-slate-800 text-xs">
                             <p><strong className="text-slate-900">Total de Agendamentos:</strong> {detailedPatient.appointments?.length || 0} sessões</p>
                             <p><strong className="text-slate-900">Concluídas / Baixadas:</strong> {detailedPatient.appointments?.filter((a: any) => a.status === 'finalizado').length || 0} sessões</p>
@@ -1474,7 +1475,7 @@ export default function PatientsListPage() {
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5">
                             <Calendar className="w-4 h-4 text-blue-600" />
-                            <span>Plano de Atendimento & Datas do Tratamento</span>
+                            <span>Plano de Atendimento e Datas do Tratamento</span>
                           </h5>
                           <div className="flex items-center space-x-2">
                             <button
@@ -1710,7 +1711,7 @@ export default function PatientsListPage() {
                                           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded-lg text-[11px] flex items-center space-x-1 disabled:opacity-50"
                                         >
                                           {savingAppEdit ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                                          <span>Salvar Atendimento</span>
+                                          <span>Salvar</span>
                                         </button>
                                       </div>
                                     </div>
@@ -1816,7 +1817,7 @@ export default function PatientsListPage() {
                         ) : (
                           <Save className="w-3.5 h-3.5" />
                         )}
-                        <span>Salvar Alterações</span>
+                        <span>Salvar</span>
                       </button>
 
                       <button
@@ -2038,7 +2039,7 @@ export default function PatientsListPage() {
                       className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-5 py-2.5 rounded-xl shadow-xs flex items-center space-x-1.5"
                     >
                       {savingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                      <span>Salvar Alterações</span>
+                      <span>Salvar</span>
                     </button>
                   </div>
                 </form>

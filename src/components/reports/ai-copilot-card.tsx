@@ -70,7 +70,7 @@ export function AiCopilotCard({
   const toneLabels: Record<string, string> = {
     patient_friendly: 'Paciente / Família',
     clinical: 'Laudo Técnico Fisioterapêutico',
-    therapeutic_goals: 'Metas & Conduta Clínica',
+    therapeutic_goals: 'Metas e Conduta Clínica',
   };
 
   const getAllCurrentReports = (): AiToneReports => {
@@ -280,7 +280,7 @@ export function AiCopilotCard({
             }`}
           >
             <Award className="w-3.5 h-3.5 text-amber-300" />
-            <span>Metas & Conduta</span>
+            <span>Metas e Conduta</span>
           </button>
         </div>
       </div>
@@ -357,7 +357,7 @@ export function AiCopilotCard({
                   ) : (
                     <Save className="w-3.5 h-3.5 text-blue-200" />
                   )}
-                  <span>{isSaving ? 'Salvando...' : savedReport ? 'Atualizar Laudo' : 'Salvar Laudo'}</span>
+                  <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
                 </button>
 
                 {/* PDF Export with all available tones */}

@@ -22,7 +22,8 @@ import {
   Phone,
   Activity,
   CheckCircle2,
-  User as UserIcon
+  User as UserIcon,
+  Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/toast-context';
@@ -140,6 +141,7 @@ function EvolutionsContent() {
   const [modalPage, setModalPage] = useState(1);
   const [expandedEvolutions, setExpandedEvolutions] = useState<number[]>([]);
   const [evolutionDetails, setEvolutionDetails] = useState<Record<number | string, { notes?: string; images?: string[]; loading?: boolean }>>({});
+  const [copiedEvolutionId, setCopiedEvolutionId] = useState<number | string | null>(null);
 
   // Edit / Insert Evolution Modal
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -291,6 +293,53 @@ function EvolutionsContent() {
     } else {
       setExpandedEvolutions((prev) => [...prev, Number(app.id)]);
       fetchEvolutionDetail(app.id, app);
+    }
+  };
+
+  const handleCopyEvolution = async (app: Appointment) => {
+    let notesToCopy =
+      evolutionDetails[app.id]?.notes !== undefined
+        ? evolutionDetails[app.id]?.notes
+        : app.notes;
+
+    if (notesToCopy === undefined || notesToCopy === null) {
+      try {
+        const res = await api.get(`/appointments/${app.id}`);
+        const data = res?.data?.id ? res.data : res;
+        notesToCopy = data.notes || '';
+      } catch {
+        notesToCopy = app.notes || '';
+      }
+    }
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = notesToCopy || '';
+    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+
+    if (!plainText.trim()) {
+      toast({
+        title: 'Aviso',
+        description: 'Nenhum texto de anotação encontrado nesta evolução.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(plainText.trim());
+      setCopiedEvolutionId(app.id);
+      setTimeout(() => setCopiedEvolutionId(null), 2500);
+      toast({
+        title: 'Sucesso',
+        description: 'Evolução copiada com sucesso!',
+        type: 'success',
+      });
+    } catch {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível copiar o texto.',
+        type: 'error',
+      });
     }
   };
 
@@ -476,7 +525,7 @@ function EvolutionsContent() {
 
       <main className="flex-1 p-4 sm:p-6 md:p-8 pb-20 space-y-6 overflow-y-auto max-w-full">
         {/* Search Bar */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+        <div data-tour="evolutions-search" className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
           <div className="relative w-full flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
@@ -514,7 +563,7 @@ function EvolutionsContent() {
             <p className="text-sm text-slate-400">Verifique o termo digitado na busca.</p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+          <div data-tour="evolutions-table" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
@@ -804,6 +853,24 @@ function EvolutionsContent() {
                               </span>
                               <button
                                 type="button"
+                                onClick={() => handleCopyEvolution(app)}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-600 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 hover:border-blue-300 transition-all cursor-pointer shadow-2xs"
+                                title="Copiar anotações da evolução"
+                              >
+                                {copiedEvolutionId === app.id ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                    <span className="text-emerald-600 dark:text-emerald-400">Copia</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                    <span>Copia</span>
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => handleStartEditOrInsert(app)}
                                 className="inline-flex items-center space-x-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 hover:border-emerald-300 transition-all cursor-pointer shadow-2xs"
                                 title="Editar evolução clínica"
@@ -1034,13 +1101,53 @@ function EvolutionsContent() {
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Anotações Clínicas & Conduta *
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => setEditNotes('')}
-                      className="text-[10px] text-slate-400 hover:text-red-600 font-medium cursor-pointer"
-                    >
-                      Limpar texto
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      {sessions.some(
+                        (s) =>
+                          (s.hasEvolution ?? s.has_evolution) &&
+                          s.id !== editingApp?.id &&
+                          (s.notes || evolutionDetails[s.id]?.notes)
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const lastCompleted = sessions.find(
+                              (s) =>
+                                (s.hasEvolution ?? s.has_evolution) &&
+                                s.id !== editingApp?.id &&
+                                (s.notes || evolutionDetails[s.id]?.notes)
+                            );
+                            const notesText =
+                              evolutionDetails[lastCompleted?.id || '']?.notes ||
+                              lastCompleted?.notes ||
+                              '';
+                            if (notesText) {
+                              const tempDiv = document.createElement('div');
+                              tempDiv.innerHTML = notesText;
+                              const plain = tempDiv.textContent || tempDiv.innerText || '';
+                              setEditNotes(plain.trim());
+                              toast({
+                                title: 'Copiado',
+                                description: 'Evolução anterior copiada com sucesso!',
+                                type: 'success',
+                              });
+                            }
+                          }}
+                          className="inline-flex items-center space-x-1 text-[11px] text-blue-600 dark:text-blue-400 hover:text-blue-700 font-bold bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800 cursor-pointer transition-colors"
+                          title="Copiar anotações da última sessão realizada"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copia</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setEditNotes('')}
+                        className="text-[10px] text-slate-400 hover:text-red-600 font-medium cursor-pointer"
+                      >
+                        Limpar texto
+                      </button>
+                    </div>
                   </div>
                   <textarea
                     rows={6}
@@ -1146,7 +1253,7 @@ function EvolutionsContent() {
                     ) : (
                       <Check className="w-4 h-4" />
                     )}
-                    <span>Salvar Evolução</span>
+                    <span>{savingEvolution ? 'Salvando...' : 'Salvar'}</span>
                   </button>
                 </div>
               </form>
