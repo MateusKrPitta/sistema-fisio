@@ -730,7 +730,8 @@ export function InteractiveTour() {
             </div>
 
             {/* Cabeçalho do Balão */}
-            <div className="p-4 pb-3 flex items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-850/80">
+            <div className="p-4 pb-3 flex items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/90">
+
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center shadow-md shrink-0">
                   <IconComponent className="w-5 h-5" />
@@ -789,7 +790,8 @@ export function InteractiveTour() {
             </div>
 
             {/* Rodapé de Ações com Cores e Contraste Sólidos */}
-            <div className="p-3 px-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+            <div className="p-3 px-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+
               <button
                 type="button"
                 onClick={handlePrev}

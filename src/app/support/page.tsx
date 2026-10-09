@@ -632,7 +632,8 @@ export default function SupportPage() {
                     <button
                       type="button"
                       onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                      className="w-full flex items-center justify-between p-4 text-left bg-slate-50/50 dark:bg-slate-850/50 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition cursor-pointer"
+                      className="w-full flex items-center justify-between p-4 text-left bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition cursor-pointer"
+
                     >
                       <div className="flex items-center gap-3 pr-2 min-w-0">
                         <span className="text-[11px] px-2.5 py-0.5 rounded-lg font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/60 shrink-0">

@@ -272,7 +272,8 @@ export const SatisfactionModal: React.FC<SatisfactionModalProps> = ({
             </div>
 
             {/* Action Banner / NPS Overview */}
-            <div className="p-6 bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-slate-50 dark:from-slate-800/40 dark:via-slate-850 dark:to-slate-900 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="p-6 bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-slate-50 dark:from-slate-800/40 dark:via-slate-900 dark:to-slate-900 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+
               <div className="flex items-center space-x-4">
                 <div className="bg-white dark:bg-slate-800 px-4 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">

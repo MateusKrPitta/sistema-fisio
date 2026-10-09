@@ -973,7 +973,8 @@ export function TeamTab({ companyIdFilter = null }: TeamTabProps) {
                   </div>
 
                   {/* Remuneração & Configurações Financeiras */}
-                  <div className="sm:col-span-2 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-850 dark:to-blue-950/20 p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 space-y-4 shadow-2xs">
+                  <div className="sm:col-span-2 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 space-y-4 shadow-2xs">
+
                     <div className="flex items-center space-x-2.5 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
                       <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
                         <Wallet className="w-4 h-4" />

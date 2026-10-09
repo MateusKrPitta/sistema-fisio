@@ -168,16 +168,22 @@ export function OnboardingProgressCard({
 
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400 flex items-center gap-1">
+              <span className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${
+                isAllCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-cyan-400'
+              }`}>
                 <Sparkles className="w-3.5 h-3.5" />
                 {isAllCompleted ? 'Configuração Completa' : 'Primeiros Passos da Clínica'}
               </span>
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-cyan-300 border border-blue-200 dark:border-blue-800">
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                isAllCompleted
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                  : 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-cyan-300 border border-blue-200 dark:border-blue-800'
+              }`}>
                 {progressPercent}% Concluído ({completedCount} de {tasks.length} etapas)
               </span>
             </div>
 
-            <h2 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 leading-tight">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">
               {isAllCompleted
                 ? 'Parabéns! Sua clínica está 100% pronta para atender com excelência.'
                 : 'Complete as etapas abaixo para aproveitar todos os recursos do sistema:'}
@@ -190,7 +196,7 @@ export function OnboardingProgressCard({
           <button
             type="button"
             onClick={() => setIsCollapsed((prev) => !prev)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer border border-slate-200 dark:border-slate-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition cursor-pointer border border-slate-200 dark:border-slate-700 shadow-2xs"
           >
             <span>{isCollapsed ? 'Ver Todas as Etapas' : 'Recolher'}</span>
             {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -200,7 +206,7 @@ export function OnboardingProgressCard({
             <button
               type="button"
               onClick={handleDismiss}
-              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               title="Dispensar este aviso"
             >
               <X className="w-4 h-4" />
@@ -226,60 +232,60 @@ export function OnboardingProgressCard({
                   return (
                     <div
                       key={task.id}
-                      className={`p-4 rounded-xl border transition-all flex flex-col justify-between space-y-3.5 ${
+                      className={`p-4 sm:p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-3.5 ${
                         task.isCompleted
-                          ? 'bg-slate-50/70 dark:bg-slate-850/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xs hover:border-blue-300 dark:hover:border-blue-800'
+                          ? 'bg-slate-50/90 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 shadow-xs hover:border-blue-400 dark:hover:border-blue-700'
                       }`}
                     >
                       {/* Topo do Card da Etapa */}
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-cyan-400 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center shrink-0">
-                              <Icon className="w-3.5 h-3.5" />
+                            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-blue-800/80 flex items-center justify-center shrink-0">
+                              <Icon className="w-4 h-4" />
                             </div>
-                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                               Etapa 0{task.stepNumber}
                             </span>
                           </div>
 
                           {task.isCompleted ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 dark:text-cyan-300 bg-blue-50 dark:bg-blue-950/70 px-2 py-0.5 rounded-full border border-blue-200/80 dark:border-blue-800/80 shrink-0">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 shrink-0">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                               <span>Concluído</span>
                             </span>
                           ) : (
-                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
                               +{task.points}%
                             </span>
                           )}
                         </div>
 
-                        {/* Título sem cortes */}
-                        <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug break-words pt-0.5">
+                        {/* Título sem cortes e com alto contraste */}
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug break-words pt-1">
                           {task.title}
                         </h3>
 
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
                           {task.description}
                         </p>
                       </div>
 
-                      {/* Botão de Ação Direto no Padrão Azul do Sistema */}
-                      <div className="pt-0.5">
+                      {/* Botão de Ação / Confirmação */}
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
                         {task.isCompleted ? (
-                          <div className="text-[11px] font-semibold text-blue-600 dark:text-cyan-400 flex items-center gap-1.5 py-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 py-0.5">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                             <span>Tarefa realizada na clínica</span>
                           </div>
                         ) : (
                           <Link
                             href={task.href}
-                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all duration-200 group cursor-pointer"
+                            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all duration-200 group cursor-pointer"
                           >
                             <span>{task.actionText}</span>
-                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                           </Link>
                         )}
                       </div>
@@ -289,6 +295,8 @@ export function OnboardingProgressCard({
               </div>
             </div>
           </motion.div>
+
+
         )}
       </AnimatePresence>
     </motion.div>
