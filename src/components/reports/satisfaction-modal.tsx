@@ -219,7 +219,7 @@ export const SatisfactionModal: React.FC<SatisfactionModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && patient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 overflow-hidden">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -235,35 +235,39 @@ export const SatisfactionModal: React.FC<SatisfactionModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 16 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="relative bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[92vh] rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden z-10"
+            className="relative bg-white dark:bg-slate-900 w-full max-w-2xl max-h-screen sm:max-h-[92vh] h-full sm:h-auto rounded-none sm:rounded-3xl border-0 sm:border border-slate-200/90 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden z-10"
           >
-            {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <div className="flex items-center space-x-3.5">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shrink-0">
-                  <Star className="w-6 h-6 fill-white" />
+            {/* Modal Header - Sticky & Mobile First com Botão Fechar Sempre Visível */}
+            <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-900/70 sticky top-0 z-20">
+              <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0 flex-1">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shrink-0">
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
                 </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base sm:text-lg">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center space-x-1.5 sm:space-x-2">
+                    <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm sm:text-base md:text-lg truncate">
                       Pesquisas de Satisfação (NPS)
                     </h3>
-                    <span className="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                      {surveys.length} {surveys.length === 1 ? 'pesquisa' : 'pesquisas'}
+                    <span className="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 shrink-0">
+                      {surveys.length}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                  <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
                     Paciente: <span className="font-bold text-slate-700 dark:text-slate-200">{patient.name}</span>
-                    {patient.cpf && <span className="font-mono text-slate-400 ml-2">({patient.cpf})</span>}
+                    {patient.cpf && <span className="font-mono text-slate-400 ml-1.5">({patient.cpf})</span>}
                   </p>
                 </div>
               </div>
 
+              {/* Botão Fechar - Somente o X */}
               <button
+                type="button"
                 onClick={onClose}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 dark:bg-slate-800 dark:hover:bg-red-950/60 dark:text-slate-200 dark:hover:text-red-400 rounded-xl border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shrink-0 shadow-2xs group focus:ring-2 focus:ring-red-500/20"
+                title="Fechar"
+                aria-label="Fechar"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 transition-transform group-hover:scale-110 text-slate-600 group-hover:text-red-600 dark:text-slate-300" />
               </button>
             </div>
 

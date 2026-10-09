@@ -424,7 +424,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
   return (
     <AnimatePresence>
       {isOpen && patient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 overflow-hidden">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -440,64 +440,69 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.97, y: 15 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="relative bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[94vh] h-[92vh] flex flex-col overflow-hidden border border-slate-200/90 z-10"
+          className="relative bg-white rounded-none sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-screen sm:max-h-[94vh] h-full sm:h-[92vh] flex flex-col overflow-hidden border-0 sm:border border-slate-200/90 z-10"
         >
-          {/* Header Bar */}
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0 shadow-xs">
-            <div className="flex items-center space-x-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-blue-500/20 shrink-0">
+          {/* Header Bar - Sticky & Mobile First com Botão Fechar Sempre Visível */}
+          <div className="px-3.5 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-2.5 sm:gap-4 bg-white shrink-0 shadow-xs sticky top-0 z-20">
+            <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0 flex-1">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-sm sm:text-lg shadow-md shadow-blue-500/20 shrink-0">
                 {(patient?.fullName || patient?.name || 'P').charAt(0).toUpperCase()}
               </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center space-x-1.5 sm:space-x-2">
+                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">
                     {viewMode === 'history'
-                      ? 'Histórico Clínico do Paciente'
+                      ? 'Histórico Clínico'
                       : editingRecord
-                      ? 'Editar Avaliação do Paciente'
-                      : 'Nova Avaliação Fisioterapêutica'}
+                      ? 'Editar Avaliação'
+                      : 'Nova Avaliação'}
                   </h2>
                   {viewMode === 'history' && formRecords.length > 0 && (
-                    <span className="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-100">
-                      {formRecords.length} registro(s)
+                    <span className="bg-blue-50 text-blue-700 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border border-blue-100 shrink-0">
+                      {formRecords.length}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate mt-0.5">
                   <strong className="text-slate-700">{patient?.fullName || patient?.name}</strong> • CPF:{' '}
                   <span className="font-mono text-slate-600">{patient?.cpf || 'Não informado'}</span>
                 </p>
               </div>
             </div>
 
-            {/* Header Actions */}
-            <div className="flex items-center space-x-2">
+            {/* Header Actions com Botão Fechar Sempre em Destaque */}
+            <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
               {viewMode === 'history' ? (
                 <button
                   type="button"
                   onClick={startNewEvaluation}
-                  className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs sm:text-sm shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+                  className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-bold px-2.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm shadow-sm shadow-blue-500/20 transition-all cursor-pointer shrink-0"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>+ Nova Avaliação</span>
+                  <span className="hidden sm:inline">+ Nova Avaliação</span>
+                  <span className="inline sm:hidden">Novo</span>
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => setViewMode('history')}
-                  className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3.5 py-2 rounded-xl text-xs border border-slate-200 transition-colors cursor-pointer"
+                  className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 sm:px-3.5 py-2 rounded-xl text-xs border border-slate-200 transition-colors cursor-pointer shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Ver Histórico</span>
+                  <span className="hidden sm:inline">Ver Histórico</span>
+                  <span className="inline sm:hidden">Voltar</span>
                 </button>
               )}
 
+              {/* Botão Fechar - Somente o X */}
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 transition-all cursor-pointer shrink-0 shadow-2xs group focus:ring-2 focus:ring-red-500/20"
+                title="Fechar"
+                aria-label="Fechar"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 transition-transform group-hover:scale-110 text-slate-600 group-hover:text-red-600" />
               </button>
             </div>
           </div>

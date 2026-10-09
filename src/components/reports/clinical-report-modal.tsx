@@ -148,7 +148,7 @@ export function ClinicalReportModal({
   return (
     <AnimatePresence>
       {patient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 overflow-hidden printable-modal-wrapper">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 overflow-hidden printable-modal-wrapper">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -164,7 +164,7 @@ export function ClinicalReportModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 15 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="printable-modal-box relative bg-slate-50 dark:bg-slate-950 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[94vh] h-[92vh] flex flex-col overflow-hidden border border-slate-200/90 dark:border-slate-800 z-10"
+            className="printable-modal-box relative bg-slate-50 dark:bg-slate-950 rounded-none sm:rounded-3xl shadow-2xl w-full max-w-6xl max-h-screen sm:max-h-[94vh] h-full sm:h-[92vh] flex flex-col overflow-hidden border-0 sm:border border-slate-200/90 dark:border-slate-800 z-10"
           >
             {/* Print Only Official Medical Header */}
             <div className="hidden print:flex flex-col border-b-2 border-slate-900 pb-4 mb-6">
@@ -190,39 +190,41 @@ export function ClinicalReportModal({
               </div>
             </div>
 
-            {/* Screen Header Bar */}
-            <div className="print:hidden px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 shadow-xs">
-              <div className="flex items-center space-x-3.5">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-blue-500/20 shrink-0">
+            {/* Screen Header Bar - Sticky & Mobile First com Botão Fechar Sempre Visível */}
+            <div className="print:hidden px-3.5 sm:px-6 py-3 sm:py-4 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2.5 sm:gap-4 shrink-0 shadow-xs sticky top-0 z-20">
+              <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0 flex-1">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-sm sm:text-lg shadow-md shadow-blue-500/20 shrink-0">
                   {patient.name.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                    Prontuário e Avaliações: {patient.name}
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
+                    {patient.name}
                   </h2>
-                  <div className="flex items-center flex-wrap gap-x-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    <span>
+                  <div className="flex items-center flex-wrap gap-x-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                    <span className="truncate">
                       CPF: <strong className="text-slate-700 dark:text-slate-300">{patient.cpf}</strong>
                     </span>
-                    <span>
-                      • Total de Avaliações: <strong className="text-blue-700 dark:text-blue-500">{patientRecords.length}</strong>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">
+                      Avaliações: <strong className="text-blue-700 dark:text-blue-500">{patientRecords.length}</strong>
                     </span>
                     {activeSession && (
-                      <span className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 font-bold px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
-                        {activeSession.sessionTitle} • {activeSession.formattedDate}
+                      <span className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 font-bold px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800 text-[10px] truncate max-w-[140px] sm:max-w-none">
+                        {activeSession.sessionTitle}
                       </span>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              {/* Botões de Ação com Botão Fechar Proeminente */}
+              <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
                 {/* PDF Download Button */}
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
                   disabled={isGeneratingPdf}
-                  className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold px-2.5 sm:px-4 py-2 rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50 shrink-0"
                   title="Gerar e Baixar Arquivo PDF Oficial Completo"
                 >
                   {isGeneratingPdf ? (
@@ -230,16 +232,19 @@ export function ClinicalReportModal({
                   ) : (
                     <FileDown className="w-4 h-4" />
                   )}
-                  <span>Baixar PDF Oficial</span>
+                  <span className="hidden md:inline">Baixar PDF Oficial</span>
+                  <span className="inline md:hidden">PDF</span>
                 </button>
 
+                {/* Botão Fechar - Somente o X */}
                 <button
                   type="button"
                   onClick={onClose}
-                  className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 dark:bg-slate-800 dark:hover:bg-red-950/60 dark:text-slate-300 dark:hover:text-red-400 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shrink-0 shadow-2xs group focus:ring-2 focus:ring-red-500/20"
                   title="Fechar"
+                  aria-label="Fechar"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 transition-transform group-hover:scale-110 text-slate-600 group-hover:text-red-600 dark:text-slate-300" />
                 </button>
               </div>
             </div>
@@ -266,15 +271,25 @@ export function ClinicalReportModal({
                 /* VIEW A: SPECIFIC EVALUATION SESSION (ALL SCALES OF THIS DATE) */
                 /* ============================================================ */
                 <div className="space-y-6">
-                  {/* Back to Evaluations Button */}
-                  <div className="flex items-center justify-between print:hidden">
+                  {/* Back to Evaluations & Direct Close Bar */}
+                  <div className="flex items-center justify-between gap-2 print:hidden">
                     <button
                       type="button"
                       onClick={() => setSelectedRecordId(null)}
-                      className="inline-flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                      className="inline-flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl shadow-xs hover:shadow-sm transition-all cursor-pointer"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       <span>Voltar para Lista de Avaliações</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="w-9 h-9 inline-flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 shadow-xs transition-colors cursor-pointer"
+                      title="Fechar"
+                      aria-label="Fechar"
+                    >
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
 
@@ -471,6 +486,28 @@ export function ClinicalReportModal({
                           }}
                         />
                       </div>
+
+                      {/* Barra de Ações Inferior • Voltar & Fechar */}
+                      <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 print:hidden">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedRecordId(null)}
+                          className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-5 py-2.5 rounded-xl shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                          <span>Voltar para Lista de Avaliações</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={onClose}
+                          className="w-10 h-10 inline-flex items-center justify-center text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-950/40 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs transition-all cursor-pointer"
+                          title="Fechar"
+                          aria-label="Fechar"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
                     </>
                   )}
                 </div>
@@ -493,18 +530,98 @@ export function ClinicalReportModal({
                     </p>
                   </div>
 
-                  {/* MAIN TABLE OF EVALUATIONS */}
-                  <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm overflow-hidden p-4 sm:p-6 space-y-4 print:shadow-none print:border-slate-300">
-                    <div className="flex items-center justify-between">
+                  {/* MAIN CONTAINER OF EVALUATIONS */}
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm overflow-hidden p-3.5 sm:p-6 space-y-4 print:shadow-none print:border-slate-300">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-slate-100 dark:border-slate-800 sm:border-0 sm:pb-0">
                       <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
-                        Avaliações e Reavaliações Registradas ({evaluationSessions.length})
+                        Avaliações Realizadas ({evaluationSessions.length})
                       </h4>
                       <span className="text-xs text-slate-400 font-medium">
-                        Total de {totalScalesCount} escalas clínicas distintas no prontuário
+                        Total de {totalScalesCount} escalas clínicas no prontuário
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* 📱 CARDS MOBILE (Para telas de aplicativo / smartphones) */}
+                    <div className="block md:hidden space-y-3">
+                      {evaluationSessions.map((sess, sIdx) => {
+                        const scaleCount = sess.scales.length > 0 ? sess.scales.length : (sess.modulesCount || 1);
+                        const isLoadingThis = loadingDetailId === sess.recordId;
+
+                        return (
+                          <div
+                            key={sess.recordId}
+                            onClick={() => handleOpenEvaluation(sess.recordId)}
+                            className="bg-slate-50 dark:bg-slate-800/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/80 transition-all cursor-pointer shadow-xs active:scale-[0.99] space-y-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center space-x-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                                  #{sIdx + 1}
+                                </div>
+                                <div className="min-w-0">
+                                  <h5 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 truncate">
+                                    {sess.sessionTitle}
+                                  </h5>
+                                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                    {sess.formattedDate}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <span
+                                className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center space-x-1 shrink-0 ${
+                                  sess.isSigned
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                                    : 'bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-800'
+                                }`}
+                              >
+                                {sess.isSigned ? (
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                ) : (
+                                  <Clock className="w-3 h-3 text-amber-600" />
+                                )}
+                                <span>{sess.isSigned ? 'Assinado' : 'Pendente'}</span>
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300">
+                              <span className="truncate">
+                                Prof.: <strong>{sess.evaluatorName}</strong>
+                              </span>
+                              <span className="inline-flex items-center space-x-1 bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-800/60 text-[11px] font-bold shrink-0">
+                                <Layers className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                                <span>{scaleCount} escala{scaleCount === 1 ? '' : 's'}</span>
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvaluation(sess.recordId);
+                              }}
+                              disabled={isLoadingThis}
+                              className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm transition-all cursor-pointer"
+                            >
+                              {isLoadingThis ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  <span>Abrindo Avaliação...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>Visualizar Avaliação Completa</span>
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* 💻 TABELA DESKTOP */}
+                    <div className="hidden md:block overflow-x-auto">
                       <table className="w-full text-left text-xs border-collapse min-w-[650px]">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider">

@@ -268,33 +268,38 @@ export function EvolutionReportModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden my-auto">
-        {/* MODAL HEADER */}
-        <div className="px-6 py-5 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shrink-0">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400 shadow-inner">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-5 bg-slate-900/60 backdrop-blur-xs overflow-hidden animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-none sm:rounded-3xl border-0 sm:border border-slate-200/80 dark:border-slate-800 shadow-2xl w-full max-w-6xl max-h-screen sm:max-h-[92vh] h-full sm:h-[92vh] flex flex-col overflow-hidden my-auto">
+        {/* MODAL HEADER - Sticky & Mobile First com Botão Fechar Sempre Visível */}
+        <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2.5 sm:gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shrink-0 sticky top-0 z-20">
+          <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0 flex-1">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400 shadow-inner shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h3 className="text-base sm:text-lg font-bold">Relatório de Evoluções com IA</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
-                  IA Copilot
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-1.5 sm:space-x-2">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold truncate">
+                  Relatório de Evoluções com IA
+                </h3>
+                <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 shrink-0">
+                  Copilot
                 </span>
               </div>
-              <p className="text-xs text-slate-300">
-                Interpretação clínica automatizada, gráfico de progresso e síntese do período
+              <p className="text-[11px] sm:text-xs text-slate-300 truncate mt-0.5">
+                {selectedPatient ? selectedPatient.name : 'Interpretação clínica e síntese do período'}
               </p>
             </div>
           </div>
 
+          {/* Botão Fechar - Somente o X */}
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center bg-white/10 hover:bg-red-500/80 active:bg-red-600 text-white rounded-xl border border-white/20 transition-all cursor-pointer shrink-0 shadow-2xs group focus:ring-2 focus:ring-red-500/30"
+            title="Fechar"
+            aria-label="Fechar"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 transition-transform group-hover:scale-110" />
           </button>
         </div>
 
@@ -653,13 +658,15 @@ export function EvolutionReportModal({
         </div>
 
         {/* MODAL FOOTER */}
-        <div className="px-6 py-4 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950 shrink-0">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-950 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs sm:text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="w-10 h-10 inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            title="Fechar"
+            aria-label="Fechar"
           >
-            Fechar
+            <X className="w-5 h-5" />
           </button>
 
           {hasGenerated && (
