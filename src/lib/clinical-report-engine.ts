@@ -1,4 +1,4 @@
-import { CLINICAL_PRESETS } from '@/lib/clinical-presets';
+import { CLINICAL_PRESETS, calculatePREP2Score, calculateNIHSSScore, getNIHSSBadge } from '@/lib/clinical-presets';
 
 export interface PatientItem {
   id: number;
@@ -149,11 +149,21 @@ export const normalizeScaleKey = (rawKey: string, title?: string): string => {
   }
   if (s.includes('força muscular') || (s.includes('mrc') && !s.includes('dispneia') && !s.includes('mmrc'))) return 'forca_muscular_mrc';
   if (s.includes('mmrc') || (s.includes('dispneia') && !s.includes('tc6'))) return 'mmrc';
+  if (s.includes('nyha') || s.includes('classe funcional') || s.includes('insuficiência cardíaca')) return 'nyha';
+  if (s.includes('sf-36') || s.includes('sf36') || s.includes('qualidade de vida')) return 'sf36';
+  if (s.includes('psqi') || s.includes('qualidade do sono') || s.includes('pittsburgh') || s.includes('sono')) return 'psqi';
+  if (s.includes('anamnese') || s.includes('queixa principal') || s.includes('história clínica') || s.includes('hmp') || s.includes('diagnóstico funcional')) return 'anamnese';
+  if (s.includes('registro fotográfico') || s.includes('registro fotografico') || s.includes('fotográfico') || s.includes('fotografico')) return 'registro_fotografico';
   if (s.includes('bioimpedância') || s.includes('bioimpedancia')) return 'bioimpedancia';
   if (s.includes('peak flow') || s.includes('pcf') || s.includes('pico de fluxo')) return 'peak_flow';
   if (s.includes('goniometria') || s.includes('amplitude articular')) return 'goniometria';
   if (s.includes('postural') || s.includes('desvios posturais')) return 'postural';
   if (s.includes('tronco') || s.includes('tct')) return 'tct';
+  if (s.includes('prep') || s.includes('safe') || s.includes('preditor')) return 'prep2';
+  if (s.includes('preens') || s.includes('dinamom') || s.includes('fpm') || s.includes('fpp')) return 'dinamometria_fpm';
+  if (s.includes('sentar e levantar') || s.includes('tsl') || s.includes('sit-to-stand') || s.includes('sts')) return 'tsl_1min';
+  if (s.includes('moca') || s.includes('montreal') || s.includes('cognitiva montreal')) return 'moca';
+  if (s.includes('nihss') || (s.includes('nih') && s.includes('avc')) || s.includes('stroke scale')) return 'nihss';
   return rawKey.toLowerCase().replace(/[^a-z0-9_]/g, '_');
 };
 
@@ -481,6 +491,218 @@ export const resolveFieldInfo = (
     };
   }
 
+  // 14. Teste de Sentar e Levantar em 1 Minuto (TSL 1 min)
+  if (
+    cleanKey.includes('sentar e levantar') ||
+    cleanKey.includes('tsl') ||
+    cleanKey.includes('sit-to-stand') ||
+    cleanKey.includes('sts') ||
+    cleanKey.includes('repetições realizadas') ||
+    cleanKey.includes('repeticoes realizadas')
+  ) {
+    return {
+      scaleKey: 'tsl_1min',
+      scaleTitle: 'Teste de Sentar e Levantar em 1 Minuto (TSL 1 min)',
+      category: 'Cardiorrespiratória',
+      label: rawKey,
+    };
+  }
+
+  // 15. Montreal Cognitive Assessment (MoCA)
+  if (
+    cleanKey.includes('moca') ||
+    cleanKey.includes('montreal') ||
+    cleanKey.includes('visuoespacial') ||
+    cleanKey.includes('evocação tardia') ||
+    cleanKey.includes('evocacao tardia') ||
+    cleanKey.includes('escore total moca') ||
+    cleanKey.includes('classificação cognitiva') ||
+    cleanKey.includes('classificacao cognitiva') ||
+    cleanKey.includes('atenção e concentração') ||
+    cleanKey.includes('atencao e concentracao') ||
+    cleanKey.includes('nomeação de animais') ||
+    cleanKey.includes('nomeacao de animais') ||
+    cleanKey.includes('orientação têmporo') ||
+    cleanKey.includes('orientacao temporo')
+  ) {
+    let cleanLabel = rawKey;
+    if (rawKey.startsWith('MoCA - ')) {
+      cleanLabel = rawKey.replace('MoCA - ', '');
+    }
+    return {
+      scaleKey: 'moca',
+      scaleTitle: 'Montreal Cognitive Assessment (MoCA)',
+      category: 'Neurológica',
+      label: cleanLabel,
+    };
+  }
+
+  // 16. PREP 2 - Preditor Pós-AVC
+  if (
+    cleanKey.includes('prep') ||
+    cleanKey.includes('safe') ||
+    cleanKey.includes('abdução de ombro') ||
+    cleanKey.includes('extensão dos dedos') ||
+    cleanKey.includes('mep') ||
+    cleanKey.includes('potencial evocado motor')
+  ) {
+    return {
+      scaleKey: 'prep2',
+      scaleTitle: 'PREP 2 - Preditor Pós-AVC (Algoritmo de Membro Superior)',
+      category: 'Neurológica',
+      label: rawKey,
+    };
+  }
+
+  // 17. Escala de AVC do NIH (NIHSS)
+  if (
+    cleanKey.includes('nihss') ||
+    cleanKey.includes('stroke scale') ||
+    cleanKey.includes('escala de avc do nih') ||
+    cleanKey.includes('nível de consciência') ||
+    cleanKey.includes('paralisia facial') ||
+    cleanKey.includes('ataxia') ||
+    cleanKey.includes('disartria') ||
+    cleanKey.includes('negligência')
+  ) {
+    return {
+      scaleKey: 'nihss',
+      scaleTitle: 'Escala de AVC do NIH (NIHSS)',
+      category: 'Neurológica',
+      label: rawKey,
+    };
+  }
+
+  // 18. Força de Preensão Palmar (Dinamometria FPM/FPP)
+  if (
+    cleanKey.includes('dinamometria') ||
+    cleanKey.includes('fpm') ||
+    cleanKey.includes('fpp') ||
+    cleanKey.includes('preensão palmar') ||
+    cleanKey.includes('preensao palmar') ||
+    cleanKey.includes('mão dominante') ||
+    cleanKey.includes('mao dominante')
+  ) {
+    return {
+      scaleKey: 'dinamometria_fpm',
+      scaleTitle: 'Força de Preensão Palmar (FPP/FPM) • Dinamometria',
+      category: 'Força Muscular',
+      label: rawKey,
+      unit: 'kgf',
+    };
+  }
+
+  // 19. Escala de Força Muscular (MRC 0-5)
+  if (
+    cleanKey.includes('mrc') ||
+    cleanKey.includes('força muscular') ||
+    cleanKey.includes('forca muscular') ||
+    cleanKey.includes('assimetrias de força') ||
+    cleanKey.includes('assimetrias de forca')
+  ) {
+    return {
+      scaleKey: 'forca_muscular_mrc',
+      scaleTitle: 'Escala de Força Muscular Periférica (MRC 0-5)',
+      category: 'Força Muscular',
+      label: rawKey,
+    };
+  }
+
+  // 20. Escala de Dispneia - mMRC
+  if (cleanKey.includes('mmrc') || cleanKey.includes('grau de dispneia') || cleanKey.includes('escala de dispneia')) {
+    return {
+      scaleKey: 'mmrc',
+      scaleTitle: 'Escala de Dispneia do Medical Research Council (mMRC)',
+      category: 'Cardiorrespiratória',
+      label: rawKey,
+    };
+  }
+
+  // 21. Classificação Funcional - NYHA
+  if (cleanKey.includes('nyha') || cleanKey.includes('classe funcional') || cleanKey.includes('insuficiência cardíaca')) {
+    return {
+      scaleKey: 'nyha',
+      scaleTitle: 'Classificação Funcional Cardíaca (NYHA)',
+      category: 'Cardiorrespiratória',
+      label: rawKey,
+    };
+  }
+
+  // 22. Qualidade de Vida (SF-36)
+  if (
+    cleanKey.includes('sf-36') ||
+    cleanKey.includes('sf36') ||
+    cleanKey.includes('saúde é:') ||
+    cleanKey.includes('saude e:') ||
+    cleanKey.includes('atividades rigorosas') ||
+    cleanKey.includes('atividades moderadas')
+  ) {
+    return {
+      scaleKey: 'sf36',
+      scaleTitle: 'Questionário de Qualidade de Vida (SF-36)',
+      category: 'Qualidade de Vida e Autonomia',
+      label: rawKey,
+    };
+  }
+
+  // 23. Qualidade do Sono (PSQI)
+  if (
+    cleanKey.includes('psqi') ||
+    cleanKey.includes('pittsburgh') ||
+    cleanKey.includes('hora usual de deitar') ||
+    cleanKey.includes('hora usual de levantar') ||
+    cleanKey.includes('horas de sono') ||
+    cleanKey.includes('adormecer') ||
+    cleanKey.includes('medicamento para dormir') ||
+    cleanKey.includes('qualidade geral do sono')
+  ) {
+    return {
+      scaleKey: 'psqi',
+      scaleTitle: 'Índice de Qualidade do Sono de Pittsburgh (PSQI)',
+      category: 'Qualidade de Vida e Autonomia',
+      label: rawKey,
+    };
+  }
+
+  // 24. Anamnese Fisioterapêutica
+  if (
+    cleanKey.includes('anamnese') ||
+    cleanKey.includes('queixa principal') ||
+    cleanKey.includes('qp') ||
+    cleanKey.includes('história médica') ||
+    cleanKey.includes('historia medica') ||
+    cleanKey.includes('hmp') ||
+    cleanKey.includes('histórico familiar') ||
+    cleanKey.includes('historico familiar') ||
+    cleanKey.includes('hf') ||
+    cleanKey.includes('diagnóstico funcional') ||
+    cleanKey.includes('diagnostico funcional')
+  ) {
+    return {
+      scaleKey: 'anamnese',
+      scaleTitle: 'Anamnese e História Clínica',
+      category: 'Geral',
+      label: rawKey,
+    };
+  }
+
+  // 25. Registro Fotográfico Corporal e Postural
+  if (
+    cleanKey.includes('registro fotográfico') ||
+    cleanKey.includes('registro fotografico') ||
+    cleanKey.includes('foto anterior') ||
+    cleanKey.includes('foto posterior') ||
+    cleanKey.includes('foto lateral') ||
+    cleanKey.includes('fotos postural')
+  ) {
+    return {
+      scaleKey: 'registro_fotografico',
+      scaleTitle: 'Registro Fotográfico Corporal e Postural',
+      category: 'Composição Corporal / Bioimpedância',
+      label: rawKey,
+    };
+  }
+
   // Final Generic Fallback
   const genericLabel = isNaN(Number(rawKey.split(' ')[0]))
     ? rawKey
@@ -794,6 +1016,334 @@ export const parseScaleGroupsFromRecords = (patientRecords: EvaluationRecord[]):
               ? 'Dependência Severa (26 a 50 pts)'
               : 'Dependência Total (25 pts ou menos)';
         }
+      }
+
+      // 8. PREP 2 - Preditor Pós-AVC
+      else if (scaleKey === 'prep2') {
+        const answersMapObj: Record<string, any> = {};
+        items.forEach((it) => {
+          answersMapObj[it.label] = it.value;
+        });
+        const prepResult = calculatePREP2Score(answersMapObj);
+        calculatedScore = `SAFE: ${prepResult.safeScore} / 10 pts • ${prepResult.title}`;
+        clinicalInterp = `${prepResult.prognosisExpected} | Foco da Fisioterapia: ${prepResult.therapyFocus}`;
+      }
+
+      // 9. NIHSS
+      else if (scaleKey === 'nihss') {
+        const answersMapObj: Record<string, any> = {};
+        items.forEach((it) => {
+          answersMapObj[it.label] = it.value;
+        });
+        const nihssCalc = calculateNIHSSScore(answersMapObj);
+        const badge = getNIHSSBadge(nihssCalc.score);
+        calculatedScore = `${nihssCalc.score} / 42 pts`;
+        clinicalInterp = `${badge.label} - ${badge.description}`;
+      }
+
+      // 10. TC6 (Teste de Caminhada de 6 Minutos)
+      else if (scaleKey === 'tc6') {
+        const distItem = items.find((i) => {
+          const l = i.label.toLowerCase();
+          return l.includes('distância total') || l.includes('distancia total') || l.includes('percorrida') || l === 'tc6' || l.includes('distância realizada');
+        });
+        const prevItem = items.find((i) => {
+          const l = i.label.toLowerCase();
+          return l.includes('prevista') || l.includes('previsto') || l.includes('predito');
+        });
+        const percItem = items.find((i) => {
+          const l = i.label.toLowerCase();
+          return l.includes('% do previsto') || l.includes('porcentagem') || l.includes('% alcançado');
+        });
+        const classItem = items.find((i) => {
+          const l = i.label.toLowerCase();
+          return l.includes('classificação') || l.includes('classificacao');
+        });
+
+        const distReal = distItem ? parseFloat(String(distItem.value).replace(/[^\d.]/g, '')) : NaN;
+        const distPrev = prevItem ? parseFloat(String(prevItem.value).replace(/[^\d.]/g, '')) : NaN;
+
+        if (!isNaN(distReal) && distReal > 0) {
+          let perc = !isNaN(distPrev) && distPrev > 0 ? (distReal / distPrev) * 100 : NaN;
+          if (isNaN(perc) && percItem) {
+            perc = parseFloat(String(percItem.value).replace(/[^\d.]/g, ''));
+          }
+
+          if (!isNaN(perc)) {
+            const diff = !isNaN(distPrev) ? Math.round(distReal - distPrev) : 0;
+            calculatedScore = `${distReal}m (${perc.toFixed(1)}% do previsto • ${diff > 0 ? '+' : ''}${diff}m)`;
+            clinicalInterp = classItem?.value
+              ? `${classItem.value} (Realizado: ${distReal}m / Previsto: ${!isNaN(distPrev) ? distPrev + 'm' : '-'})`
+              : perc >= 100
+              ? `Excelente Capacidade Submáxima (${perc.toFixed(1)}% do previsto • Realizado: ${distReal}m / Previsto: ${!isNaN(distPrev) ? distPrev + 'm' : '-'})`
+              : perc >= 80
+              ? `Capacidade Funcional Normal/Preservada (${perc.toFixed(1)}% do previsto • Realizado: ${distReal}m / Previsto: ${!isNaN(distPrev) ? distPrev + 'm' : '-'})`
+              : perc >= 60
+              ? `Redução Leve a Moderada da Capacidade Funcional (${perc.toFixed(1)}% do previsto • Realizado: ${distReal}m / Previsto: ${!isNaN(distPrev) ? distPrev + 'm' : '-'})`
+              : `Redução Severa da Capacidade Funcional Submáxima (${perc.toFixed(1)}% do previsto • Realizado: ${distReal}m / Previsto: ${!isNaN(distPrev) ? distPrev + 'm' : '-'})`;
+          } else {
+            calculatedScore = `${distReal} metros`;
+            clinicalInterp = `Distância total percorrida no TC6: ${distReal} metros`;
+          }
+        }
+      }
+
+      // 11. Dinamometria de Preensão Palmar (FPP/FPM)
+      else if (scaleKey === 'dinamometria_fpm') {
+        const domItem = items.find((i) => i.label.toLowerCase().includes('medido - mão dominante') || i.label.toLowerCase().includes('medido dominante'));
+        const nonDomItem = items.find((i) => i.label.toLowerCase().includes('medido - mão não dominante') || i.label.toLowerCase().includes('medido não dominante'));
+        const domPredItem = items.find((i) => i.label.toLowerCase().includes('previsto - mão dominante') || i.label.toLowerCase().includes('previsto dominante'));
+        const domPercItem = items.find((i) => i.label.toLowerCase().includes('% do previsto - mão dominante') || i.label.toLowerCase().includes('% dominante'));
+        const classItem = items.find((i) => i.label.toLowerCase().includes('classificação') || i.label.toLowerCase().includes('parecer'));
+
+        const domVal = domItem ? parseFloat(String(domItem.value).replace(/[^\d.]/g, '')) : NaN;
+        const nonDomVal = nonDomItem ? parseFloat(String(nonDomItem.value).replace(/[^\d.]/g, '')) : NaN;
+        const domPred = domPredItem ? parseFloat(String(domPredItem.value).replace(/[^\d.]/g, '')) : NaN;
+
+        if (!isNaN(domVal) && domVal > 0) {
+          const percStr = domPercItem?.value || (!isNaN(domPred) && domPred > 0 ? `${((domVal / domPred) * 100).toFixed(1)}%` : '');
+          calculatedScore = `Mão Dominante: ${domVal} kgf${percStr ? ` (${percStr})` : ''}${!isNaN(nonDomVal) ? ` • Não Dominante: ${nonDomVal} kgf` : ''}`;
+          clinicalInterp = classItem?.value
+            ? `${classItem.value} (Medido: ${domVal} kgf / Previsto: ${!isNaN(domPred) ? domPred + ' kgf' : '-'})`
+            : `Força de preensão manual: ${domVal} kgf (mão dominante) • Previsto por Novaes et al. (2009): ${!isNaN(domPred) ? domPred + ' kgf' : '-'}`;
+        }
+      }
+
+      // 12. Teste de Sentar e Levantar em 1 Minuto (TSL 1 min)
+      else if (scaleKey === 'tsl_1min') {
+        const repsItem = items.find((i) => i.label.toLowerCase().includes('repetições') || i.label.toLowerCase().includes('repeticoes') || i.label.toLowerCase().includes('reps'));
+        const p50Item = items.find((i) => i.label.toLowerCase().includes('mediana') || i.label.toLowerCase().includes('p50'));
+        const percItem = items.find((i) => i.label.toLowerCase().includes('% da mediana') || i.label.toLowerCase().includes('% da p50'));
+        const rankItem = items.find((i) => i.label.toLowerCase().includes('percentil'));
+        const classItem = items.find((i) => i.label.toLowerCase().includes('classificação') || i.label.toLowerCase().includes('classificacao') || i.label.toLowerCase().includes('desempenho'));
+
+        const repsVal = repsItem ? parseFloat(String(repsItem.value).replace(/[^\d.]/g, '')) : NaN;
+        const p50Val = p50Item ? parseFloat(String(p50Item.value).replace(/[^\d.]/g, '')) : NaN;
+
+        if (!isNaN(repsVal) && repsVal > 0) {
+          const percStr = percItem?.value || (!isNaN(p50Val) && p50Val > 0 ? `${((repsVal / p50Val) * 100).toFixed(1)}%` : '');
+          const rankStr = rankItem?.value ? ` • ${rankItem.value}` : '';
+          calculatedScore = `${repsVal} reps em 1 min${percStr ? ` (${percStr} da mediana p50)` : ''}${rankStr}`;
+          clinicalInterp = classItem?.value
+            ? `${classItem.value} (Realizado: ${repsVal} reps / Mediana P50: ${!isNaN(p50Val) ? p50Val + ' reps' : '-'})`
+            : `Capacidade funcional em 1 min: ${repsVal} repetições • Referência de Strassmann et al. (2013): mediana ${!isNaN(p50Val) ? p50Val : '-'} reps`;
+        }
+      }
+
+      // 13. MoCA (Montreal Cognitive Assessment)
+      else if (scaleKey === 'moca') {
+        const totalItem = items.find((i) => i.label.toLowerCase().includes('escore total') || i.label.toLowerCase().includes('total moca') || i.label === 'moca_total_score');
+        const classItem = items.find((i) => i.label.toLowerCase().includes('classificação') || i.label.toLowerCase().includes('classificacao'));
+        const totalVal = totalItem ? parseFloat(String(totalItem.value).replace(/[^\d.]/g, '')) : NaN;
+
+        if (!isNaN(totalVal)) {
+          calculatedScore = `${totalVal}/30 pontos`;
+          clinicalInterp = classItem?.value
+            ? `${classItem.value} (Escore: ${totalVal}/30 • Corte normalidade: ≥ 26/30)`
+            : totalVal >= 26
+            ? `Função Cognitiva Normal / Preservada (${totalVal}/30 pontos)`
+            : totalVal >= 18
+            ? `Sugestivo de Comprometimento Cognitivo Leve - CCL (${totalVal}/30 pontos)`
+            : `Comprometimento Cognitivo Relevante (${totalVal}/30 pontos)`;
+        }
+      }
+
+      // 14. Força Muscular (MRC 0-5)
+      else if (scaleKey === 'forca_muscular_mrc') {
+        const mrcItem = items.find((i) => i.label.toLowerCase().includes('mrc') || i.label.toLowerCase().includes('força'));
+        const obsItem = items.find((i) => i.label.toLowerCase().includes('assimetria') || i.label.toLowerCase().includes('observaç'));
+        if (mrcItem) {
+          const matchDigit = mrcItem.value.match(/^([0-5])/);
+          const grade = matchDigit ? matchDigit[1] : mrcItem.value.split(' - ')[0];
+          calculatedScore = `Grau ${grade}/5 (MRC)`;
+          if (grade === '5') clinicalInterp = 'Força Normal (Grau 5) - Contração normal contra resistência plena';
+          else if (grade === '4') clinicalInterp = 'Paresia Leve (Grau 4) - Movimento ativo contra resistência parcial';
+          else if (grade === '3') clinicalInterp = 'Paresia Moderada (Grau 3) - Movimento ativo vence apenas gravidade';
+          else if (grade === '2') clinicalInterp = 'Fraqueza Severa (Grau 2) - Movimento ativo apenas sem gravidade';
+          else if (grade === '1') clinicalInterp = 'Vestígio de Contração (Grau 1) - Sem movimento articular';
+          else if (grade === '0') clinicalInterp = 'Plegia Completa (Grau 0) - Ausência total de contração detectável';
+          else clinicalInterp = mrcItem.value;
+
+          if (obsItem?.value) {
+            clinicalInterp += ` • Observações: ${obsItem.value}`;
+          }
+        }
+      }
+
+      // 15. Manovacuometria (PImáx / PEmáx)
+      else if (scaleKey === 'manovacuometria') {
+        const piItem = items.find((i) => i.label.toLowerCase().includes('pimáx medida') || i.label.toLowerCase().includes('pimax medida') || (i.label.toLowerCase().includes('pimáx') && !i.label.toLowerCase().includes('prevista') && !i.label.toLowerCase().includes('%')));
+        const peItem = items.find((i) => i.label.toLowerCase().includes('pemáx medida') || i.label.toLowerCase().includes('pemax medida') || (i.label.toLowerCase().includes('pemáx') && !i.label.toLowerCase().includes('prevista') && !i.label.toLowerCase().includes('%')));
+        const piPerc = items.find((i) => i.label.toLowerCase().includes('pimáx') && i.label.toLowerCase().includes('%'));
+        const pePerc = items.find((i) => i.label.toLowerCase().includes('pemáx') && i.label.toLowerCase().includes('%'));
+
+        const piVal = piItem ? piItem.value : null;
+        const peVal = peItem ? peItem.value : null;
+
+        if (piVal || peVal) {
+          const parts: string[] = [];
+          if (piVal) parts.push(`PImáx: ${piVal} cmH2O${piPerc?.value ? ` (${piPerc.value}%)` : ''}`);
+          if (peVal) parts.push(`PEmáx: ${peVal} cmH2O${pePerc?.value ? ` (${pePerc.value}%)` : ''}`);
+          calculatedScore = parts.join(' • ');
+
+          const piNum = parseFloat(String(piPerc?.value || '').replace(/[^\d.]/g, ''));
+          if (!isNaN(piNum)) {
+            clinicalInterp = piNum >= 80
+              ? `Força Muscular Inspiratória Normal (${piNum}% do previsto)`
+              : piNum >= 60
+              ? `Fraqueza Muscular Inspiratória Leve a Moderada (${piNum}% do previsto)`
+              : `Fraqueza Muscular Inspiratória Severa (${piNum}% do previsto)`;
+          } else {
+            clinicalInterp = 'Avaliação da força dos músculos inspiratórios (PImáx) e expiratórios (PEmáx)';
+          }
+        }
+      }
+
+      // 16. Peak Flow e Pico de Fluxo de Tosse (PFE / PFT)
+      else if (scaleKey === 'peak_flow') {
+        const pfeItem = items.find((i) => i.label.toLowerCase().includes('pfe') || i.label.toLowerCase().includes('expiratório'));
+        const pftItem = items.find((i) => i.label.toLowerCase().includes('pft') || i.label.toLowerCase().includes('tosse'));
+        const interpItem = items.find((i) => i.label.toLowerCase().includes('interpretação'));
+
+        const pfeVal = pfeItem ? pfeItem.value : null;
+        const pftVal = pftItem ? pftItem.value : null;
+
+        if (pfeVal || pftVal) {
+          const parts: string[] = [];
+          if (pfeVal) parts.push(`PFE: ${pfeVal} L/min`);
+          if (pftVal) parts.push(`PFT Tosse: ${pftVal} L/min`);
+          calculatedScore = parts.join(' • ');
+
+          if (interpItem?.value) {
+            clinicalInterp = interpItem.value;
+          } else if (pftVal) {
+            const num = parseFloat(String(pftVal).replace(/[^\d.]/g, ''));
+            if (!isNaN(num)) {
+              clinicalInterp = num >= 270
+                ? `Tosse Eficaz (> 270 L/min) - Mecanismo de limpeza brônquica preservado`
+                : num >= 160
+                ? `Tosse Potencialmente Insuficiente (160 a 270 L/min) - Requer vigilância respiratória`
+                : `Tosse Ineficaz (< 160 L/min) - Alto risco de retenção de secreções e infecção pulmonar`;
+            }
+          }
+        }
+      }
+
+      // 17. Escala de Dispneia - mMRC
+      else if (scaleKey === 'mmrc') {
+        const mmrcItem = items.find((i) => i.label.toLowerCase().includes('mmrc') || i.label.toLowerCase().includes('dispneia'));
+        if (mmrcItem) {
+          const matchGrau = mmrcItem.value.match(/Grau\s*(\d)/i);
+          const grau = matchGrau ? matchGrau[1] : mmrcItem.value.charAt(0);
+          calculatedScore = `Grau ${grau} / 4 (mMRC)`;
+          clinicalInterp = mmrcItem.value;
+        }
+      }
+
+      // 18. Classificação Funcional - NYHA
+      else if (scaleKey === 'nyha') {
+        const nyhaItem = items.find((i) => i.label.toLowerCase().includes('nyha') || i.label.toLowerCase().includes('classe'));
+        if (nyhaItem) {
+          const matchClass = nyhaItem.value.match(/Classe\s*(I{1,3}|IV)/i);
+          const classe = matchClass ? matchClass[1] : nyhaItem.value.split(' - ')[0];
+          calculatedScore = `Classe ${classe} (NYHA)`;
+          clinicalInterp = nyhaItem.value;
+        }
+      }
+
+      // 19. Qualidade de Vida (SF-36)
+      else if (scaleKey === 'sf36') {
+        const saudeItem = items.find((i) => i.label.includes('1 - Em geral'));
+        const compItem = items.find((i) => i.label.includes('2 - Comparada'));
+        if (saudeItem) {
+          calculatedScore = `Saúde Geral: ${saudeItem.value.replace(/^\d+\s*-\s*/, '')}`;
+          clinicalInterp = `Avaliação de Qualidade de Vida e Capacidade Funcional (SF-36)${compItem?.value ? ` • Evolução anual: ${compItem.value.replace(/^\d+\s*-\s*/, '')}` : ''}`;
+        } else {
+          calculatedScore = 'Questionário SF-36 Preenchido';
+          clinicalInterp = 'Avaliação multidimensional de qualidade de vida, vitalidade e capacidade funcional.';
+        }
+      }
+
+      // 20. Qualidade do Sono (PSQI)
+      else if (scaleKey === 'psqi') {
+        const hSono = items.find((i) => i.label.toLowerCase().includes('horas de sono'));
+        const lat = items.find((i) => i.label.toLowerCase().includes('minutos para adormecer') || i.label.toLowerCase().includes('adormecer'));
+        const qual = items.find((i) => i.label.toLowerCase().includes('qualidade geral'));
+        if (hSono || qual) {
+          const parts: string[] = [];
+          if (hSono?.value) parts.push(`${hSono.value}h de sono`);
+          if (lat?.value) parts.push(`Latência: ${lat.value} min`);
+          calculatedScore = parts.join(' • ') || 'Avaliação PSQI Preenchida';
+          clinicalInterp = qual?.value
+            ? `Qualidade Geral do Sono: ${qual.value.replace(/^\d+\s*-\s*/, '')} • Índice de Qualidade do Sono de Pittsburgh (PSQI)`
+            : 'Avaliação dos padrões, latência e distúrbios do sono pelo PSQI.';
+        }
+      }
+
+      // 21. Bioimpedância
+      else if (scaleKey === 'bioimpedancia') {
+        const imcItem = items.find((i) => i.label.toLowerCase().includes('imc'));
+        const gordItem = items.find((i) => i.label.toLowerCase().includes('gordura'));
+        const massaItem = items.find((i) => i.label.toLowerCase().includes('massa muscular') || i.label.toLowerCase().includes('massa magra'));
+        const pesoItem = items.find((i) => i.label.toLowerCase().includes('peso'));
+
+        if (imcItem || gordItem || pesoItem) {
+          const parts: string[] = [];
+          if (pesoItem?.value) parts.push(`${pesoItem.value} kg`);
+          if (imcItem?.value) parts.push(`IMC: ${imcItem.value}`);
+          if (gordItem?.value) parts.push(`Gordura: ${gordItem.value}%`);
+          if (massaItem?.value) parts.push(`M. Magra: ${massaItem.value} kg`);
+          calculatedScore = parts.join(' • ');
+
+          const imcNum = parseFloat(String(imcItem?.value || '').replace(/[^\d.]/g, ''));
+          if (!isNaN(imcNum)) {
+            clinicalInterp = imcNum < 18.5
+              ? `Baixo Peso (IMC ${imcNum}) • Necessária atenção ao aporte nutricional e massa muscular`
+              : imcNum < 25
+              ? `Eutrofia / Peso Adequado (IMC ${imcNum}) • Composição corporal equilibrada`
+              : imcNum < 30
+              ? `Sobrepeso (IMC ${imcNum}) • Acompanhamento de composição corporal e controle de carga articular`
+              : `Obesidade (IMC ${imcNum}) • Prescrição funcional com controle de sobrecarga musculoesquelética`;
+          } else {
+            clinicalInterp = 'Composição corporal avaliada por bioimpedância elétrica.';
+          }
+        }
+      }
+
+      // 22. Goniometria
+      else if (scaleKey === 'goniometria') {
+        const degreeItems = items.filter((i) => i.unit === '°' || i.value.includes('°') || !isNaN(parseFloat(i.value)));
+        calculatedScore = `${degreeItems.length} ADM(s) medida(s)`;
+        clinicalInterp = `Goniometria Articular - Amplitude de Movimento (ADM) avaliada em ${degreeItems.length} teste(s) específicos.`;
+      }
+
+      // 23. Postural Global
+      else if (scaleKey === 'postural') {
+        const deviationsCount = items.reduce((acc, it) => {
+          if (it.value && it.value !== 'Não' && it.value !== 'Simétrico') {
+            const list = it.value.split(',');
+            return acc + list.length;
+          }
+          return acc;
+        }, 0);
+        calculatedScore = `${deviationsCount} desvio(s) anotado(s)`;
+        clinicalInterp = 'Avaliação Postural Global nos planos frontal anterior, frontal posterior e sagital lateral.';
+      }
+
+      // 24. Anamnese
+      else if (scaleKey === 'anamnese') {
+        const qp = items.find((i) => i.label.toLowerCase().includes('queixa') || i.label.toLowerCase().includes('qp'));
+        const diag = items.find((i) => i.label.toLowerCase().includes('diagnóstico') || i.label.toLowerCase().includes('diagnostico'));
+        calculatedScore = 'Anamnese Completa';
+        clinicalInterp = qp?.value
+          ? `Queixa Principal: ${qp.value.slice(0, 100)}${qp.value.length > 100 ? '...' : ''}${diag?.value ? ` • Diagnóstico Funcional: ${diag.value.slice(0, 80)}` : ''}`
+          : 'História clínica pregressa, familiar e diagnóstico cinético-funcional.';
+      }
+
+      // 25. Registro Fotográfico
+      else if (scaleKey === 'registro_fotografico') {
+        calculatedScore = 'Registro Fotográfico Postural';
+        clinicalInterp = 'Documentação fotográfica corporal nos planos frontal e sagitais para monitoramento visual.';
       }
 
       scaleEntry.sessionsMap.set(record.id, {

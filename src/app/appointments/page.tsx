@@ -308,6 +308,7 @@ export default function AppointmentsPage() {
   const [isSavingEvolution, setIsSavingEvolution] = useState(false);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [evolutionPreviewImageIndex, setEvolutionPreviewImageIndex] = useState<number | null>(null);
+  const [copiedEvolutionNotes, setCopiedEvolutionNotes] = useState(false);
   const evolutionFileInputRef = useRef<HTMLInputElement>(null);
   const evolutionEditorRef = useRef<HTMLDivElement>(null);
 
@@ -602,6 +603,7 @@ export default function AppointmentsPage() {
     const initialNotes = selectedApp.notes && !selectedApp.notes.startsWith('Sessão ') ? selectedApp.notes : '';
     setEvolutionNotes(initialNotes);
     setEvolutionImages(selectedApp.images && Array.isArray(selectedApp.images) ? selectedApp.images : []);
+    setCopiedEvolutionNotes(false);
     setInlineEvolutionOpen(true);
     setTimeout(() => {
       if (evolutionEditorRef.current) {
@@ -638,6 +640,57 @@ export default function AppointmentsPage() {
       evolutionEditorRef.current.innerHTML = newHtml;
       setEvolutionNotes(newHtml);
       evolutionEditorRef.current.focus();
+    }
+  };
+
+  const handleCopyEvolutionNotes = async () => {
+    let textToCopy = evolutionEditorRef.current?.innerText?.trim() || '';
+    if (!textToCopy && evolutionNotes) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = evolutionNotes;
+      textToCopy = (tempDiv.innerText || tempDiv.textContent || '').trim();
+    }
+    if (!textToCopy && selectedApp?.notes) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = selectedApp.notes;
+      textToCopy = (tempDiv.innerText || tempDiv.textContent || '').trim();
+    }
+
+    if (!textToCopy) {
+      toast({
+        title: 'Aviso',
+        description: 'Não há anotações na evolução para copiar.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedEvolutionNotes(true);
+      setTimeout(() => setCopiedEvolutionNotes(false), 2500);
+      toast({
+        title: 'Copiado!',
+        description: 'Anotações da evolução copiadas para a área de transferência.',
+        type: 'success',
+      });
+    } catch {
+      toast({
+        title: 'Erro ao copiar',
+        description: 'Não foi possível copiar o texto automaticamente.',
+        type: 'error',
+      });
     }
   };
 
@@ -1241,23 +1294,23 @@ export default function AppointmentsPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-2xl p-5 sm:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto"
+                className="relative z-10 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto"
               >
-                <h3 className="font-bold text-slate-800 text-base sm:text-lg border-b border-slate-100 pb-3">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-lg border-b border-slate-100 dark:border-slate-800 pb-3">
                   Agendar Atendimento
                 </h3>
 
                 <form onSubmit={handleAddAppointment} className="space-y-4">
                   {modalError && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-600 font-medium flex items-start space-x-2">
-                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-600 dark:text-red-400 font-medium flex items-start space-x-2">
+                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                       <span>{modalError}</span>
                     </div>
                   )}
 
                   {/* Custom Pretty Patient Select */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Nome do Paciente *
                     </label>
                     <PatientSelect
@@ -1269,7 +1322,7 @@ export default function AppointmentsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Data *
                       </label>
                       <input
@@ -1281,12 +1334,12 @@ export default function AppointmentsPage() {
                           setDate(newD);
                           checkConflict(newD, time);
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Horário *
                       </label>
                       <input
@@ -1298,7 +1351,7 @@ export default function AppointmentsPage() {
                           setTime(newT);
                           checkConflict(date, newT);
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -1307,7 +1360,7 @@ export default function AppointmentsPage() {
                     <button
                       type="button"
                       onClick={() => setShowModal(false)}
-                      className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 text-center"
+                      className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-center"
                     >
                       Cancelar
                     </button>
@@ -1345,42 +1398,42 @@ export default function AppointmentsPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-                className={`relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 sm:p-6 w-full max-h-[92vh] overflow-y-auto transition-all duration-300 ${
+                className={`relative z-10 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-6 w-full max-h-[92vh] overflow-y-auto transition-all duration-300 ${
                   inlineEvolutionOpen ? 'max-w-4xl sm:max-w-5xl' : 'max-w-lg'
                 }`}
               >
                 {/* Modal Top Bar */}
-                <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
+                <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
                   <div className="flex items-center space-x-3 min-w-0">
                     <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-700 text-white font-black text-base flex items-center justify-center shrink-0 shadow-sm">
                       {(selectedApp.patientName || 'P').charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-slate-900 text-base sm:text-lg truncate">
+                        <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg truncate">
                           {selectedApp.patientName}
                         </h3>
                         {selectedApp.hasEvolution && (
-                          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 shrink-0">
+                          <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 shrink-0">
                             <CheckCircle2 className="w-3 h-3" /> Evoluído
                           </span>
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5">
-                        <p className="text-xs text-slate-500 font-medium truncate">{selectedApp.type}</p>
-                        <span className="hidden sm:inline text-slate-300">•</span>
-                        <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                          <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">{selectedApp.type}</p>
+                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                        <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                          <CalendarDays className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                           <span>{getWeekdayLabel(selectedApp.date || '').shortDate}</span>
-                          <span className="text-slate-300 mx-0.5">-</span>
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="text-slate-300 dark:text-slate-600 mx-0.5">-</span>
+                          <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                           <span>{normalizeTime(selectedApp.time)}</span>
                         </div>
                         {selectedApp.physioName && (
                           <>
-                            <span className="hidden sm:inline text-slate-300">•</span>
-                            <div className="flex items-center space-x-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                              <User className="w-3 h-3 text-slate-500" />
+                            <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                            <div className="flex items-center space-x-1 text-[11px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                              <User className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                               <span className="truncate max-w-[150px] sm:max-w-none">{selectedApp.physioName}</span>
                             </div>
                           </>
@@ -1392,7 +1445,7 @@ export default function AppointmentsPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedApp(null)}
-                    className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors shrink-0"
+                    className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -1404,14 +1457,14 @@ export default function AppointmentsPage() {
                   <div className="space-y-4">
                     {/* Quick Status Selection Bar */}
                     <div className="space-y-2">
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         Alterar Status do Atendimento
                       </label>
                       <div className="relative">
                         <button 
                           type="button"
                           onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                          className="w-full bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-xl px-3 py-2.5 text-sm text-slate-800 flex items-center justify-between transition-all cursor-pointer"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 flex items-center justify-between transition-all cursor-pointer"
                         >
                           <div className="flex items-center space-x-2">
                             <div className={`w-2.5 h-2.5 rounded-full ${[
@@ -1430,7 +1483,7 @@ export default function AppointmentsPage() {
                         </button>
 
                         {isStatusDropdownOpen && (
-                          <div className="absolute top-full mt-1 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden py-1">
+                          <div className="absolute top-full mt-1 left-0 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 overflow-hidden py-1">
                             {[
                               { label: 'Agendado', value: 'Agendado', color: 'bg-blue-500' },
                               { label: 'Atendido', value: 'Atendido', color: 'bg-emerald-500' },
@@ -1451,7 +1504,7 @@ export default function AppointmentsPage() {
                                     handleUpdateStatus(option.value);
                                   }
                                 }}
-                                className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center space-x-2 text-sm text-slate-700 transition-colors cursor-pointer"
+                                className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
                               >
                                 <div className={`w-2.5 h-2.5 rounded-full ${option.color}`} />
                                 <span>{option.label}</span>
@@ -1462,19 +1515,19 @@ export default function AppointmentsPage() {
                       </div>
 
                       {editStatus === 'Remarcar' && (
-                        <div className="mt-4 p-4 border border-blue-200 bg-blue-50/50 rounded-xl space-y-3">
-                          <p className="text-xs font-bold text-blue-800">Escolha o novo horário:</p>
+                        <div className="mt-4 p-4 border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/40 rounded-xl space-y-3">
+                          <p className="text-xs font-bold text-blue-800 dark:text-blue-300">Escolha o novo horário:</p>
                           
                           {editError && (
-                            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-600 font-medium flex items-start space-x-2">
-                              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-600 dark:text-red-400 font-medium flex items-start space-x-2">
+                              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                               <span>{editError}</span>
                             </div>
                           )}
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs font-semibold text-slate-600 mb-1">Nova Data</label>
+                              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Nova Data</label>
                               <input
                                 type="date"
                                 value={editDate}
@@ -1482,11 +1535,11 @@ export default function AppointmentsPage() {
                                   setEditDate(e.target.value);
                                   checkRescheduleConflict(e.target.value, editTime);
                                 }}
-                                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:border-blue-500 focus:outline-none"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-semibold text-slate-600 mb-1">Novo Horário</label>
+                              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Novo Horário</label>
                               <input
                                 type="time"
                                 value={editTime}
@@ -1494,7 +1547,7 @@ export default function AppointmentsPage() {
                                   setEditTime(e.target.value);
                                   checkRescheduleConflict(editDate, e.target.value);
                                 }}
-                                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:border-blue-500 focus:outline-none"
                               />
                             </div>
                           </div>
@@ -1511,21 +1564,21 @@ export default function AppointmentsPage() {
                     </div>
 
                     {/* Financial Baixa Action Banner */}
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between gap-3">
+                    <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3.5 flex items-center justify-between gap-3">
                       <div className="flex items-center space-x-2.5 min-w-0">
                         <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0 shadow-2xs">
                           <CheckCircle2 className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-emerald-950">Baixa no Financeiro</p>
-                          <p className="text-[11px] text-emerald-700 font-medium">
+                          <p className="text-xs font-bold text-emerald-950 dark:text-emerald-100">Baixa no Financeiro</p>
+                          <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
                             Atendimentos confirmados dão baixa automática.
                           </p>
                         </div>
                       </div>
 
                       {(selectedApp as any)?.financialRecord?.status === 'baixado' ? (
-                        <div className="bg-emerald-100/50 text-emerald-800 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center space-x-1.5">
+                        <div className="bg-emerald-100/50 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center space-x-1.5">
                           <CheckCircle2 className="w-4 h-4" />
                           <span>Baixa Confirmada</span>
                         </div>
@@ -1542,14 +1595,14 @@ export default function AppointmentsPage() {
 
                     {/* Patient Contact & WhatsApp Action Card */}
                     {selectedApp.patientPhone && (
-                      <div className="flex items-center justify-between bg-blue-50/70 p-3.5 rounded-xl border border-blue-100/90 shadow-2xs">
+                      <div className="flex items-center justify-between bg-blue-50/70 dark:bg-slate-800/60 p-3.5 rounded-xl border border-blue-100/90 dark:border-slate-700 shadow-2xs">
                         <div className="flex items-center space-x-3 min-w-0">
-                          <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 border border-blue-200">
+                          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-700">
                             <Phone className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-[10px] uppercase font-semibold text-slate-400">Contato do Paciente</p>
-                            <p className="text-xs font-bold text-slate-800 font-mono truncate">{selectedApp.patientPhone}</p>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 font-mono truncate">{selectedApp.patientPhone}</p>
                           </div>
                         </div>
 
@@ -1582,61 +1635,83 @@ export default function AppointmentsPage() {
                       const isAtendido = (selectedApp.status || '').toLowerCase().includes('atendido') || (selectedApp.status || '').toLowerCase().includes('finalizado');
 
                       return (
-                        <div className={`${hasEvolution ? 'bg-emerald-50/90 border-emerald-300' : isAtendido ? 'bg-amber-50/90 border-amber-300' : 'bg-blue-50/90 border-blue-300'} border rounded-2xl p-4 flex items-center justify-between gap-3 shadow-2xs`}>
+                        <div className={`${hasEvolution ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800' : isAtendido ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800' : 'bg-blue-50/90 dark:bg-blue-950/40 border-blue-300 dark:border-blue-800'} border rounded-2xl p-4 flex items-center justify-between gap-3 shadow-2xs`}>
                           <div className="flex items-center space-x-3 min-w-0">
                             <div className={`w-10 h-10 rounded-xl text-white flex items-center justify-center font-bold shrink-0 shadow-2xs ${hasEvolution ? 'bg-emerald-600' : isAtendido ? 'bg-amber-600' : 'bg-blue-600'}`}>
                               {hasEvolution ? <CheckCircle2 className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                             </div>
                             <div className="min-w-0">
-                              <p className={`text-xs sm:text-sm font-bold ${hasEvolution ? 'text-emerald-950' : isAtendido ? 'text-amber-950' : 'text-blue-950'}`}>
+                              <p className={`text-xs sm:text-sm font-bold ${hasEvolution ? 'text-emerald-950 dark:text-emerald-100' : isAtendido ? 'text-amber-950 dark:text-amber-100' : 'text-blue-950 dark:text-blue-100'}`}>
                                 {hasEvolution ? 'Evolução Registrada' : isAtendido ? 'Evolução Pendente' : 'Evolução do Paciente'}
                               </p>
-                              <p className={`text-[11px] font-medium truncate ${hasEvolution ? 'text-emerald-700' : isAtendido ? 'text-amber-700' : 'text-blue-700'}`}>
+                              <p className={`text-[11px] font-medium truncate ${hasEvolution ? 'text-emerald-700 dark:text-emerald-300' : isAtendido ? 'text-amber-700 dark:text-amber-300' : 'text-blue-700 dark:text-blue-300'}`}>
                                 {hasEvolution ? 'Anotações clínicas e anexos salvos' : isAtendido ? 'Atendimento realizado: registre a evolução clínica' : 'Registre a evolução clínica da sessão'}
                               </p>
                             </div>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={handleOpenInlineEvolution}
-                            className={`${hasEvolution ? 'bg-emerald-600 hover:bg-emerald-700' : isAtendido ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 py-2.5 rounded-xl text-xs font-bold shrink-0 shadow-sm transition-all cursor-pointer flex items-center space-x-1.5 hover:scale-[1.02] active:scale-95`}
-                          >
-                            {hasEvolution ? <Search className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
-                            <span>{hasEvolution ? 'Ver / Editar Evolução' : isAtendido ? 'Inserir Evolução' : 'Atender e Evoluir'}</span>
-                          </button>
+                          <div className="flex items-center space-x-2 shrink-0">
+                            {hasEvolution && (
+                              <button
+                                type="button"
+                                onClick={handleCopyEvolutionNotes}
+                                className="bg-white dark:bg-slate-900 hover:bg-emerald-100 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 shadow-2xs hover:scale-[1.02] active:scale-95"
+                                title="Copiar anotações da evolução"
+                              >
+                                {copiedEvolutionNotes ? (
+                                  <>
+                                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                    <span>Copiado</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                                    <span>Copiar</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={handleOpenInlineEvolution}
+                              className={`${hasEvolution ? 'bg-emerald-600 hover:bg-emerald-700' : isAtendido ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 py-2.5 rounded-xl text-xs font-bold shrink-0 shadow-sm transition-all cursor-pointer flex items-center space-x-1.5 hover:scale-[1.02] active:scale-95`}
+                            >
+                              {hasEvolution ? <Search className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+                              <span>{hasEvolution ? 'Ver / Editar Evolução' : isAtendido ? 'Inserir Evolução' : 'Atender e Evoluir'}</span>
+                            </button>
+                          </div>
                         </div>
                       );
                     })()}
 
                     {/* Edit Form */}
                     {isEditing && (
-                      <form onSubmit={handleSaveEdit} className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                      <form onSubmit={handleSaveEdit} className="space-y-3 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                         {editError && (
-                          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-600 font-medium">
+                          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-600 dark:text-red-400 font-medium">
                             {editError}
                           </div>
                         )}
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-1">Data</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Data</label>
                             <input
                               type="date"
                               required
                               value={editDate}
                               onChange={(e) => setEditDate(e.target.value)}
-                              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800"
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-1">Horário</label>
+                            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Horário</label>
                             <input
                               type="time"
                               required
                               value={editTime}
                               onChange={(e) => setEditTime(e.target.value)}
-                              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800"
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100"
                             />
                           </div>
                         </div>
@@ -1645,7 +1720,7 @@ export default function AppointmentsPage() {
                           <button
                             type="button"
                             onClick={() => setIsEditing(false)}
-                            className="px-3 py-1.5 text-xs text-slate-500 font-semibold hover:text-slate-800 cursor-pointer"
+                            className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 font-semibold hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
                           >
                             Cancelar
                           </button>
@@ -1660,11 +1735,11 @@ export default function AppointmentsPage() {
                     )}
 
                     {/* Footer Action Buttons */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                       <button
                         type="button"
                         onClick={() => setIsEditing(!isEditing)}
-                        className="inline-flex items-center space-x-1.5 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                        className="inline-flex items-center space-x-1.5 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                         <span>{isEditing ? 'Fechar Edição' : 'Editar Horário'}</span>
@@ -1673,7 +1748,7 @@ export default function AppointmentsPage() {
                       <button
                         type="button"
                         onClick={() => handleDeleteAppointment(selectedApp.id)}
-                        className="inline-flex items-center space-x-1.5 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                        className="inline-flex items-center space-x-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/60 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Excluir Atendimento</span>
@@ -1691,27 +1766,27 @@ export default function AppointmentsPage() {
                   >
                     {/* Left Column: Summary & Patient Overview */}
                     <div className="lg:col-span-4 space-y-4">
-                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+                      <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                             Resumo do Paciente
                           </span>
-                          <span className="text-[11px] font-black text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                          <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full">
                             {selectedApp.time}
                           </span>
                         </div>
 
                         <div>
-                          <p className="font-extrabold text-sm text-slate-900">{selectedApp.patientName}</p>
-                          <p className="text-xs text-slate-500 font-medium mt-0.5">{selectedApp.type}</p>
+                          <p className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{selectedApp.patientName}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">{selectedApp.type}</p>
                           {selectedApp.patientPhone && (
-                            <p className="text-xs font-mono font-bold text-slate-700 mt-1">{selectedApp.patientPhone}</p>
+                            <p className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 mt-1">{selectedApp.patientPhone}</p>
                           )}
                         </div>
 
                         {selectedApp.physioName && (
-                          <div className="pt-2 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-blue-800">
-                            <User className="w-3.5 h-3.5 text-blue-600" />
+                          <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 flex items-center gap-2 text-xs font-semibold text-blue-800 dark:text-blue-300">
+                            <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                             <span>{selectedApp.physioName}</span>
                           </div>
                         )}
@@ -1733,7 +1808,7 @@ export default function AppointmentsPage() {
                       <button
                         type="button"
                         onClick={handleCloseInlineEvolution}
-                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition-colors cursor-pointer"
+                        className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition-colors cursor-pointer"
                       >
                         <ArrowLeft className="w-3.5 h-3.5" />
                         <span>Voltar aos Detalhes</span>
@@ -1741,15 +1816,15 @@ export default function AppointmentsPage() {
                     </div>
 
                     {/* Right Column: Interactive Clinical Evolution Form */}
-                    <div className="lg:col-span-8 space-y-4 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-6 pt-4 lg:pt-0">
-                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div className="lg:col-span-8 space-y-4 border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800 lg:pl-6 pt-4 lg:pt-0">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                         <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                          <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                             <FileText className="w-4 h-4" />
                           </div>
                           <div>
-                            <h4 className="font-bold text-sm text-slate-900">Evolução Clínica da Sessão</h4>
-                            <p className="text-[11px] text-slate-500 font-medium">
+                            <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Evolução Clínica da Sessão</h4>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                               Registre condutas, relato do paciente e procedimentos realizados
                             </p>
                           </div>
@@ -1758,7 +1833,7 @@ export default function AppointmentsPage() {
 
                       {/* Quick Clinical Chips */}
                       <div className="space-y-1.5">
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                        <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-amber-500" />
                           <span>Frases Rápidas e Condutas Clínicas</span>
                         </label>
@@ -1768,9 +1843,9 @@ export default function AppointmentsPage() {
                               key={idx}
                               type="button"
                               onClick={() => insertEvolutionChip(chip)}
-                              className="text-[11px] font-medium bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 transition-all flex items-center gap-1 cursor-pointer text-left"
+                              className="text-[11px] font-medium bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-700 dark:hover:text-blue-300 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1 cursor-pointer text-left"
                             >
-                              <Plus className="w-3 h-3 shrink-0 text-blue-500" />
+                              <Plus className="w-3 h-3 shrink-0 text-blue-500 dark:text-blue-400" />
                               <span>{chip}</span>
                             </button>
                           ))}
@@ -1780,14 +1855,14 @@ export default function AppointmentsPage() {
                       {/* Rich Text Toolbar */}
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                          <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                             Anotações da Evolução
                           </label>
-                          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                          <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
                             <button
                               type="button"
                               onClick={() => formatEditorText('bold')}
-                              className="p-1 hover:bg-white rounded text-slate-700 transition-colors"
+                              className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 transition-colors"
                               title="Negrito"
                             >
                               <Bold className="w-3.5 h-3.5" />
@@ -1795,7 +1870,7 @@ export default function AppointmentsPage() {
                             <button
                               type="button"
                               onClick={() => formatEditorText('italic')}
-                              className="p-1 hover:bg-white rounded text-slate-700 transition-colors"
+                              className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 transition-colors"
                               title="Itálico"
                             >
                               <Italic className="w-3.5 h-3.5" />
@@ -1803,7 +1878,7 @@ export default function AppointmentsPage() {
                             <button
                               type="button"
                               onClick={() => formatEditorText('strikeThrough')}
-                              className="p-1 hover:bg-white rounded text-slate-700 transition-colors"
+                              className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 transition-colors"
                               title="Tachado"
                             >
                               <Strikethrough className="w-3.5 h-3.5" />
@@ -1811,7 +1886,7 @@ export default function AppointmentsPage() {
                             <button
                               type="button"
                               onClick={() => formatEditorText('insertUnorderedList')}
-                              className="p-1 hover:bg-white rounded text-slate-700 transition-colors"
+                              className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 transition-colors"
                               title="Lista com Marcadores"
                             >
                               <List className="w-3.5 h-3.5" />
@@ -1819,10 +1894,35 @@ export default function AppointmentsPage() {
                             <button
                               type="button"
                               onClick={() => formatEditorText('removeFormat')}
-                              className="p-1 hover:bg-white rounded text-slate-700 transition-colors"
+                              className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 transition-colors"
                               title="Limpar Formatação"
                             >
                               <Eraser className="w-3.5 h-3.5" />
+                            </button>
+
+                            <div className="w-[1px] h-3.5 bg-slate-300 dark:bg-slate-600 mx-0.5" />
+
+                            <button
+                              type="button"
+                              onClick={handleCopyEvolutionNotes}
+                              className={`p-1 px-1.5 hover:bg-white dark:hover:bg-slate-700 rounded transition-all flex items-center space-x-1 cursor-pointer ${
+                                copiedEvolutionNotes
+                                  ? 'text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-700 shadow-2xs font-bold'
+                                  : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
+                              }`}
+                              title="Copiar anotações da evolução"
+                            >
+                              {copiedEvolutionNotes ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Copiado</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                                  <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">Copiar</span>
+                                </>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -1832,7 +1932,7 @@ export default function AppointmentsPage() {
                           ref={evolutionEditorRef}
                           contentEditable
                           onInput={handleEditorInput}
-                          className="w-full min-h-[140px] max-h-[220px] overflow-y-auto p-3.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans leading-relaxed"
+                          className="w-full min-h-[140px] max-h-[220px] overflow-y-auto p-3.5 bg-slate-50 dark:bg-slate-950 hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans leading-relaxed"
                           data-placeholder="Descreva aqui o estado do paciente, queixas, testes realizados, condutas e resposta ao tratamento..."
                         />
                       </div>
@@ -1840,8 +1940,8 @@ export default function AppointmentsPage() {
                       {/* Photo / Image Attachments */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                            <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                          <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <ImageIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                             <span>Fotos e Anexos da Sessão ({evolutionImages.length})</span>
                           </label>
                           <input
@@ -1856,7 +1956,7 @@ export default function AppointmentsPage() {
                             type="button"
                             onClick={() => evolutionFileInputRef.current?.click()}
                             disabled={isUploadingImages}
-                            className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 px-3 py-1 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
                           >
                             {isUploadingImages ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1873,7 +1973,7 @@ export default function AppointmentsPage() {
                               <div
                                 key={idx}
                                 onClick={() => setEvolutionPreviewImageIndex(idx)}
-                                className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer shadow-2xs"
+                                className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 cursor-pointer shadow-2xs"
                               >
                                 <img
                                   src={img}
@@ -1895,12 +1995,12 @@ export default function AppointmentsPage() {
                       </div>
 
                       {/* Modal Footer Actions */}
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
                         <button
                           type="button"
                           onClick={handleCloseInlineEvolution}
                           disabled={isSavingEvolution}
-                          className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                          className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
                           Cancelar
                         </button>
@@ -1949,24 +2049,24 @@ export default function AppointmentsPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.93, y: 15 }}
                 transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-                className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                className="relative z-10 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
               >
                 {/* Modal Header */}
-                <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 px-5 pt-5 pb-3 border-b border-slate-100 rounded-t-3xl">
+                <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10 px-5 pt-5 pb-3 border-b border-slate-100 dark:border-slate-800 rounded-t-3xl">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md">
                         <SlidersHorizontal className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-slate-900 text-base">Filtros Avançados</h3>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Refine sua busca na agenda</p>
+                        <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">Filtros Avançados</h3>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Refine sua busca na agenda</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => setShowFilterModal(false)}
-                      className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
+                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -1976,39 +2076,39 @@ export default function AppointmentsPage() {
                 <div className="p-5 space-y-5">
                   {/* 1. Date Range Filter */}
                   <div className="space-y-2.5">
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      <CalendarDays className="w-4 h-4 text-blue-500" />
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      <CalendarDays className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                       Período
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] text-slate-500 font-medium mb-1">Data Início</label>
+                        <label className="block text-[11px] text-slate-500 dark:text-slate-400 font-medium mb-1">Data Início</label>
                         <input
                           type="date"
                           value={filterStartDate}
                           onChange={(e) => setFilterStartDate(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] text-slate-500 font-medium mb-1">Data Fim</label>
+                        <label className="block text-[11px] text-slate-500 dark:text-slate-400 font-medium mb-1">Data Fim</label>
                         <input
                           type="date"
                           value={filterEndDate}
                           onChange={(e) => setFilterEndDate(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-dashed border-slate-200" />
+                  <div className="border-t border-dashed border-slate-200 dark:border-slate-800" />
 
                   {/* 2. Status Multi-Select */}
                   <div className="space-y-2.5">
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      <Activity className="w-4 h-4 text-purple-500" />
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      <Activity className="w-4 h-4 text-purple-500 dark:text-purple-400" />
                       Status
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -2021,8 +2121,8 @@ export default function AppointmentsPage() {
                             onClick={() => toggleFilterStatus(opt.value)}
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
                               isActive
-                                ? 'bg-slate-900 text-white border-slate-900 shadow-sm scale-[1.02]'
-                                : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-400 hover:bg-slate-100'
+                                ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-600 shadow-sm scale-[1.02]'
+                                : 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                           >
                             <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-white' : opt.color}`} />
@@ -2035,12 +2135,12 @@ export default function AppointmentsPage() {
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-dashed border-slate-200" />
+                  <div className="border-t border-dashed border-slate-200 dark:border-slate-800" />
 
                   {/* 3. Physio Multi-Select */}
                   <div className="space-y-2.5">
-                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      <User className="w-4 h-4 text-emerald-500" />
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      <User className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                       Funcionários
                     </label>
                     {uniquePhysios.length > 0 ? (
@@ -2056,11 +2156,11 @@ export default function AppointmentsPage() {
                               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
                                 isActive
                                   ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm scale-[1.02]'
-                                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-emerald-400 hover:bg-emerald-50'
+                                  : 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-slate-800'
                               }`}
                             >
                               <span className={`w-5 h-5 rounded-full text-[9px] font-black flex items-center justify-center ${
-                                isActive ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                isActive ? 'bg-white/20 text-white' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                               }`}>
                                 {initials}
                               </span>
@@ -2077,12 +2177,12 @@ export default function AppointmentsPage() {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-slate-100 px-5 py-4 rounded-b-3xl">
+                <div className="sticky bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-t border-slate-100 dark:border-slate-800 px-5 py-4 rounded-b-3xl">
                   <div className="flex items-center justify-between">
                     <button
                       type="button"
                       onClick={clearAllFilters}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-xl transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 px-3 py-2 rounded-xl transition-colors"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       Limpar Filtros

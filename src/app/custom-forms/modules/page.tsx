@@ -36,6 +36,7 @@ import { useToast } from '@/components/toast-context';
 import { CustomSelect } from '@/components/custom-select';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FillFormModal } from '@/components/fill-form-modal';
+import { getNIHSSFields } from '@/lib/clinical-presets';
 
 export interface CustomField {
   id?: number | string;
@@ -528,82 +529,38 @@ export default function CustomModulesPage() {
       }]
   };
 
+  const loadNIHSSPreset = () => {
+    return getNIHSSFields().map((f, i) => ({
+      ...f,
+      id: Date.now() + i + 1,
+    }));
+  };
+
   const loadMRCScalePreset = () => {
-    const mrcOptions = [
-      '5 - Contração normal contra resistência plena',
-      '4 - Contração contra resistência parcial',
-      '3 - Contração contra gravidade apenas',
-      '2 - Contração contra gravidade parcial',
-      '1 - Contração contra gravidade mínima',
-      '0 - Sem contração detectável',
-    ];
-
-    const movements = [
-      'Flexão do Braço (Bíceps)',
-      'Extensão do Braço (Tríceps)',
-      'Elevação / Abdução de Ombro',
-      'Rotação Externa de Ombro',
-      'Flexão do Punho',
-      'Extensão do Punho',
-      'Flexão do Quadril (Iliopsoas)',
-      'Extensão do Quadril (Glúteo Máximo)',
-      'Flexão do Joelho (Isquiotibiais)',
-      'Extensão do Joelho (Quadríceps)',
-      'Dorsiflexão do Tornozelo (Tibial Anterior)',
-      'Flexão Plantar (Tríceps Sural)',
-    ];
-
-    const fields: any[] = [];
-    let counter = 1;
-    movements.forEach((mov) => {
-      fields.push({
-        id: Date.now() + counter++,
-        label: `${mov} - Direito`,
+    return [
+      {
+        id: Date.now() + 1,
+        label: 'Escala de Força Muscular (MRC)',
         fieldType: 'single_select',
+        isRequired: true,
+        helpText: 'Selecione o Movimento, Lado (Direito ou Esquerdo), Observação (Sim ou Não) e o Grau de Força (0 a 5)',
+        options: [
+          '5 - Contração normal contra resistência plena',
+          '4 - Contração contra resistência parcial',
+          '3 - Contração contra gravidade apenas',
+          '2 - Contração contra gravidade parcial',
+          '1 - Contração contra gravidade mínima',
+          '0 - Sem contração detectável',
+        ],
+      },
+      {
+        id: Date.now() + 2,
+        label: 'Observações / Assimetrias de Força Muscular',
+        fieldType: 'long_text',
         isRequired: false,
-        helpText: `Teste de ${mov.toLowerCase()} contra gravidade/resistência (Lado Direito)`,
-        options: mrcOptions,
-      });
-      fields.push({
-        id: Date.now() + counter++,
-        label: `${mov} - Esquerdo`,
-        fieldType: 'single_select',
-        isRequired: false,
-        helpText: `Teste de ${mov.toLowerCase()} contra gravidade/resistência (Lado Esquerdo)`,
-        options: mrcOptions,
-      });
-    });
-
-    fields.push({
-      id: Date.now() + counter++,
-      label: 'Músculo Específico Avaliado (Caso Necessário)',
-      fieldType: 'text',
-      isRequired: false,
-      helpText: 'Ex: Serrátil Anterior, Trapézio, Glúteo Médio, etc.',
-    });
-    fields.push({
-      id: Date.now() + counter++,
-      label: 'Grau de Força - Músculo Específico (Direito)',
-      fieldType: 'single_select',
-      isRequired: false,
-      options: mrcOptions,
-    });
-    fields.push({
-      id: Date.now() + counter++,
-      label: 'Grau de Força - Músculo Específico (Esquerdo)',
-      fieldType: 'single_select',
-      isRequired: false,
-      options: mrcOptions,
-    });
-    fields.push({
-      id: Date.now() + counter++,
-      label: 'Observações / Assimetrias de Força Muscular',
-      fieldType: 'long_text',
-      isRequired: false,
-      helpText: 'Anotar assimetrias, fadiga ou compensações',
-    });
-
-    return fields;
+        helpText: 'Anotar assimetrias, fadiga ou compensações gerais',
+      },
+    ];
   };
 
   const loadTUGScalePreset = () => {
@@ -1553,7 +1510,7 @@ export default function CustomModulesPage() {
                   {/* Module Basic Info */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider mb-1">
                         Selecionar Paciente *
                       </label>
                       <CustomSelect
@@ -1571,7 +1528,7 @@ export default function CustomModulesPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider mb-1">
                         Categoria
                       </label>
                       <CustomSelect
@@ -1594,7 +1551,7 @@ export default function CustomModulesPage() {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider mb-1">
                         Nome / Título da Avaliação ou Escala
                       </label>
                       <input
@@ -1602,7 +1559,7 @@ export default function CustomModulesPage() {
                         value={moduleTitle}
                         onChange={(e) => setModuleTitle(e.target.value)}
                         placeholder="Ex: Escala de Berg, Avaliação de Controle de Tronco, Escala EVA..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all"
                       />
                     </div>
 
@@ -1624,6 +1581,7 @@ export default function CustomModulesPage() {
                             { label: 'Módulo do Controle de Tronco', action: loadTrunkControlPreset }
                           ],
                           'Neurologia': [
+                            { label: 'Escala de AVC do NIH (NIHSS)', action: loadNIHSSPreset },
                             { label: 'Escala de Glasgow', action: loadGlasgowScalePreset },
                             { label: 'Escala de Ashworth', action: loadAshworthScalePreset }
                           ],
@@ -1655,12 +1613,12 @@ export default function CustomModulesPage() {
                         if (availablePresets.length === 0) return null;
 
                         return (
-                          <div className="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100 flex flex-col gap-2">
-                            <label className="block text-xs font-bold text-indigo-900 uppercase tracking-wider">
-                              <Sparkles className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5 text-indigo-600" />
+                          <div className="bg-indigo-50/60 dark:bg-slate-950/70 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/50 flex flex-col gap-2">
+                            <label className="block text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">
+                              <Sparkles className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5 text-indigo-600 dark:text-indigo-400" />
                               Carregar Escala Pronta (Opcional)
                             </label>
-                            <p className="text-[11px] text-indigo-700/80 mb-1">
+                            <p className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80 mb-1">
                               Selecione uma escala pronta abaixo para carregar as perguntas automaticamente.
                             </p>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 w-full">
@@ -1691,7 +1649,7 @@ export default function CustomModulesPage() {
                                   }
                                 }}
                                 disabled={!selectedPresetToLoad}
-                                className="inline-flex h-[42px] items-center justify-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white px-5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all shrink-0"
+                                className="inline-flex h-[42px] items-center justify-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white px-5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all shrink-0 cursor-pointer"
                               >
                                 <Plus className="w-4 h-4" />
                                 <span>Adicionar</span>
@@ -1703,7 +1661,7 @@ export default function CustomModulesPage() {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider mb-1">
                         Descrição Breve
                       </label>
                       <input
@@ -1711,21 +1669,19 @@ export default function CustomModulesPage() {
                         value={moduleDescription}
                         onChange={(e) => setModuleDescription(e.target.value)}
                         placeholder="Ex: Medições de flexão, extensão e rotações articulares"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all"
                       />
                     </div>
                   </div>
 
-
-
                   {/* Added Fields Preview */}
                   <div className="space-y-3">
-                    <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider">
                       Testes da Avaliação ({fields.length})
                     </h4>
 
                     {fields.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic">Nenhum teste adicionado ainda. Preencha a caixa acima.</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 italic">Nenhum teste adicionado ainda. Preencha a caixa acima.</p>
                     ) : (
                       <div className="space-y-2">
                         {fields.map((f, idx) => {
@@ -1734,29 +1690,29 @@ export default function CustomModulesPage() {
                             <React.Fragment key={idx}>
                               {isNewGroup && (
                                 <div className="pt-3 pb-1 flex items-center gap-2">
-                                  <div className="h-px bg-indigo-100 flex-1"></div>
-                                  <h5 className="text-[10px] font-bold text-indigo-700 bg-indigo-50/80 px-3 py-1 rounded-full border border-indigo-100 uppercase tracking-wider">
+                                  <div className="h-px bg-indigo-100 dark:bg-slate-800 flex-1"></div>
+                                  <h5 className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-800 uppercase tracking-wider">
                                     {f.group}
                                   </h5>
-                                  <div className="h-px bg-indigo-100 flex-1"></div>
+                                  <div className="h-px bg-indigo-100 dark:bg-slate-800 flex-1"></div>
                                 </div>
                               )}
-                              <div className="py-5 border-b border-slate-100 flex flex-col space-y-3 relative group">
+                              <div className="py-5 border-b border-slate-100 dark:border-slate-800/80 flex flex-col space-y-3 relative group">
                                 <div className="flex items-start justify-between">
                                   <div className="pr-10">
                                     <div className="flex items-center space-x-2">
-                                      <h4 className="font-bold text-sm text-slate-800">{f.label}</h4>
+                                      <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">{f.label}</h4>
                                       {f.isRequired && <span className="text-red-500 font-bold">*</span>}
                                     </div>
                                     {f.helpText && (
-                                      <p className="text-[11px] text-slate-400 italic mt-0.5">{f.helpText}</p>
+                                      <p className="text-[11px] text-slate-400 dark:text-slate-400 italic mt-0.5">{f.helpText}</p>
                                     )}
                                   </div>
                                   
                                   <button
                                     type="button"
                                     onClick={() => handleRemoveField(idx)}
-                                    className="text-slate-300 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 absolute right-0 top-4 opacity-0 group-hover:opacity-100 transition-all"
+                                    className="text-slate-300 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 absolute right-0 top-4 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -1767,7 +1723,7 @@ export default function CustomModulesPage() {
                                   {f.fieldType === 'scale_0_10' && (
                                     <div className="flex flex-wrap gap-1.5">
                                       {[...Array(11)].map((_, i) => (
-                                        <div key={i} className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm">
+                                        <div key={i} className="w-8 h-8 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm">
                                           {i}
                                         </div>
                                       ))}
@@ -1777,7 +1733,7 @@ export default function CustomModulesPage() {
                                   {(f.fieldType === 'single_select' || f.fieldType === 'multi_select') && (
                                     <div className="flex flex-wrap gap-2">
                                       {f.options?.map((opt: string, optIdx: number) => (
-                                        <div key={optIdx} className="px-3.5 py-1.5 rounded-xl border bg-white border-slate-200 text-xs font-semibold text-slate-700 shadow-sm">
+                                        <div key={optIdx} className="px-3.5 py-1.5 rounded-xl border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
                                           {opt}
                                         </div>
                                       ))}
@@ -1786,21 +1742,21 @@ export default function CustomModulesPage() {
 
                                   {f.fieldType === 'boolean' && (
                                     <div className="flex gap-2">
-                                      <div className="px-6 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-sm">Sim</div>
-                                      <div className="px-6 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-sm">Não</div>
+                                      <div className="px-6 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm">Sim</div>
+                                      <div className="px-6 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm">Não</div>
                                     </div>
                                   )}
 
                                   {f.fieldType === 'long_text' && (
-                                    <div className="w-full h-16 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-400">
+                                    <div className="w-full h-16 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-400 dark:text-slate-500">
                                       Caixa de texto longo...
                                     </div>
                                   )}
 
                                   {['text', 'number', 'date'].includes(f.fieldType) && (
-                                    <div className="w-full max-w-sm h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 flex items-center text-xs text-slate-400">
+                                    <div className="w-full max-w-sm h-10 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 flex items-center text-xs text-slate-400 dark:text-slate-400">
                                       {f.fieldType === 'date' ? 'dd/mm/aaaa' : 'Digite a resposta...'}
-                                      {f.unit && <span className="ml-2 text-slate-500 font-semibold">{f.unit}</span>}
+                                      {f.unit && <span className="ml-2 text-slate-500 dark:text-slate-300 font-semibold">{f.unit}</span>}
                                     </div>
                                   )}
                                 </div>
@@ -1813,18 +1769,18 @@ export default function CustomModulesPage() {
                   </div>
 
                   {/* Modal Actions */}
-                  <div className="sticky bottom-0 -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 px-5 sm:px-6 py-4 sm:py-5 mt-8 bg-white/85 backdrop-blur-xl border-t border-slate-200/60 flex items-center justify-end space-x-3 rounded-b-2xl shadow-[0_-15px_30px_-15px_rgba(0,0,0,0.1)] z-20 transition-all">
+                  <div className="sticky bottom-0 -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 px-5 sm:px-6 py-4 sm:py-5 mt-8 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-end space-x-3 rounded-b-2xl shadow-[0_-15px_30px_-15px_rgba(0,0,0,0.1)] z-20 transition-all">
                     <button
                       type="button"
                       onClick={() => setShowModal(false)}
-                      className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800"
+                      className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors cursor-pointer"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={fields.length === 0 || !selectedPatientId}
-                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-xs flex items-center space-x-1.5"
+                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-xs flex items-center space-x-1.5 cursor-pointer"
                     >
                       <Check className="w-4 h-4" />
                       <span>Salvar</span>
@@ -1869,23 +1825,23 @@ export default function CustomModulesPage() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0.5 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative z-10 w-full max-w-md md:max-w-lg bg-white h-full shadow-2xl border-l border-slate-200 flex flex-col"
+              className="relative z-10 w-full max-w-md md:max-w-lg bg-white dark:bg-slate-900 h-full shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col"
             >
-              <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/70">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold shadow-sm">
                     <ClipboardList className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">Histórico de Evoluções</h3>
-                    <p className="text-xs text-slate-500">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Histórico de Evoluções</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {evolutionsPatient?.name || evolutionsPatient?.fullName || 'Carregando...'}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setEvolutionsModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -2054,24 +2010,24 @@ export default function CustomModulesPage() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden my-8"
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-xl overflow-hidden my-8"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/80">
+              <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/70">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold shadow-sm">
                     <Edit3 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">Editar Evolução Clínica</h3>
-                    <p className="text-xs text-slate-500">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Editar Evolução Clínica</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {evolutionsPatient?.name || evolutionsPatient?.fullName || 'Paciente'}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setEditingEvolutionModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>

@@ -61,23 +61,23 @@ export function Sidebar() {
           groupName: 'Principal',
           items: [
             { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-            { label: 'Pacientes', href: '/patients', icon: Users },
-            { label: 'Atendimentos', href: '/appointments', icon: Calendar },
+            { label: 'Pacientes', href: '/pacientes', icon: Users },
+            { label: 'Atendimentos', href: '/atendimentos', icon: Calendar },
           ],
         },
         {
           groupName: 'Clínica e Avaliação',
           items: [
-            { label: 'Avaliações', href: '/custom-forms/modules', icon: Layers },
-            { label: 'Evoluções', href: '/evolutions', icon: Activity },
-            { label: 'Relatórios', href: '/reports', icon: BarChart3 },
+            { label: 'Avaliações', href: '/avaliacoes/modulos', icon: Layers },
+            { label: 'Evoluções', href: '/evolucoes', icon: Activity },
+            { label: 'Relatórios', href: '/relatorios', icon: BarChart3 },
           ],
         },
         {
           groupName: 'Gestão da Clínica',
           items: [
-            { label: 'Financeiro', href: '/financial', icon: DollarSign },
-            { label: 'Aniversariantes', href: '/birthdays', icon: Gift },
+            { label: 'Financeiro', href: '/financeiro', icon: DollarSign },
+            { label: 'Aniversariantes', href: '/aniversariantes', icon: Gift },
           ],
         },
       ];
@@ -89,14 +89,14 @@ export function Sidebar() {
           groupName: 'Principal',
           items: [
             { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-            { label: 'Pacientes', href: '/patients', icon: Users },
-            { label: 'Atendimentos / Agenda', href: '/appointments', icon: Calendar },
+            { label: 'Pacientes', href: '/pacientes', icon: Users },
+            { label: 'Atendimentos / Agenda', href: '/atendimentos', icon: Calendar },
           ],
         },
         {
           groupName: 'Gestão',
           items: [
-            { label: 'Aniversariantes', href: '/birthdays', icon: Gift },
+            { label: 'Aniversariantes', href: '/aniversariantes', icon: Gift },
           ],
         },
       ];
@@ -108,22 +108,22 @@ export function Sidebar() {
         groupName: 'Principal',
         items: [
           { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-          { label: 'Meus Pacientes', href: '/patients', icon: Users },
-          { label: 'Meus Atendimentos', href: '/appointments', icon: Calendar },
+          { label: 'Meus Pacientes', href: '/pacientes', icon: Users },
+          { label: 'Meus Atendimentos', href: '/atendimentos', icon: Calendar },
         ],
       },
       {
         groupName: 'Clínica e Avaliação',
         items: [
-          { label: 'Avaliações', href: '/custom-forms/modules', icon: Layers },
-          { label: 'Evoluções', href: '/evolutions', icon: Activity },
-          { label: 'Relatórios', href: '/reports', icon: BarChart3 },
+          { label: 'Avaliações', href: '/avaliacoes/modulos', icon: Layers },
+          { label: 'Evoluções', href: '/evolucoes', icon: Activity },
+          { label: 'Relatórios', href: '/relatorios', icon: BarChart3 },
         ],
       },
       {
         groupName: 'Prática',
         items: [
-          { label: 'Aniversariantes', href: '/birthdays', icon: Gift },
+          { label: 'Aniversariantes', href: '/aniversariantes', icon: Gift },
         ],
       },
     ];
@@ -131,7 +131,7 @@ export function Sidebar() {
 
   const navGroups = getNavGroups();
 
-  const isSupportActive = pathname === '/support';
+  const isSupportActive = pathname === '/support' || pathname === '/suporte';
 
   const renderSidebarInner = (isMobile = false) => (
     <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col h-full border-r border-slate-800 shrink-0 select-none z-30 overflow-hidden">
@@ -189,15 +189,17 @@ export function Sidebar() {
             </p>
             {group.items.map((item) => {
               const Icon = item.icon;
-              const isEvolutionRoute = pathname.startsWith('/evolutions') || pathname.includes('/evolution');
+              const isEvolutionRoute = pathname.startsWith('/evolutions') || pathname.startsWith('/evolucoes') || pathname.includes('/evolution') || pathname.includes('/evolucao');
               const isActive = item.href === '/'
                 ? pathname === '/'
-                : item.href === '/evolutions'
+                : (item.href === '/evolucoes' || item.href === '/evolutions')
                 ? isEvolutionRoute
-                : item.href === '/custom-forms/modules'
-                ? pathname.startsWith('/custom-forms')
-                : item.href === '/patients'
-                ? (pathname === '/patients' || (pathname.startsWith('/patients/') && !isEvolutionRoute))
+                : (item.href === '/avaliacoes/modulos' || item.href === '/custom-forms/modules')
+                ? (pathname.startsWith('/avaliacoes') || pathname.startsWith('/custom-forms'))
+                : (item.href === '/pacientes' || item.href === '/patients')
+                ? (pathname === '/pacientes' || pathname === '/patients' || ((pathname.startsWith('/pacientes/') || pathname.startsWith('/patients/')) && !isEvolutionRoute))
+                : (item.href === '/atendimentos' || item.href === '/appointments')
+                ? (pathname.startsWith('/atendimentos') || pathname.startsWith('/appointments'))
                 : pathname === item.href || pathname.startsWith(item.href);
 
               return (
@@ -227,7 +229,7 @@ export function Sidebar() {
       <div className="p-3 border-t border-slate-800/80 space-y-1.5 shrink-0 bg-slate-900/95">
         {/* Suporte e Ajuda */}
         <Link
-          href="/support"
+          href="/suporte"
           data-tour="sidebar-support"
           prefetch={false}
           onClick={closeMobileMenu}

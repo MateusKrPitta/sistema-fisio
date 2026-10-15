@@ -144,7 +144,7 @@ export function PhotoAttachmentManager({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-6 space-y-4">
       {/* Hidden inputs */}
       <input
         ref={fileInputRef}
@@ -164,21 +164,21 @@ export function PhotoAttachmentManager({
       />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
             <ImageIcon className="w-4 h-4" />
           </div>
           <div>
-            <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
               <span>{title}</span>
               {images.length > 0 && (
-                <span className="bg-blue-100 text-blue-800 text-[11px] font-extrabold px-2 py-0.5 rounded-full">
+                <span className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-[11px] font-extrabold px-2 py-0.5 rounded-full">
                   {images.length} {images.length === 1 ? 'foto' : 'fotos'}
                 </span>
               )}
             </h4>
-            <p className="text-xs text-slate-500">{subtitle}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
           </div>
         </div>
 
@@ -188,10 +188,10 @@ export function PhotoAttachmentManager({
             type="button"
             onClick={() => cameraInputRef.current?.click()}
             disabled={uploading || disabled}
-            className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
             title="Tirar foto agora com a câmera"
           >
-            <Camera className="w-3.5 h-3.5 text-blue-600" />
+            <Camera className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             <span>Câmera</span>
           </button>
 
@@ -221,16 +221,16 @@ export function PhotoAttachmentManager({
             e.preventDefault();
             handleFiles(e.dataTransfer.files);
           }}
-          className="border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50/60 hover:bg-blue-50/30 rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-2 group"
+          className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/60 dark:bg-slate-950/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-2 group"
         >
-          <div className="w-12 h-12 rounded-2xl bg-white group-hover:bg-blue-100 text-slate-400 group-hover:text-blue-600 flex items-center justify-center shadow-2xs transition-colors">
+          <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-950 text-slate-400 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center shadow-2xs transition-colors">
             <UploadCloud className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-700 group-hover:text-blue-700">
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-300">
               Clique ou arraste imagens aqui para anexar
             </p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">
               Suporte a múltiplas fotos (JPG, PNG, WEBP). Ficarão salvas no prontuário e laudos desta avaliação.
             </p>
           </div>
@@ -243,7 +243,7 @@ export function PhotoAttachmentManager({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="group relative aspect-square rounded-2xl overflow-hidden border border-slate-200/90 bg-slate-100 shadow-2xs hover:shadow-md transition-all flex items-center justify-center"
+              className="group relative aspect-square rounded-2xl overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 shadow-2xs hover:shadow-md transition-all flex items-center justify-center"
             >
               {/* Image thumbnail */}
               <img

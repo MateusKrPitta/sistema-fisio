@@ -122,7 +122,7 @@ export default function AllEvaluationsPage() {
           </div>
 
           <Link
-            href="/patients"
+            href="/pacientes"
             data-tour="evaluations-new-btn"
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all shrink-0 cursor-pointer"
           >
@@ -186,7 +186,7 @@ export default function AllEvaluationsPage() {
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <Link
-                          href={`/patients`}
+                          href="/pacientes"
                           className="text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-xl inline-flex items-center space-x-1.5 transition-colors cursor-pointer"
                         >
                           <FileText className="w-3.5 h-3.5" />

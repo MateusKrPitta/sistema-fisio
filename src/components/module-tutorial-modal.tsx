@@ -329,16 +329,16 @@ export function ModuleTutorialModal() {
   const getModuleByPath = useCallback((path: string): ModuleInfo | null => {
     if (!path) return null;
     if (path === '/' || path === '/dashboard') return MODULES_INFO.dashboard;
-    if (path.startsWith('/patients')) return MODULES_INFO.patients;
-    if (path.startsWith('/appointments')) return MODULES_INFO.appointments;
+    if (path.startsWith('/patients') || path.startsWith('/pacientes')) return MODULES_INFO.patients;
+    if (path.startsWith('/appointments') || path.startsWith('/atendimentos')) return MODULES_INFO.appointments;
     if (path.startsWith('/evaluations')) return MODULES_INFO.evaluations;
-    if (path.startsWith('/evolutions')) return MODULES_INFO.evolutions;
-    if (path.startsWith('/reports')) return MODULES_INFO.reports;
-    if (path.startsWith('/team')) return MODULES_INFO.team;
-    if (path.startsWith('/financial')) return MODULES_INFO.financial;
-    if (path.startsWith('/birthdays')) return MODULES_INFO.birthdays;
-    if (path.startsWith('/custom-forms')) return MODULES_INFO.customForms;
-    if (path.startsWith('/support')) return MODULES_INFO.support;
+    if (path.startsWith('/evolutions') || path.startsWith('/evolucoes')) return MODULES_INFO.evolutions;
+    if (path.startsWith('/reports') || path.startsWith('/relatorios')) return MODULES_INFO.reports;
+    if (path.startsWith('/team') || path.startsWith('/equipe')) return MODULES_INFO.team;
+    if (path.startsWith('/financial') || path.startsWith('/financeiro')) return MODULES_INFO.financial;
+    if (path.startsWith('/birthdays') || path.startsWith('/aniversariantes') || path.startsWith('/aniversarios')) return MODULES_INFO.birthdays;
+    if (path.startsWith('/custom-forms') || path.startsWith('/avaliacoes')) return MODULES_INFO.customForms;
+    if (path.startsWith('/support') || path.startsWith('/suporte')) return MODULES_INFO.support;
     return null;
   }, []);
 

@@ -851,7 +851,7 @@ export default function PatientsListPage() {
               Total: <strong className="text-slate-800 dark:text-slate-200">{totalRecords}</strong> pacientes
             </span>
             <Link
-              href="/patients/new"
+              href="/pacientes/new"
               data-tour="patients-new-btn"
               prefetch={false}
               className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all shrink-0"
@@ -1867,16 +1867,16 @@ export default function PatientsListPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 w-full max-w-xl space-y-5 max-h-[92vh] overflow-y-auto"
+              className="relative z-10 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 w-full max-w-xl space-y-5 max-h-[92vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center space-x-2.5">
-                  <Edit3 className="w-5 h-5 text-amber-600" />
-                  <h3 className="font-bold text-slate-800 text-lg">Editar Dados do Paciente</h3>
+                  <Edit3 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Editar Dados do Paciente</h3>
                 </div>
                 <button
                   onClick={() => setEditModalOpen(false)}
-                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1889,7 +1889,7 @@ export default function PatientsListPage() {
               ) : (
                 <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
                   <div>
-                    <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                       Nome Completo *
                     </label>
                     <input
@@ -1897,13 +1897,13 @@ export default function PatientsListPage() {
                       required
                       value={editForm.name}
                       onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         CPF *
                       </label>
                       <input
@@ -1912,12 +1912,12 @@ export default function PatientsListPage() {
                         value={editForm.cpf}
                         placeholder="000.000.000-00"
                         onChange={(e) => setEditForm({ ...editForm, cpf: maskCpf(e.target.value) })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none font-mono"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none font-mono"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Telefone *
                       </label>
                       <input
@@ -1926,40 +1926,40 @@ export default function PatientsListPage() {
                         value={editForm.phone}
                         placeholder="(11) 99999-9999"
                         onChange={(e) => setEditForm({ ...editForm, phone: maskPhone(e.target.value) })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none font-mono"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none font-mono"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         E-mail
                       </label>
                       <input
                         type="email"
                         value={editForm.email}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Data de Nascimento
                       </label>
                       <input
                         type="date"
                         value={editForm.birthdate ? editForm.birthdate.split('T')[0] : ''}
                         onChange={(e) => setEditForm({ ...editForm, birthdate: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Gênero
                       </label>
                       <CustomSelect
@@ -1974,7 +1974,7 @@ export default function PatientsListPage() {
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Fisioterapeuta Responsável
                       </label>
                       <CustomSelect
@@ -1995,7 +1995,7 @@ export default function PatientsListPage() {
 
                   <div className="grid grid-cols-1 gap-3">
                     <div>
-                      <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Avaliação Associada
                       </label>
                       <CustomSelect
@@ -2014,22 +2014,22 @@ export default function PatientsListPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                       Observações Clínicas
                     </label>
                     <textarea
                       rows={3}
                       value={editForm.notes}
                       onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none resize-none"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none resize-none"
                     />
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-3">
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end space-x-3">
                     <button
                       type="button"
                       onClick={() => setEditModalOpen(false)}
-                      className="px-4 py-2 font-semibold text-slate-500 hover:text-slate-800"
+                      className="px-4 py-2 font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                     >
                       Cancelar
                     </button>
@@ -2067,21 +2067,21 @@ export default function PatientsListPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 w-full max-w-md space-y-4"
+              className="relative z-10 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 w-full max-w-md space-y-4"
             >
-              <div className="flex items-center space-x-3 text-red-600">
-                <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+              <div className="flex items-center space-x-3 text-red-600 dark:text-red-400">
+                <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center shrink-0">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-base">Excluir Paciente</h3>
-                  <p className="text-xs text-slate-500">Confirmação de exclusão definitiva</p>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Excluir Paciente</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Confirmação de exclusão definitiva</p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Tem certeza que deseja excluir o cadastro do paciente{' '}
-                <strong className="text-slate-800 font-bold">{deletingPatient.name || deletingPatient.fullName}</strong>?
+                <strong className="text-slate-800 dark:text-slate-100 font-bold">{deletingPatient.name || deletingPatient.fullName}</strong>?
                 Esta ação removerá os dados do sistema e não poderá ser desfeita.
               </p>
 
@@ -2089,7 +2089,7 @@ export default function PatientsListPage() {
                 <button
                   type="button"
                   onClick={() => setDeleteModalOpen(false)}
-                  className="px-4 py-2 font-semibold text-slate-500 hover:text-slate-800"
+                  className="px-4 py-2 font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                 >
                   Cancelar
                 </button>
@@ -2127,25 +2127,25 @@ export default function PatientsListPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 w-full max-w-md space-y-4"
+              className="relative z-10 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 w-full max-w-md space-y-4"
             >
-              <div className="flex items-center space-x-3 text-red-600">
-                <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+              <div className="flex items-center space-x-3 text-red-600 dark:text-red-400">
+                <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center shrink-0">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-base">Excluir Agendamento</h3>
-                  <p className="text-xs text-slate-500">Confirmação de exclusão do atendimento</p>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Excluir Agendamento</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Confirmação de exclusão do atendimento</p>
                 </div>
               </div>
 
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1 text-xs text-slate-700">
-                <p><strong className="text-slate-900">Data do Atendimento:</strong> {formatDate(appointmentToDelete.date)}</p>
-                <p><strong className="text-slate-900">Horário:</strong> {appointmentToDelete.startTime} - {appointmentToDelete.endTime}</p>
-                <p><strong className="text-slate-900">Especialidade:</strong> {appointmentToDelete.specialty || 'Atendimento Fisioterapêutico'}</p>
+              <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                <p><strong className="text-slate-900 dark:text-slate-100">Data do Atendimento:</strong> {formatDate(appointmentToDelete.date)}</p>
+                <p><strong className="text-slate-900 dark:text-slate-100">Horário:</strong> {appointmentToDelete.startTime} - {appointmentToDelete.endTime}</p>
+                <p><strong className="text-slate-900 dark:text-slate-100">Especialidade:</strong> {appointmentToDelete.specialty || 'Atendimento Fisioterapêutico'}</p>
               </div>
 
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Tem certeza que deseja cancelar e excluir este agendamento? Caso já tenha sido baixado, o registro no financeiro também será ajustado.
               </p>
 
@@ -2156,7 +2156,7 @@ export default function PatientsListPage() {
                     setDeleteAppModalOpen(false);
                     setAppointmentToDelete(null);
                   }}
-                  className="px-4 py-2 font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+                  className="px-4 py-2 font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
                 >
                   Cancelar
                 </button>

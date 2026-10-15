@@ -128,7 +128,7 @@ export default function FormTemplatesPage() {
   };
 
   const openPreviewModal = (t: FormTemplate) => {
-    router.push(`/custom-forms/templates/${t.id}`);
+    router.push(`/avaliacoes/modelos/${t.id}`);
   };
 
   const handleAddModule = () => {

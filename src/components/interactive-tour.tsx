@@ -318,74 +318,74 @@ const GLOBAL_TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'patients',
-    selector: 'sidebar-nav-/patients',
+    selector: 'sidebar-nav-/pacientes',
     title: 'Meus Pacientes e Prontuários',
     subtitle: 'Histórico clínico e documentos centralizados',
     description: 'Acesse a lista completa de pacientes, consulte prontuários digitais, diagnósticos, anexos de exames e contatos.',
     tip: 'Na ficha de cada paciente você tem as abas de Avaliações, Evoluções e Histórico Clínico.',
     icon: Users,
     placement: 'right',
-    targetRoute: '/patients',
+    targetRoute: '/pacientes',
     actionLabel: 'Ver Pacientes',
   },
   {
     id: 'appointments',
-    selector: 'sidebar-nav-/appointments',
+    selector: 'sidebar-nav-/atendimentos',
     title: 'Agenda e Atendimentos',
     subtitle: 'Grade de horários inteligente',
     description: 'Gerencie atendimentos diários, filtre por fisioterapeuta da equipe e acompanhe status (Agendado, Confirmado, Realizado ou Cancelado).',
     tip: 'Clique diretamente em qualquer horário livre para marcar um atendimento em segundos.',
     icon: Calendar,
     placement: 'right',
-    targetRoute: '/appointments',
+    targetRoute: '/atendimentos',
     actionLabel: 'Abrir Agenda',
   },
   {
     id: 'evaluations',
-    selector: 'sidebar-nav-/custom-forms/modules',
+    selector: 'sidebar-nav-/avaliacoes/modulos',
     title: 'Avaliações Clínicas e Laudos',
     subtitle: 'Mapas de dor interativos e fotos posturais',
     description: 'Crie e preencha avaliações completas com mapa 3D de dor corporal, fotos posturais (anterior, posterior e perfil) e gere PDFs com assinatura digital do paciente.',
     tip: 'O paciente pode assinar o laudo com o próprio dedo na tela do seu tablet ou celular!',
     icon: Layers,
     placement: 'right',
-    targetRoute: '/custom-forms/modules',
+    targetRoute: '/avaliacoes/modulos',
     actionLabel: 'Ver Avaliações',
   },
   {
     id: 'evolutions',
-    selector: 'sidebar-nav-/evolutions',
+    selector: 'sidebar-nav-/evolucoes',
     title: 'Evoluções e Linha do Tempo',
     subtitle: 'Registro sessão a sessão do paciente',
     description: 'Documente cada sessão de fisioterapia realizada, acompanhe a queda da dor na escala EVA e monitore gráficos de melhora do paciente.',
     tip: 'Evoluções diárias mantêm o prontuário seguro e respaldam o tratamento para convênios e médicos.',
     icon: Activity,
     placement: 'right',
-    targetRoute: '/evolutions',
+    targetRoute: '/evolucoes',
     actionLabel: 'Ver Evoluções',
   },
   {
     id: 'reports',
-    selector: 'sidebar-nav-/reports',
+    selector: 'sidebar-nav-/relatorios',
     title: 'Relatórios e Assistente de Laudos',
     subtitle: 'Estatísticas clínicas e resumos inteligentes',
     description: 'Gere relatórios gerenciais sobre atendimentos realizados e utilize o assistente de IA para sugerir pareceres e resumos clínicos.',
     tip: 'Exporte relatórios consolidados em PDF prontos para impressão ou compartilhamento.',
     icon: BarChart3,
     placement: 'right',
-    targetRoute: '/reports',
+    targetRoute: '/relatorios',
     actionLabel: 'Ver Relatórios',
   },
   {
     id: 'team',
-    selector: 'sidebar-nav-/team',
+    selector: 'sidebar-nav-/equipe',
     title: 'Minha Equipe e Gestão',
     subtitle: 'Controle de acessos e fisioterapeutas',
     description: 'Cadastre os membros da sua equipe (fisioterapeutas com CREFITO e secretárias), com regras de permissão e cálculo automatizado de comissões.',
     tip: 'Fisioterapeutas têm visão focada em seus próprios atendimentos para total privacidade.',
     icon: ShieldCheck,
     placement: 'right',
-    targetRoute: '/team',
+    targetRoute: '/equipe',
     actionLabel: 'Ver Equipe',
   },
   {
@@ -448,22 +448,22 @@ export function InteractiveTour() {
       if (moduleId && MODULE_SPECIFIC_STEPS[moduleId]) {
         setActiveSteps(MODULE_SPECIFIC_STEPS[moduleId]);
         setCurrentStepIndex(0);
-      } else if (pathname?.startsWith('/evaluations') || pathname?.startsWith('/custom-forms/modules')) {
+      } else if (pathname?.startsWith('/evaluations') || pathname?.startsWith('/custom-forms') || pathname?.startsWith('/avaliacoes')) {
         setActiveSteps(MODULE_SPECIFIC_STEPS.evaluations || GLOBAL_TOUR_STEPS);
         setCurrentStepIndex(0);
-      } else if (pathname?.startsWith('/evolutions')) {
+      } else if (pathname?.startsWith('/evolutions') || pathname?.startsWith('/evolucoes')) {
         setActiveSteps(MODULE_SPECIFIC_STEPS.evolutions || GLOBAL_TOUR_STEPS);
         setCurrentStepIndex(0);
-      } else if (pathname?.startsWith('/patients')) {
+      } else if (pathname?.startsWith('/patients') || pathname?.startsWith('/pacientes')) {
         setActiveSteps(MODULE_SPECIFIC_STEPS.patients || GLOBAL_TOUR_STEPS);
         setCurrentStepIndex(0);
-      } else if (pathname?.startsWith('/appointments')) {
+      } else if (pathname?.startsWith('/appointments') || pathname?.startsWith('/atendimentos')) {
         setActiveSteps(MODULE_SPECIFIC_STEPS.appointments || GLOBAL_TOUR_STEPS);
         setCurrentStepIndex(0);
-      } else if (pathname?.startsWith('/team')) {
+      } else if (pathname?.startsWith('/team') || pathname?.startsWith('/equipe')) {
         setActiveSteps(MODULE_SPECIFIC_STEPS.team || GLOBAL_TOUR_STEPS);
         setCurrentStepIndex(0);
-      } else if (pathname?.startsWith('/support')) {
+      } else if (pathname?.startsWith('/support') || pathname?.startsWith('/suporte')) {
         setActiveSteps(MODULE_SPECIFIC_STEPS.support || GLOBAL_TOUR_STEPS);
         setCurrentStepIndex(0);
       } else if (pathname === '/' || pathname === '/dashboard') {
@@ -554,15 +554,14 @@ export function InteractiveTour() {
         const dismissed = stored ? JSON.parse(stored) : {};
         
         let currentModuleKey = 'dashboard';
-        if (pathname?.startsWith('/evaluations') || pathname?.startsWith('/custom-forms/modules')) currentModuleKey = 'evaluations';
-        else if (pathname?.startsWith('/evolutions')) currentModuleKey = 'evolutions';
-        else if (pathname?.startsWith('/patients')) currentModuleKey = 'patients';
-        else if (pathname?.startsWith('/appointments')) currentModuleKey = 'appointments';
-        else if (pathname?.startsWith('/team')) currentModuleKey = 'team';
-        else if (pathname?.startsWith('/financial')) currentModuleKey = 'financial';
-        else if (pathname?.startsWith('/birthdays')) currentModuleKey = 'birthdays';
-        else if (pathname?.startsWith('/custom-forms')) currentModuleKey = 'custom-forms';
-        else if (pathname?.startsWith('/support')) currentModuleKey = 'support';
+        if (pathname?.startsWith('/evaluations') || pathname?.startsWith('/custom-forms') || pathname?.startsWith('/avaliacoes')) currentModuleKey = 'evaluations';
+        else if (pathname?.startsWith('/evolutions') || pathname?.startsWith('/evolucoes')) currentModuleKey = 'evolutions';
+        else if (pathname?.startsWith('/patients') || pathname?.startsWith('/pacientes')) currentModuleKey = 'patients';
+        else if (pathname?.startsWith('/appointments') || pathname?.startsWith('/atendimentos')) currentModuleKey = 'appointments';
+        else if (pathname?.startsWith('/team') || pathname?.startsWith('/equipe')) currentModuleKey = 'team';
+        else if (pathname?.startsWith('/financial') || pathname?.startsWith('/financeiro')) currentModuleKey = 'financial';
+        else if (pathname?.startsWith('/birthdays') || pathname?.startsWith('/aniversariantes')) currentModuleKey = 'birthdays';
+        else if (pathname?.startsWith('/support') || pathname?.startsWith('/suporte')) currentModuleKey = 'support';
 
         dismissed[currentModuleKey] = true;
         localStorage.setItem('fismovie_dismissed_module_tutorials', JSON.stringify(dismissed));

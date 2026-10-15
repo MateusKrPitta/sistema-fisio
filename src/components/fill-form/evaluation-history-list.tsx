@@ -20,6 +20,7 @@ import {
   Loader2,
   Check,
   Layers,
+  Copy,
 } from 'lucide-react';
 import { CustomField, CLINICAL_PRESETS, ClinicalPreset } from '@/lib/clinical-presets';
 import { ImageLightbox } from '@/components/image-lightbox';
@@ -28,6 +29,7 @@ import { useToast } from '@/components/toast-context';
 import { FieldRenderer } from './field-renderer';
 import { InteractivePainBodyMap } from '@/components/interactive-pain-body-map';
 import { stripHtml } from '@/components/reports/evolution-report-modal';
+import { MRCMuscleScaleSection, parseMRCTestsFromAnswers } from './mrc-muscle-scale';
 
 export function formatTemplateTitle(title?: string): { shortTitle: string; badges: string[]; count: number } {
   if (!title) return { shortTitle: 'Avaliação Clínica', badges: [], count: 0 };
@@ -62,6 +64,7 @@ interface EvaluationHistoryListProps {
   onStartEdit: (record: any, scale?: ScaleGroup) => void;
   onRequestDelete: (record: any) => void;
   onRecordUpdated?: (recordId: number, updatedAnswers: any) => void;
+  onDuplicateRecord?: (record: any) => Promise<any> | any;
 }
 
 export const formatDateSafe = (dateString?: string) => {
@@ -184,6 +187,18 @@ export const detectScaleForField = (field: any): { scaleTitle: string; category:
     label.includes('tct')
   ) {
     return { scaleTitle: 'Módulo do Controle de Tronco (TCT)', category: 'Neurológica' };
+  }
+
+  if (
+    label.includes('prep 2') ||
+    label.includes('prep2') ||
+    label.includes('escore safe') ||
+    label.includes('preditor pós avc') ||
+    label.includes('preditor pos avc') ||
+    (label.includes('abdução do ombro') && label.includes('mrc')) ||
+    (label.includes('extensão dos dedos') && label.includes('mrc'))
+  ) {
+    return { scaleTitle: 'PREP 2 - Preditor Pós-AVC', category: 'Neurológica' };
   }
 
   // 2. CARDIORRESPIRATÓRIA
@@ -319,6 +334,19 @@ export const detectScaleForField = (field: any): { scaleTitle: string; category:
   }
 
   // 6. FORÇA MUSCULAR
+  if (
+    label.includes('preensão') ||
+    label.includes('preensao') ||
+    label.includes('dinamometria') ||
+    label.includes('dinamom') ||
+    label.includes('fpm') ||
+    label.includes('fpp') ||
+    label.includes('mão dominante') ||
+    label.includes('mao dominante')
+  ) {
+    return { scaleTitle: 'Força de Preensão Palmar (Dinamometria FPM)', category: 'Força Muscular' };
+  }
+
   if (
     label.includes('flexão do braço') ||
     label.includes('extensão do braço') ||
@@ -548,6 +576,58 @@ export const calculateScaleBadge = (
     }
   }
 
+  // NIHSS - National Institutes of Health Stroke Scale (0 a 42 pts)
+  if (
+    scaleTitle.includes('nihss') ||
+    scaleTitle.includes('nih') ||
+    fields.some((f) => {
+      const l = (f.label || '').toLowerCase();
+      return l.includes('nível de consciência') || l.includes('paralisia facial') || l.includes('ataxia');
+    })
+  ) {
+    let total = 0;
+    let answered = 0;
+    fields.forEach((f, idx) => {
+      const ans = getAnswerForField(f, recAnswers, idx);
+      if (ans !== undefined && ans !== null && ans !== '') {
+        const str = String(ans).trim();
+        if (!str.toUpperCase().startsWith('NT')) {
+          total += getAnswerPoints(ans);
+        }
+        answered++;
+      }
+    });
+    if (answered > 0) {
+      const severity =
+        total === 0
+          ? 'Normal'
+          : total <= 4
+          ? 'Leve'
+          : total <= 15
+          ? 'Moderado'
+          : total <= 20
+          ? 'Mod-Grave'
+          : 'Grave';
+
+      const badgeColor =
+        total === 0
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          : total <= 4
+          ? 'bg-blue-50 text-blue-700 border-blue-200'
+          : total <= 15
+          ? 'bg-amber-50 text-amber-700 border-amber-200'
+          : total <= 20
+          ? 'bg-orange-50 text-orange-700 border-orange-200'
+          : 'bg-red-50 text-red-700 border-red-200';
+
+      return {
+        label: `NIHSS (${severity})`,
+        score: `${total} / 42 pts`,
+        badgeClass: badgeColor,
+      };
+    }
+  }
+
   // 3. Tronco TCT (0 a 100 pts)
   if (
     scaleTitle.includes('tronco') ||
@@ -752,6 +832,25 @@ export const calculateScaleBadge = (
 
   // 12. Força Muscular MRC
   if (scaleTitle.includes('força muscular') || (scaleTitle.includes('mrc') && !scaleTitle.includes('dispneia'))) {
+    const mrcTests = parseMRCTestsFromAnswers(recAnswers);
+    if (mrcTests.length > 0) {
+      let total = 0;
+      let count = 0;
+      mrcTests.forEach((t) => {
+        if (t.score) {
+          total += getAnswerPoints(t.score);
+          count++;
+        }
+      });
+      if (count > 0) {
+        return {
+          label: 'MRC FORÇA',
+          score: `${total} / ${count * 5} pts (${count} testes)`,
+          badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        };
+      }
+    }
+
     const mrcFields = fields.filter((f) => {
       const l = (f.label || '').toLowerCase();
       return !l.includes('específico') && !l.includes('especifico') && !l.includes('obs');
@@ -801,6 +900,7 @@ export function EvaluationHistoryList({
   onStartEdit,
   onRequestDelete,
   onRecordUpdated,
+  onDuplicateRecord,
 }: EvaluationHistoryListProps) {
   const { toast } = useToast();
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
@@ -808,6 +908,7 @@ export function EvaluationHistoryList({
   const [collapsedScales, setCollapsedScales] = useState<Record<string, boolean>>({});
   const [loadedDetails, setLoadedDetails] = useState<Record<number, any>>({});
   const [loadingDetailsIds, setLoadingDetailsIds] = useState<number[]>([]);
+  const [duplicatingRecordId, setDuplicatingRecordId] = useState<number | null>(null);
 
   // Inline scale editing state
   const [editingScaleKey, setEditingScaleKey] = useState<string | null>(null);
@@ -867,6 +968,31 @@ export function EvaluationHistoryList({
     onStartEdit(effectiveRecord);
   };
 
+  const handleDuplicate = async (record: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (duplicatingRecordId) return;
+
+    setDuplicatingRecordId(record.id);
+    try {
+      const effectiveRecord = loadedDetails[record.id] || record;
+      let fullData = effectiveRecord;
+      if (!effectiveRecord.answers || !effectiveRecord.detailsLoaded) {
+        const fetched = await fetchRecordDetails(record.id);
+        if (fetched) fullData = fetched;
+      }
+      if (onDuplicateRecord) {
+        const created = await onDuplicateRecord(fullData);
+        if (created && created.id) {
+          await fetchRecordDetails(created.id);
+        }
+      }
+    } catch (err: any) {
+      console.error('Erro ao duplicar avaliação:', err);
+    } finally {
+      setDuplicatingRecordId(null);
+    }
+  };
+
   const toggleScaleCollapse = (key: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setCollapsedScales((prev) => ({
@@ -881,6 +1007,10 @@ export function EvaluationHistoryList({
     setEditingScaleKey(scaleKey);
     const effectiveRecord = loadedDetails[record.id] || record;
     const currentAnswers = parseAnswers(effectiveRecord.answers);
+    const parsedMrc = parseMRCTestsFromAnswers(currentAnswers);
+    if (parsedMrc.length > 0 && !currentAnswers.mrc_tests) {
+      currentAnswers.mrc_tests = parsedMrc;
+    }
     setEditingAnswers({ ...currentAnswers });
 
     // Ensure scale sub-accordion is expanded
@@ -898,6 +1028,53 @@ export function EvaluationHistoryList({
 
   const handleSaveScale = async (record: any, scale: ScaleGroup, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+
+    const isMRCScale =
+      (scale.title || '').toLowerCase().includes('força muscular') ||
+      ((scale.title || '').toLowerCase().includes('mrc') && !(scale.title || '').toLowerCase().includes('dispne'));
+
+    if (isMRCScale) {
+      const mrcTests = parseMRCTestsFromAnswers(editingAnswers);
+      for (let i = 0; i < mrcTests.length; i++) {
+        const t = mrcTests[i];
+        const num = i + 1;
+        const movName =
+          t.movement === 'Outro Músculo / Movimento Específico' ? t.customMovement?.trim() : t.movement;
+        if (!movName) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione o Nome do Movimento no Teste #${num} de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+        if (!t.side) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione o Lado (Direito ou Esquerdo) no Teste #${num} de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+        if (!t.observation) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione a Observação (Sim ou Não) no Teste #${num} de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+        if (!t.score) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione o Grau de Força (0 a 5) no Teste #${num} de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+      }
+    }
+
     setSavingScale(true);
 
     try {
@@ -1105,6 +1282,23 @@ export function EvaluationHistoryList({
                       <MessageSquare className="w-4 h-4" />
                     </button>
                   </div>
+                )}
+
+                {onDuplicateRecord && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDuplicate(record, e)}
+                    disabled={duplicatingRecordId === record.id}
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                    title="Duplicar Avaliação"
+                    aria-label="Duplicar Avaliação"
+                  >
+                    {duplicatingRecordId === record.id ? (
+                      <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
                 )}
 
                 <button
@@ -1362,201 +1556,377 @@ export function EvaluationHistoryList({
                                   transition={{ duration: 0.2 }}
                                   className="border-t border-slate-100 p-4 sm:p-5 bg-slate-50/40 space-y-4"
                                 >
-                                  {isEditingThisScale ? (
-                                    // EDIT MODE FOR THIS SCALE
-                                    <div className="space-y-4">
-                                      <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-blue-950">
-                                        <span className="font-bold flex items-center gap-1.5">
-                                          <Edit3 className="w-3.5 h-3.5 text-blue-600" />
-                                          Editando respostas de: {scale.title}
-                                        </span>
-                                        <span className="text-[11px] text-blue-700">
-                                          Altere os valores e clique em Salvar abaixo.
-                                        </span>
-                                      </div>
+                                  {(() => {
+                                    const isMRCScale =
+                                      (scale.title || '').toLowerCase().includes('força muscular') ||
+                                      ((scale.title || '').toLowerCase().includes('mrc') &&
+                                        !(scale.title || '').toLowerCase().includes('dispne'));
 
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {scale.fields
-                                          .filter((f: CustomField) => {
-                                            const labelLower = (f.label || '').toLowerCase();
-                                            if (labelLower.includes('quantidade de o2')) {
-                                              const hasO2BoolField = scale.fields.some((other: CustomField) => {
-                                                const otherLabel = (other.label || '').toLowerCase();
-                                                return (
-                                                  (otherLabel.includes('o2') ||
-                                                    otherLabel.includes('oxigênio') ||
-                                                    otherLabel.includes('oxigenio')) &&
-                                                  !otherLabel.includes('quantidade')
-                                                );
-                                              });
-                                              return !hasO2BoolField;
-                                            }
-                                            return true;
-                                          })
-                                          .map((f: CustomField, fIdx: number) => {
-                                            const fieldKey = String(f.id || f.label || fIdx);
-                                            const currentVal =
-                                              editingAnswers[fieldKey] ??
-                                              editingAnswers[String(f.label)] ??
-                                              getAnswerForField(f, editingAnswers, fIdx) ??
-                                              '';
-
-                                            const isFullWidth =
-                                              f.fieldType === 'long_text' ||
-                                              f.fieldType === 'body_map' ||
-                                              f.fieldType === 'scale_0_10' ||
-                                              (f.label &&
-                                                (f.label.toLowerCase().includes('observaç') ||
-                                                  f.label.toLowerCase().includes('conclus')));
-
-                                            return (
-                                              <div
-                                                key={fieldKey}
-                                                className={isFullWidth ? 'col-span-1 md:col-span-2' : 'col-span-1'}
-                                              >
-                                                <FieldRenderer
-                                                  field={f}
-                                                  value={currentVal}
-                                                  onChange={(val) => {
-                                                    setEditingAnswers((prev) => {
-                                                      const updated = { ...prev };
-                                                      if (f.id) updated[String(f.id)] = val;
-                                                      if (f.label) updated[String(f.label)] = val;
-                                                      return updated;
-                                                    });
-                                                  }}
-                                                  index={fIdx}
-                                                  allAnswers={editingAnswers}
-                                                  onAnswerChange={(key, val) => {
-                                                    setEditingAnswers((prev) => ({ ...prev, [key]: val }));
-                                                  }}
-                                                />
-                                              </div>
-                                            );
-                                          })}
-                                      </div>
-
-                                      {/* Bottom Toolbar inside this scale */}
-                                      <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200">
-                                        <button
-                                          type="button"
-                                          onClick={handleCancelEditScale}
-                                          disabled={savingScale}
-                                          className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
-                                        >
-                                          Cancelar
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => handleSaveScale(record, scale, e)}
-                                          disabled={savingScale}
-                                          className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
-                                        >
-                                          {savingScale ? (
-                                            <>
-                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                              <span>Salvando...</span>
-                                            </>
-                                          ) : (
-                                            <>
-                                              <Save className="w-3.5 h-3.5" />
-                                              <span>Salvar</span>
-                                            </>
-                                          )}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    // VIEW MODE
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                                      {scale.fields.map((f: any, fIdx: number) => {
-                                        const keyById = String(f.id || f.label || fIdx);
-                                        const ansVal = getAnswerForField(f, recAnswers, fIdx);
-                                        const hasAns = ansVal !== undefined && ansVal !== null && ansVal !== '';
-
-                                        const labelLower = (f.label || '').toLowerCase();
-                                        const isRightSide =
-                                          labelLower.includes('direito') ||
-                                          labelLower.includes(' dir.') ||
-                                          labelLower.endsWith(' - d') ||
-                                          labelLower.includes('(direito)');
-                                        const isLeftSide =
-                                          labelLower.includes('esquerdo') ||
-                                          labelLower.includes(' esq.') ||
-                                          labelLower.endsWith(' - e') ||
-                                          labelLower.includes('(esquerdo)');
-
-                                        const isFullWidth =
-                                          f.fieldType === 'long_text' ||
-                                          f.fieldType === 'body_map' ||
-                                          f.fieldType === 'scale_0_10' ||
-                                          (f.label &&
-                                            (f.label.toLowerCase().includes('observaç') ||
-                                              f.label.toLowerCase().includes('conclus')));
-
-                                        const cardBg = hasAns
-                                          ? isRightSide
-                                            ? 'bg-blue-50/25 border-blue-200/90 shadow-2xs'
-                                            : isLeftSide
-                                            ? 'bg-purple-50/25 border-purple-200/90 shadow-2xs'
-                                            : 'bg-white border-slate-200 shadow-2xs'
-                                          : 'bg-slate-50/50 border-dashed border-slate-200 opacity-60';
-
+                                    if (isEditingThisScale) {
+                                      if (isMRCScale) {
                                         return (
-                                          <div
-                                            key={keyById}
-                                            className={`${
-                                              isFullWidth ? 'col-span-1 md:col-span-2' : 'col-span-1'
-                                            } p-4 rounded-xl border text-xs flex flex-col justify-between space-y-2 ${cardBg}`}
-                                          >
-                                            <div className="flex items-start justify-between gap-2">
-                                              <span className="text-[11px] font-bold text-slate-700 leading-snug">
-                                                {f.label}
+                                          <div className="space-y-4">
+                                            <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-blue-950">
+                                              <span className="font-bold flex items-center gap-1.5">
+                                                <Edit3 className="w-3.5 h-3.5 text-blue-600" />
+                                                Editando respostas de: {scale.title}
                                               </span>
-                                              {isRightSide && (
-                                                <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-blue-100 text-blue-800 border border-blue-200">
-                                                  Direito (D)
-                                                </span>
-                                              )}
-                                              {isLeftSide && (
-                                                <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-100 text-purple-800 border border-purple-200">
-                                                  Esquerdo (E)
-                                                </span>
-                                              )}
+                                              <span className="text-[11px] text-blue-700">
+                                                Altere os valores e clique em Salvar abaixo.
+                                              </span>
                                             </div>
-                                            <div className="font-black text-slate-900 text-sm">
-                                              {hasAns ? (
-                                                Array.isArray(ansVal) ? (
-                                                  <div className="flex flex-wrap gap-1.5">
-                                                    {ansVal.map((vItem: string) => (
-                                                      <span
-                                                        key={vItem}
-                                                        className="bg-blue-600 text-white font-bold text-xs px-2.5 py-0.5 rounded-lg"
-                                                      >
-                                                        ✓ {vItem}
-                                                      </span>
-                                                    ))}
-                                                  </div>
+
+                                            <MRCMuscleScaleSection
+                                              answers={editingAnswers}
+                                              onChange={setEditingAnswers}
+                                              scaleTitle={scale.title}
+                                              readOnly={false}
+                                            />
+
+                                            {/* Bottom Toolbar inside this scale */}
+                                            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200">
+                                              <button
+                                                type="button"
+                                                onClick={handleCancelEditScale}
+                                                disabled={savingScale}
+                                                className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+                                              >
+                                                Cancelar
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={(e) => handleSaveScale(record, scale, e)}
+                                                disabled={savingScale}
+                                                className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                                              >
+                                                {savingScale ? (
+                                                  <>
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                    <span>Salvando...</span>
+                                                  </>
                                                 ) : (
-                                                  <span
-                                                    className={
-                                                      isLeftSide
-                                                        ? 'text-purple-950 bg-purple-50 border border-purple-200 px-3 py-1 rounded-xl inline-block'
-                                                        : 'text-blue-950 bg-blue-50 border border-blue-200 px-3 py-1 rounded-xl inline-block'
-                                                    }
-                                                  >
-                                                    {`${ansVal} ${f.unit || ''}`}
-                                                  </span>
-                                                )
-                                              ) : (
-                                                <span className="text-slate-400 italic font-normal">Não preenchido</span>
-                                              )}
+                                                  <>
+                                                    <Save className="w-3.5 h-3.5" />
+                                                    <span>Salvar</span>
+                                                  </>
+                                                )}
+                                              </button>
                                             </div>
                                           </div>
                                         );
-                                      })}
-                                    </div>
-                                  )}
+                                      }
+
+                                      return (
+                                        <div className="space-y-4">
+                                          <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-blue-950">
+                                            <span className="font-bold flex items-center gap-1.5">
+                                              <Edit3 className="w-3.5 h-3.5 text-blue-600" />
+                                              Editando respostas de: {scale.title}
+                                            </span>
+                                            <span className="text-[11px] text-blue-700">
+                                              Altere os valores e clique em Salvar abaixo.
+                                            </span>
+                                          </div>
+
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {scale.fields
+                                              .filter((f: CustomField) => {
+                                                const labelLower = (f.label || '').toLowerCase();
+                                                if (labelLower.includes('quantidade de o2')) {
+                                                  const hasO2BoolField = scale.fields.some((other: CustomField) => {
+                                                    const otherLabel = (other.label || '').toLowerCase();
+                                                    return (
+                                                      (otherLabel.includes('o2') ||
+                                                        otherLabel.includes('oxigênio') ||
+                                                        otherLabel.includes('oxigenio')) &&
+                                                      !otherLabel.includes('quantidade')
+                                                    );
+                                                  });
+                                                  return !hasO2BoolField;
+                                                }
+                                                return true;
+                                              })
+                                              .map((f: CustomField, fIdx: number) => {
+                                                const fieldKey = String(f.id || f.label || fIdx);
+                                                const currentVal =
+                                                  editingAnswers[fieldKey] ??
+                                                  editingAnswers[String(f.label)] ??
+                                                  getAnswerForField(f, editingAnswers, fIdx) ??
+                                                  '';
+
+                                                const isFullWidth =
+                                                  f.fieldType === 'long_text' ||
+                                                  f.fieldType === 'body_map' ||
+                                                  f.fieldType === 'scale_0_10' ||
+                                                  (f.label &&
+                                                    (f.label.toLowerCase().includes('observaç') ||
+                                                      f.label.toLowerCase().includes('conclus')));
+
+                                                return (
+                                                  <div
+                                                    key={fieldKey}
+                                                    className={isFullWidth ? 'col-span-1 md:col-span-2' : 'col-span-1'}
+                                                  >
+                                                    <FieldRenderer
+                                                      field={f}
+                                                      value={currentVal}
+                                                      onChange={(val) => {
+                                                        setEditingAnswers((prev) => {
+                                                          const updated = { ...prev };
+                                                          if (f.id) updated[String(f.id)] = val;
+                                                          if (f.label) updated[String(f.label)] = val;
+                                                          return updated;
+                                                        });
+                                                      }}
+                                                      index={fIdx}
+                                                      allAnswers={editingAnswers}
+                                                      onAnswerChange={(key, val) => {
+                                                        setEditingAnswers((prev) => ({ ...prev, [key]: val }));
+                                                      }}
+                                                    />
+                                                  </div>
+                                                );
+                                              })}
+                                          </div>
+
+                                          {/* Bottom Toolbar inside this scale */}
+                                          <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200">
+                                            <button
+                                              type="button"
+                                              onClick={handleCancelEditScale}
+                                              disabled={savingScale}
+                                              className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+                                            >
+                                              Cancelar
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => handleSaveScale(record, scale, e)}
+                                              disabled={savingScale}
+                                              className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                                            >
+                                              {savingScale ? (
+                                                <>
+                                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                  <span>Salvando...</span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <Save className="w-3.5 h-3.5" />
+                                                  <span>Salvar</span>
+                                                </>
+                                              )}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    // VIEW MODE
+                                    if (isMRCScale) {
+                                      const mrcTests = parseMRCTestsFromAnswers(recAnswers);
+                                      const generalNotes =
+                                        recAnswers['Observações / Assimetrias de Força Muscular'] ??
+                                        recAnswers['observacoes_forca'] ??
+                                        '';
+
+                                      return (
+                                        <div className="space-y-4">
+                                          {mrcTests.length === 0 ? (
+                                            <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400">
+                                              Nenhum movimento avaliado registrado nesta escala.
+                                            </div>
+                                          ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                              {mrcTests.map((t, tIdx) => {
+                                                const isRightSide = t.side === 'Direito';
+                                                const isLeftSide = t.side === 'Esquerdo';
+                                                const movName =
+                                                  t.movement === 'Outro Músculo / Movimento Específico' && t.customMovement
+                                                    ? t.customMovement
+                                                    : t.movement || `Movimento #${tIdx + 1}`;
+
+                                                const cardBorder = isRightSide
+                                                  ? 'bg-blue-50/25 border-blue-200 shadow-2xs'
+                                                  : isLeftSide
+                                                  ? 'bg-purple-50/25 border-purple-200 shadow-2xs'
+                                                  : 'bg-white border-slate-200 shadow-2xs';
+
+                                                return (
+                                                  <div
+                                                    key={t.id || tIdx}
+                                                    className={`p-4 rounded-xl border text-xs flex flex-col justify-between space-y-3 ${cardBorder}`}
+                                                  >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                      <div className="space-y-0.5">
+                                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                                                          Movimento #{tIdx + 1}
+                                                        </span>
+                                                        <h6 className="font-extrabold text-slate-800 text-xs sm:text-sm">
+                                                          {movName}
+                                                        </h6>
+                                                      </div>
+
+                                                      <div className="flex items-center space-x-1.5 shrink-0">
+                                                        {isRightSide && (
+                                                          <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-blue-100 text-blue-800 border border-blue-200">
+                                                            Direito (D)
+                                                          </span>
+                                                        )}
+                                                        {isLeftSide && (
+                                                          <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-100 text-purple-800 border border-purple-200">
+                                                            Esquerdo (E)
+                                                          </span>
+                                                        )}
+                                                      </div>
+                                                    </div>
+
+                                                    {/* Score & Observation */}
+                                                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                                                      <div className="flex items-center justify-between">
+                                                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">
+                                                          Grau de Força:
+                                                        </span>
+                                                        <span
+                                                          className={`font-black text-xs px-2.5 py-0.5 rounded-lg ${
+                                                            isLeftSide
+                                                              ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                                                              : 'bg-blue-100 text-blue-900 border border-blue-200'
+                                                          }`}
+                                                        >
+                                                          {t.score ? t.score : 'Não pontuado'}
+                                                        </span>
+                                                      </div>
+
+                                                      <div className="flex items-center justify-between">
+                                                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">
+                                                          Observação:
+                                                        </span>
+                                                        <span
+                                                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
+                                                            t.observation === 'Sim'
+                                                              ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                                                              : 'bg-slate-100 text-slate-700 border border-slate-200'
+                                                          }`}
+                                                        >
+                                                          {t.observation === 'Sim' ? 'Sim' : 'Não'}
+                                                        </span>
+                                                      </div>
+
+                                                      {t.observation === 'Sim' && t.observationText && (
+                                                        <div className="p-2 bg-amber-50/70 border border-amber-200/80 rounded-lg text-[11px] text-amber-950 font-medium">
+                                                          <strong>Obs:</strong> {t.observationText}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          )}
+
+                                          {generalNotes && (
+                                            <div className="p-3.5 bg-white border border-slate-200 rounded-xl text-xs space-y-1">
+                                              <span className="font-bold text-slate-700 block">
+                                                Observações Gerais de Força Muscular:
+                                              </span>
+                                              <p className="text-slate-600 whitespace-pre-wrap">{generalNotes}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+
+                                    return (
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                        {scale.fields.map((f: any, fIdx: number) => {
+                                          const keyById = String(f.id || f.label || fIdx);
+                                          const ansVal = getAnswerForField(f, recAnswers, fIdx);
+                                          const hasAns = ansVal !== undefined && ansVal !== null && ansVal !== '';
+
+                                          const labelLower = (f.label || '').toLowerCase();
+                                          const isRightSide =
+                                            labelLower.includes('direito') ||
+                                            labelLower.includes(' dir.') ||
+                                            labelLower.endsWith(' - d') ||
+                                            labelLower.includes('(direito)');
+                                          const isLeftSide =
+                                            labelLower.includes('esquerdo') ||
+                                            labelLower.includes(' esq.') ||
+                                            labelLower.endsWith(' - e') ||
+                                            labelLower.includes('(esquerdo)');
+
+                                          const isFullWidth =
+                                            f.fieldType === 'long_text' ||
+                                            f.fieldType === 'body_map' ||
+                                            f.fieldType === 'scale_0_10' ||
+                                            (f.label &&
+                                              (f.label.toLowerCase().includes('observaç') ||
+                                                f.label.toLowerCase().includes('conclus')));
+
+                                          const cardBg = hasAns
+                                            ? isRightSide
+                                              ? 'bg-blue-50/25 border-blue-200/90 shadow-2xs'
+                                              : isLeftSide
+                                              ? 'bg-purple-50/25 border-purple-200/90 shadow-2xs'
+                                              : 'bg-white border-slate-200 shadow-2xs'
+                                            : 'bg-slate-50/50 border-dashed border-slate-200 opacity-60';
+
+                                          return (
+                                            <div
+                                              key={keyById}
+                                              className={`${
+                                                isFullWidth ? 'col-span-1 md:col-span-2' : 'col-span-1'
+                                              } p-4 rounded-xl border text-xs flex flex-col justify-between space-y-2 ${cardBg}`}
+                                            >
+                                              <div className="flex items-start justify-between gap-2">
+                                                <span className="text-[11px] font-bold text-slate-700 leading-snug">
+                                                  {f.label}
+                                                </span>
+                                                {isRightSide && (
+                                                  <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-blue-100 text-blue-800 border border-blue-200">
+                                                    Direito (D)
+                                                  </span>
+                                                )}
+                                                {isLeftSide && (
+                                                  <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-100 text-purple-800 border border-purple-200">
+                                                    Esquerdo (E)
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <div className="font-black text-slate-900 text-sm">
+                                                {hasAns ? (
+                                                  Array.isArray(ansVal) ? (
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                      {ansVal.map((vItem: string) => (
+                                                        <span
+                                                          key={vItem}
+                                                          className="bg-blue-600 text-white font-bold text-xs px-2.5 py-0.5 rounded-lg"
+                                                        >
+                                                          ✓ {vItem}
+                                                        </span>
+                                                      ))}
+                                                    </div>
+                                                  ) : (
+                                                    <span
+                                                      className={
+                                                        isLeftSide
+                                                          ? 'text-purple-950 bg-purple-50 border border-purple-200 px-3 py-1 rounded-xl inline-block'
+                                                          : 'text-blue-950 bg-blue-50 border border-blue-200 px-3 py-1 rounded-xl inline-block'
+                                                      }
+                                                    >
+                                                      {`${ansVal} ${f.unit || ''}`}
+                                                    </span>
+                                                  )
+                                                ) : (
+                                                  <span className="text-slate-400 italic font-normal">Não preenchido</span>
+                                                )}
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    );
+                                  })()}
                                 </motion.div>
                               )}
                             </AnimatePresence>

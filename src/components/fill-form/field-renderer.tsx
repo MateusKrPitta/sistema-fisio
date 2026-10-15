@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CustomField } from '@/lib/clinical-presets';
-import { Smile, Meh, Frown } from 'lucide-react';
+import { Smile, Meh, Frown, Check } from 'lucide-react';
 import { InteractivePainBodyMap, PainMarker } from '@/components/interactive-pain-body-map';
 
 interface FieldRendererProps {
@@ -69,16 +69,16 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
   }
 
   const cardStyling = isRightSide
-    ? 'bg-blue-50/30 border-blue-200/90 hover:border-blue-400/90 shadow-2xs'
+    ? 'bg-blue-50/30 dark:bg-blue-950/20 border-blue-200/90 dark:border-blue-900/60 hover:border-blue-400/90 shadow-2xs'
     : isLeftSide
-    ? 'bg-purple-50/30 border-purple-200/90 hover:border-purple-400/90 shadow-2xs'
-    : 'bg-slate-50 border-slate-200/80 hover:border-slate-300';
+    ? 'bg-purple-50/30 dark:bg-purple-950/20 border-purple-200/90 dark:border-purple-900/60 hover:border-purple-400/90 shadow-2xs'
+    : 'bg-slate-50 dark:bg-slate-900/70 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700';
 
   return (
     <div className={`p-4 sm:p-5 rounded-2xl border transition-all space-y-3 ${cardStyling}`}>
       <div>
         <div className="flex items-start justify-between gap-2">
-          <label className="block text-xs sm:text-sm font-bold text-slate-800 leading-snug">
+          <label className="block text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug">
             {field.label}
             {field.isRequired && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -93,7 +93,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
             </span>
           )}
         </div>
-        {field.helpText && <p className="text-[11px] text-slate-500 mt-1">{field.helpText}</p>}
+        {field.helpText && <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{field.helpText}</p>}
       </div>
 
       {/* BODY MAP (Desenho Anatômico e Pontos de Dor) */}
@@ -117,7 +117,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
       {field.fieldType === 'scale_0_10' && (
         <div className="space-y-3 pt-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Intensidade (0 a 10):</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Intensidade (0 a 10):</span>
             {value !== undefined && value !== '' && (
               <span
                 className={`text-xs font-black px-2.5 py-0.5 rounded-full flex items-center space-x-1 ${
@@ -142,7 +142,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
                   className={`h-9 sm:h-10 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-blue-600 text-white shadow-md scale-105'
-                      : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-200'
+                      : 'bg-white dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800'
                   }`}
                 >
                   {num}
@@ -160,14 +160,14 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
             const isSelected = String(value) === String(opt);
             const activeBgClass = isSelected
               ? isLeftSide
-                ? 'bg-purple-100/80 border-purple-500 text-purple-950 font-bold shadow-2xs'
-                : 'bg-blue-50/90 border-blue-500 text-blue-950 font-bold shadow-2xs'
-              : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-700 text-xs';
+                ? 'bg-purple-100/80 dark:bg-purple-950/80 border-purple-500 text-purple-950 dark:text-purple-200 font-bold shadow-2xs'
+                : 'bg-blue-50/90 dark:bg-blue-950/80 border-blue-500 text-blue-950 dark:text-blue-200 font-bold shadow-2xs'
+              : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 text-xs';
 
             return (
               <label
                 key={optIdx}
-                className={`flex items-center space-x-2.5 p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${activeBgClass}`}
+                className={`group flex items-center space-x-3 p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${activeBgClass}`}
               >
                 <input
                   type="radio"
@@ -175,8 +175,19 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
                   value={opt}
                   checked={isSelected}
                   onChange={() => onChange(opt)}
-                  className={`w-4 h-4 ${isLeftSide ? 'text-purple-600 focus:ring-purple-500' : 'text-blue-600 focus:ring-blue-500'}`}
+                  className="sr-only"
                 />
+                <div
+                  className={`w-4 h-4 rounded-full flex items-center justify-center border transition-all shrink-0 ${
+                    isSelected
+                      ? isLeftSide
+                        ? 'border-purple-600 bg-purple-600 ring-2 ring-purple-600/20'
+                        : 'border-blue-600 bg-blue-600 ring-2 ring-blue-600/20'
+                      : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 group-hover:border-slate-400'
+                  }`}
+                >
+                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                </div>
                 <span className="text-xs leading-snug">{opt}</span>
               </label>
             );
@@ -193,10 +204,10 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
             return (
               <label
                 key={optIdx}
-                className={`flex items-center space-x-2.5 p-2.5 rounded-xl border transition-all cursor-pointer text-xs ${
+                className={`group flex items-center space-x-3 p-2.5 rounded-xl border transition-all cursor-pointer text-xs ${
                   isSelected
-                    ? 'bg-blue-50/80 border-blue-500 text-blue-950 font-bold'
-                    : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-700'
+                    ? 'bg-blue-50/80 dark:bg-blue-950/80 border-blue-500 text-blue-950 dark:text-blue-200 font-bold shadow-2xs'
+                    : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <input
@@ -209,9 +220,18 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
                       onChange(selectedList.filter((item) => item !== opt));
                     }
                   }}
-                  className="w-4 h-4 text-blue-600 rounded-md focus:ring-blue-500"
+                  className="sr-only"
                 />
-                <span>{opt}</span>
+                <div
+                  className={`w-4.5 h-4.5 rounded-lg flex items-center justify-center border transition-all shrink-0 ${
+                    isSelected
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-2xs'
+                      : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 group-hover:border-blue-400'
+                  }`}
+                >
+                  {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
+                <span className="leading-snug">{opt}</span>
               </label>
             );
           })}
@@ -227,9 +247,9 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
             value={value !== undefined ? value : ''}
             onChange={(e) => onChange(e.target.value)}
             placeholder="0"
-            className="w-full sm:w-48 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
+            className="w-full sm:w-48 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all"
           />
-          {field.unit && <span className="text-xs font-bold text-slate-500">{field.unit}</span>}
+          {field.unit && <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{field.unit}</span>}
         </div>
       )}
 
@@ -240,7 +260,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
           value={value !== undefined ? value : ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Digite a resposta ou observação..."
-          className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-medium focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all"
         />
       )}
 
@@ -251,7 +271,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
           value={value !== undefined ? value : ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Descreva detalhadamente as conclusões clínicas..."
-          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-medium focus:bg-white focus:border-blue-500 focus:outline-none transition-all resize-none"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all resize-none"
         />
       )}
 
@@ -265,7 +285,7 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 value === true
                   ? 'bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-600/20'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                  : 'bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               Sim / Presente
@@ -281,8 +301,8 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
               }}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 value === false
-                  ? 'bg-slate-800 text-white shadow-xs'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                  ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-xs'
+                  : 'bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               Não / Ausente
@@ -291,8 +311,8 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
 
           {/* Conditional field for O2 quantity appearing directly beside when Sim is selected */}
           {isO2Field && value === true && (
-            <div className="flex items-center space-x-2.5 bg-blue-50/90 border border-blue-200 px-3.5 py-1.5 rounded-xl shadow-2xs">
-              <label className="text-xs font-bold text-blue-900 whitespace-nowrap">
+            <div className="flex items-center space-x-2.5 bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 px-3.5 py-1.5 rounded-xl shadow-2xs">
+              <label className="text-xs font-bold text-blue-900 dark:text-blue-300 whitespace-nowrap">
                 Qual a quantidade de O2?
               </label>
               <div className="flex items-center space-x-1">
@@ -309,9 +329,9 @@ export function FieldRenderer({ field, value, onChange, index, allAnswers, onAns
                     }
                   }}
                   placeholder="Ex: 2"
-                  className="w-20 bg-white border border-blue-300 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none"
+                  className="w-20 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-900 dark:text-slate-100 focus:bg-white focus:border-blue-500 focus:outline-none"
                 />
-                <span className="text-xs font-extrabold text-blue-700">L/min</span>
+                <span className="text-xs font-extrabold text-blue-700 dark:text-blue-400">L/min</span>
               </div>
             </div>
           )}

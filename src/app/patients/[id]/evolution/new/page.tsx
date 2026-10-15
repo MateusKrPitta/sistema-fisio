@@ -35,7 +35,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
-  Copy
+  Copy,
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/toast-context';
@@ -125,6 +126,8 @@ export default function NewEvolutionPage() {
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
   const [historyPreviewImages, setHistoryPreviewImages] = useState<{ images: string[]; index: number } | null>(null);
 
+  const [copiedNotes, setCopiedNotes] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -195,6 +198,52 @@ export default function NewEvolutionPage() {
       editorRef.current.innerHTML = newHtml;
       setEvolutionNotes(newHtml);
       editorRef.current.focus();
+    }
+  };
+
+  const handleCopyCurrentNotes = async () => {
+    let textToCopy = editorRef.current?.innerText?.trim() || '';
+    if (!textToCopy && evolutionNotes) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = evolutionNotes;
+      textToCopy = (tempDiv.innerText || tempDiv.textContent || '').trim();
+    }
+
+    if (!textToCopy) {
+      toast({
+        title: 'Aviso',
+        description: 'Não há anotações na evolução para copiar.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedNotes(true);
+      setTimeout(() => setCopiedNotes(false), 2500);
+      toast({
+        title: 'Copiado!',
+        description: 'Anotações da evolução copiadas para a área de transferência.',
+        type: 'success',
+      });
+    } catch {
+      toast({
+        title: 'Erro ao copiar',
+        description: 'Não foi possível copiar o texto automaticamente.',
+        type: 'error',
+      });
     }
   };
 
@@ -477,6 +526,29 @@ export default function NewEvolutionPage() {
                   <button type="button" onClick={() => formatText('justifyRight')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"><AlignRight className="w-4 h-4"/></button>
                   <div className="w-px h-4 bg-slate-200 mx-1"></div>
                   <button type="button" onClick={() => formatText('removeFormat')} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Limpar"><Eraser className="w-4 h-4"/></button>
+                  <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                  <button
+                    type="button"
+                    onClick={handleCopyCurrentNotes}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      copiedNotes
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                        : 'text-slate-600 hover:text-blue-700 hover:bg-slate-100'
+                    }`}
+                    title="Copiar anotações da evolução"
+                  >
+                    {copiedNotes ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-[11px] text-emerald-700">Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
+                        <span className="text-[11px]">Copiar</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
 

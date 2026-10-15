@@ -136,7 +136,7 @@ export function Header({
         {/* Birthday Notification Button */}
         {shouldShowBirthday && (
           <Link
-            href="/birthdays"
+            href="/aniversariantes"
             prefetch={false}
             title={todayBirthdayCount > 0 ? `${todayBirthdayCount} aniversariante(s) hoje!` : 'Ver Aniversariantes'}
             className="p-2 text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors relative flex items-center justify-center cursor-pointer"
@@ -285,7 +285,7 @@ export function Header({
                   {/* Minha Equipe (Apenas para Administrador de Clínica) */}
                   {user?.role === 'clinic_admin' && (
                     <Link
-                      href="/team"
+                      href="/equipe"
                       onClick={() => setDropdownOpen(false)}
                       className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
                     >
@@ -300,7 +300,7 @@ export function Header({
                   {/* Minha Assinatura (Apenas para Administrador de Clínica) */}
                   {user?.role === 'clinic_admin' && (
                     <Link
-                      href="/subscription"
+                      href="/assinatura"
                       onClick={() => setDropdownOpen(false)}
                       className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
                     >
@@ -314,7 +314,7 @@ export function Header({
 
                   {/* Support Link Button */}
                   <Link
-                    href="/support"
+                    href="/suporte"
                     onClick={() => setDropdownOpen(false)}
                     className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
                   >

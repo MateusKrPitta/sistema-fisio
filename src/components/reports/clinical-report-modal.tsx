@@ -250,14 +250,14 @@ export function ClinicalReportModal({
             </div>
 
             {/* Content Body */}
-            <div className="printable-content-body flex-1 overflow-y-auto p-5 sm:p-6 lg:p-8 space-y-6 print:p-0 print:overflow-visible">
+            <div className="printable-content-body flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 print:p-0 print:overflow-visible">
               {loading ? (
                 <div className="py-24 flex flex-col items-center justify-center text-slate-400 space-y-3">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                   <p className="text-xs font-semibold">Carregando avaliações e histórico do paciente...</p>
                 </div>
               ) : evaluationSessions.length === 0 ? (
-                <div className="py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 text-center space-y-3">
+                <div className="py-20 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
                     <AlertCircle className="w-6 h-6" />
                   </div>
@@ -270,13 +270,13 @@ export function ClinicalReportModal({
                 /* ============================================================ */
                 /* VIEW A: SPECIFIC EVALUATION SESSION (ALL SCALES OF THIS DATE) */
                 /* ============================================================ */
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Back to Evaluations & Direct Close Bar */}
                   <div className="flex items-center justify-between gap-2 print:hidden">
                     <button
                       type="button"
                       onClick={() => setSelectedRecordId(null)}
-                      className="inline-flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                      className="inline-flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:text-blue-700 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-xs hover:shadow-sm transition-all cursor-pointer"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       <span>Voltar para Lista de Avaliações</span>
@@ -294,16 +294,16 @@ export function ClinicalReportModal({
                   </div>
 
                   {/* Session Header Banner */}
-                  <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-6 rounded-3xl shadow-md space-y-3 print:bg-white print:text-slate-900 print:border print:border-slate-300 print:shadow-none print:p-4 print:rounded-xl break-inside-avoid page-break-avoid">
+                  <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md space-y-3 print:bg-white print:text-slate-900 print:border print:border-slate-300 print:shadow-none print:p-4 print:rounded-xl break-inside-avoid page-break-avoid">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <span className="text-[10px] font-bold text-blue-300 print:text-blue-700 uppercase tracking-wider block">
                           Avaliação Fisioterapêutica Selecionada
                         </span>
-                        <h3 className="text-lg sm:text-xl font-black text-white print:text-slate-950">
+                        <h3 className="text-base sm:text-lg md:text-xl font-black text-white print:text-slate-950">
                           {activeSession.sessionTitle} • {activeSession.formattedDate}
                         </h3>
-                        <p className="text-xs text-slate-300 print:text-slate-600">
+                        <p className="text-xs text-slate-300 print:text-slate-600 mt-0.5">
                           Fisioterapeuta: <strong className="text-white print:text-slate-900">{activeSession.evaluatorName}</strong>
                           {activeSession.evaluatorCrefito ? ` (CREFITO: ${activeSession.evaluatorCrefito})` : ''} •{' '}
                           <strong className="text-cyan-300 print:text-slate-900">
@@ -313,7 +313,7 @@ export function ClinicalReportModal({
                       </div>
 
                       <span
-                        className={`text-[11px] font-extrabold px-3 py-1.5 rounded-full border flex items-center space-x-1.5 self-start sm:self-auto ${
+                        className={`text-[11px] font-extrabold px-3 py-1.5 rounded-full border flex items-center space-x-1.5 self-start sm:self-auto shrink-0 ${
                           activeSession.isSigned
                             ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 print:bg-emerald-50 print:text-emerald-800 print:border-emerald-300'
                             : 'bg-amber-500/20 text-amber-300 border-amber-500/30 print:bg-amber-50 print:text-amber-800 print:border-amber-300'
@@ -331,7 +331,7 @@ export function ClinicalReportModal({
 
                   {/* Loading Full Evaluation Details State */}
                   {loadingDetailId === selectedRecordId && activeSession.scales.length === 0 ? (
-                    <div className="py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 flex flex-col items-center justify-center text-slate-400 space-y-3">
+                    <div className="py-24 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-8 flex flex-col items-center justify-center text-slate-400 space-y-3">
                       <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                       <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
                         Carregando detalhes e escalas da avaliação #{activeSession.recordIndex + 1}...
@@ -350,7 +350,7 @@ export function ClinicalReportModal({
                         </h4>
 
                         {activeSession.scales.length === 0 ? (
-                          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 text-center text-xs text-slate-500">
+                          <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 text-center text-xs text-slate-500">
                             Nenhum item preenchido encontrado para esta avaliação.
                           </div>
                         ) : (
@@ -358,15 +358,15 @@ export function ClinicalReportModal({
                             {activeSession.scales.map((scale, scIdx) => (
                               <div
                                 key={scale.scaleKey}
-                                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-6 space-y-4 print:shadow-none print:border-slate-300 print:rounded-xl print:p-4 break-inside-avoid page-break-avoid"
+                                className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-4 sm:p-6 space-y-3.5 sm:space-y-4 print:shadow-none print:border-slate-300 print:rounded-xl print:p-4 break-inside-avoid page-break-avoid"
                               >
                                 {/* Scale Header */}
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 print:border-slate-200 pb-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-2 border-b border-slate-100 dark:border-slate-800 print:border-slate-200 pb-3">
                                   <div className="flex items-center space-x-3">
                                     <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 print:bg-slate-800">
                                       #{scIdx + 1}
                                     </div>
-                                    <div>
+                                    <div className="min-w-0 flex-1">
                                       <h5 className="font-black text-sm text-slate-900 dark:text-slate-100 print:text-slate-950">
                                         {scale.scaleTitle}
                                       </h5>
@@ -377,11 +377,11 @@ export function ClinicalReportModal({
                                   </div>
 
                                   {scale.scoreSummary && (
-                                    <div className="bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-3 py-1.5 rounded-xl text-right">
+                                    <div className="bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-3 py-1.5 rounded-xl text-left sm:text-right w-full sm:w-auto flex sm:flex-col justify-between sm:justify-start items-center sm:items-end shrink-0">
                                       <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase block">
                                         Resultado Obtido
                                       </span>
-                                      <span className="text-base font-black text-blue-950 dark:text-blue-200">
+                                      <span className="text-sm sm:text-base font-black text-blue-950 dark:text-blue-200">
                                         {scale.scoreSummary}
                                       </span>
                                     </div>
@@ -390,12 +390,348 @@ export function ClinicalReportModal({
 
                                 {/* Clinical Interpretation if any */}
                                 {scale.clinicalInterpretation && (
-                                  <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs flex items-center space-x-2 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700 print:border-slate-200">
-                                    <Info className="w-4 h-4 text-blue-600 shrink-0" />
-                                    <span>
-                                      <strong>Classificação Clínica:</strong> {scale.clinicalInterpretation}
-                                    </span>
-                                  </div>
+                                  scale.scaleKey === 'prep2' || (scale.scaleTitle || '').toLowerCase().includes('prep') ? (
+                                    <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-blue-200/90 dark:border-blue-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-blue-900 dark:text-blue-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-blue-600 shrink-0" />
+                                          <span>Algoritmo PREP2 • Estratificação de Membro Superior</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-blue-200 dark:border-blue-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'dinamometria_fpm' || (scale.scaleTitle || '').toLowerCase().includes('dinamometria') || (scale.scaleTitle || '').toLowerCase().includes('preensão') ? (
+                                    <div className="bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-slate-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-emerald-200/90 dark:border-emerald-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-emerald-900 dark:text-emerald-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-emerald-600 shrink-0" />
+                                          <span>Dinamometria FPM • Predição Novaes et al. & EWGSOP2</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'tc6' || (scale.scaleTitle || '').toLowerCase().includes('tc6') || (scale.scaleTitle || '').toLowerCase().includes('caminhada') ? (
+                                    <div className="bg-gradient-to-r from-sky-50/90 via-blue-50/70 to-slate-50 dark:from-sky-950/40 dark:via-blue-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-sky-200/90 dark:border-sky-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-sky-900 dark:text-sky-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-sky-600 shrink-0" />
+                                          <span>Teste TC6 • Referência Victor Zuniga Dourado (UNIFESP)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-sky-700 dark:text-sky-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-sky-200 dark:border-sky-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-sky-100 dark:border-sky-900/50">
+                                        Ref: Victor Zuniga Dourado • Equações de Referência para o Teste de Caminhada de Seis Minutos em Indivíduos Saudáveis • UNIFESP
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'tsl_1min' || (scale.scaleTitle || '').toLowerCase().includes('sentar e levantar') || (scale.scaleTitle || '').toLowerCase().includes('tsl') || (scale.scaleTitle || '').toLowerCase().includes('sit-to-stand') || (scale.scaleTitle || '').toLowerCase().includes('sts') ? (
+                                    <div className="bg-gradient-to-r from-indigo-50/90 via-violet-50/70 to-slate-50 dark:from-indigo-950/40 dark:via-violet-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-indigo-200/90 dark:border-indigo-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-indigo-900 dark:text-indigo-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-indigo-600 shrink-0" />
+                                          <span>Sentar e Levantar (TSL 1 min) • Referência Strassmann et al. (2013)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-indigo-100 dark:border-indigo-900/50">
+                                        Ref: Strassmann A, Steurer-Stey C, Lana KD, Zoller M, Turk AJ, Suter P, Puhan MA. Population-based reference values for the 1-min sit-to-stand test. Int J Public Health (2013)
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'moca' || (scale.scaleTitle || '').toLowerCase().includes('moca') || (scale.scaleTitle || '').toLowerCase().includes('montreal') ? (
+                                    <div className="bg-gradient-to-r from-purple-50/90 via-violet-50/70 to-slate-50 dark:from-purple-950/40 dark:via-violet-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-purple-200/90 dark:border-purple-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-purple-900 dark:text-purple-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-purple-600 shrink-0" />
+                                          <span>Montreal Cognitive Assessment (MoCA) • Versão Brasileira (UNIFESP)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-purple-700 dark:text-purple-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-purple-200 dark:border-purple-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-purple-100 dark:border-purple-900/50">
+                                        Ref: Nasreddine ZS et al. (2005) • Adaptação Brasileira: Bertolucci, Sarmento & Wajman (UNIFESP-SP, 2007) • Corte Normalidade: ≥ 26/30 pts
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'berg' || (scale.scaleTitle || '').toLowerCase().includes('berg') || (scale.scaleTitle || '').toLowerCase().includes('bbs') ? (
+                                    <div className="bg-gradient-to-r from-amber-50/90 via-orange-50/70 to-slate-50 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-amber-200/90 dark:border-amber-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-amber-900 dark:text-amber-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-amber-600 shrink-0" />
+                                          <span>Escala de Berg (BBS) • Equilíbrio Funcional e Risco de Queda</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-amber-700 dark:text-amber-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-amber-200 dark:border-amber-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-amber-100 dark:border-amber-900/50">
+                                        Ref: Berg K, Wood-Dauphinee S, Williams JI, Gayton D. (1989) • Escore Total: 0 a 56 pts • Corte de Risco Elevado: ≤ 40 pts
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'barthel' || (scale.scaleTitle || '').toLowerCase().includes('barthel') ? (
+                                    <div className="bg-gradient-to-r from-teal-50/90 via-emerald-50/70 to-slate-50 dark:from-teal-950/40 dark:via-emerald-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-teal-200/90 dark:border-teal-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-teal-900 dark:text-teal-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-teal-600 shrink-0" />
+                                          <span>Índice de Barthel • Avaliação de Autonomia e AVDs</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-teal-700 dark:text-teal-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-teal-200 dark:border-teal-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-teal-100 dark:border-teal-900/50">
+                                        Ref: Mahoney FI, Barthel DW. (1965) • Escore Total: 0 a 100 pontos • 100 pts: Totalmente Independente
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'nihss' || (scale.scaleTitle || '').toLowerCase().includes('nihss') ? (
+                                    <div className="bg-gradient-to-r from-rose-50/90 via-red-50/70 to-slate-50 dark:from-rose-950/40 dark:via-red-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-rose-200/90 dark:border-rose-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-rose-900 dark:text-rose-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-rose-600 shrink-0" />
+                                          <span>Escala de AVC do NIH (NIHSS) • Déficit Neurológico</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-rose-700 dark:text-rose-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-rose-200 dark:border-rose-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-rose-100 dark:border-rose-900/50">
+                                        Ref: Lyden P et al. (1999) • National Institutes of Health Stroke Scale • Escore de 0 a 42 pontos
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'manovacuometria' || (scale.scaleTitle || '').toLowerCase().includes('manovacuometria') ? (
+                                    <div className="bg-gradient-to-r from-cyan-50/90 via-sky-50/70 to-slate-50 dark:from-cyan-950/40 dark:via-sky-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-cyan-200/90 dark:border-cyan-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-cyan-900 dark:text-cyan-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-cyan-600 shrink-0" />
+                                          <span>Manovacuometria • Força Muscular Respiratória (PImáx / PEmáx)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-cyan-700 dark:text-cyan-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-cyan-200 dark:border-cyan-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-cyan-100 dark:border-cyan-900/50">
+                                        Ref: Neder JA, Andreoni S, Lerario MC, Nery LE. (1999) • Equações de Referência para População Brasileira
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'peak_flow' || (scale.scaleTitle || '').toLowerCase().includes('peak flow') ? (
+                                    <div className="bg-gradient-to-r from-blue-50/90 via-cyan-50/70 to-slate-50 dark:from-blue-950/40 dark:via-cyan-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-blue-200/90 dark:border-blue-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-blue-900 dark:text-blue-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-blue-600 shrink-0" />
+                                          <span>Peak Flow (PFE) & Pico de Fluxo de Tosse (PFT)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-blue-200 dark:border-blue-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-blue-100 dark:border-blue-900/50">
+                                        Ref: Leith DE et al. • Eficácia de Tosse: &gt; 270 L/min Eficaz | 160-270 L/min Insuficiente | &lt; 160 L/min Ineficaz
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'mmrc' || (scale.scaleTitle || '').toLowerCase().includes('mmrc') ? (
+                                    <div className="bg-gradient-to-r from-orange-50/90 via-amber-50/70 to-slate-50 dark:from-orange-950/40 dark:via-amber-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-orange-200/90 dark:border-orange-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-orange-900 dark:text-orange-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-orange-600 shrink-0" />
+                                          <span>Escala de Dispneia - mMRC (Medical Research Council)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-orange-700 dark:text-orange-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-orange-200 dark:border-orange-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-orange-100 dark:border-orange-900/50">
+                                        Ref: Fletcher CM et al. • American Thoracic Society / GOLD • Graus 0 a 4 de limitação respiratória
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'nyha' || (scale.scaleTitle || '').toLowerCase().includes('nyha') ? (
+                                    <div className="bg-gradient-to-r from-red-50/90 via-rose-50/70 to-slate-50 dark:from-red-950/40 dark:via-rose-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-red-200/90 dark:border-red-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-red-900 dark:text-red-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-red-600 shrink-0" />
+                                          <span>Classificação Funcional Cardíaca (NYHA)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-red-700 dark:text-red-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-red-200 dark:border-red-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-red-100 dark:border-red-900/50">
+                                        Ref: New York Heart Association (NYHA) • Classificação funcional de insuficiência cardíaca (Classes I a IV)
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'forca_muscular_mrc' || (scale.scaleTitle || '').toLowerCase().includes('força muscular') ? (
+                                    <div className="bg-gradient-to-r from-indigo-50/90 via-blue-50/70 to-slate-50 dark:from-indigo-950/40 dark:via-blue-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-indigo-200/90 dark:border-indigo-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-indigo-900 dark:text-indigo-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-indigo-600 shrink-0" />
+                                          <span>Escala de Força Muscular Periférica (MRC 0-5)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-indigo-100 dark:border-indigo-900/50">
+                                        Ref: Medical Research Council (MRC) • Graduação Padronizada de Força Muscular Manual (Graus 0 a 5)
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'eva_dor' || (scale.scaleTitle || '').toLowerCase().includes('eva') || (scale.scaleTitle || '').toLowerCase().includes('body map') ? (
+                                    <div className="bg-gradient-to-r from-rose-50/90 via-pink-50/70 to-slate-50 dark:from-rose-950/40 dark:via-pink-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-rose-200/90 dark:border-rose-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-rose-900 dark:text-rose-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-rose-600 shrink-0" />
+                                          <span>Escala Visual Analógica (EVA) & Mapeamento de Dor (Body Map)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-rose-700 dark:text-rose-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-rose-200 dark:border-rose-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-rose-100 dark:border-rose-900/50">
+                                        Ref: Huskisson EC. (1974) • Avaliação Quantitativa da Intensidade da Dor (0 a 10) e Mapeamento Topográfico Anatômico
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'sf36' || (scale.scaleTitle || '').toLowerCase().includes('sf-36') ? (
+                                    <div className="bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-slate-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-emerald-200/90 dark:border-emerald-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-emerald-900 dark:text-emerald-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-emerald-600 shrink-0" />
+                                          <span>Questionário de Qualidade de Vida (SF-36)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-emerald-100 dark:border-emerald-900/50">
+                                        Ref: Ware JE Jr, Sherbourne CD. (1992) • Validação Brasileira: Ciconelli RM et al. (UNIFESP, 1999)
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'psqi' || (scale.scaleTitle || '').toLowerCase().includes('psqi') ? (
+                                    <div className="bg-gradient-to-r from-violet-50/90 via-indigo-50/70 to-slate-50 dark:from-violet-950/40 dark:via-indigo-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-violet-200/90 dark:border-violet-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-violet-900 dark:text-violet-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-violet-600 shrink-0" />
+                                          <span>Índice de Qualidade do Sono de Pittsburgh (PSQI)</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-violet-700 dark:text-violet-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-violet-200 dark:border-violet-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-violet-100 dark:border-violet-900/50">
+                                        Ref: Buysse DJ et al. (1989) • Validação Brasileira: Bertolazi AN et al. (2011)
+                                      </p>
+                                    </div>
+                                  ) : scale.scaleKey === 'bioimpedancia' || (scale.scaleTitle || '').toLowerCase().includes('bioimpedância') ? (
+                                    <div className="bg-gradient-to-r from-cyan-50/90 via-teal-50/70 to-slate-50 dark:from-cyan-950/40 dark:via-teal-950/30 dark:to-slate-900/40 p-4 rounded-2xl border border-cyan-200/90 dark:border-cyan-800/80 print:border-slate-300 space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center space-x-2 text-cyan-900 dark:text-cyan-300 font-black text-xs uppercase tracking-wider">
+                                          <Activity className="w-4 h-4 text-cyan-600 shrink-0" />
+                                          <span>Bioimpedância e Composição Corporal</span>
+                                        </div>
+                                        {scale.scoreSummary && (
+                                          <span className="text-[11px] font-black text-cyan-700 dark:text-cyan-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-cyan-200 dark:border-cyan-700">
+                                            {scale.scoreSummary}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        {scale.clinicalInterpretation}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-cyan-100 dark:border-cyan-900/50">
+                                        Ref: Análise por Bioimpedância Elétrica Tetrapolar • Parâmetros de Eutrofia e Distribuição de Massa Magra / Gordura
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs flex items-center space-x-2 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700 print:border-slate-200">
+                                      <Info className="w-4 h-4 text-blue-600 shrink-0" />
+                                      <span>
+                                        <strong>Classificação Clínica:</strong> {scale.clinicalInterpretation}
+                                      </span>
+                                    </div>
+                                  )
                                 )}
 
                                 {/* Items Grid */}

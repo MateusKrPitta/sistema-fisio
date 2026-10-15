@@ -16,9 +16,14 @@ import {
   Edit3,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CLINICAL_PRESETS, ClinicalPreset, CustomField } from '@/lib/clinical-presets';
+import { CLINICAL_PRESETS, ClinicalPreset, CustomField, calculateNIHSSScore, getNIHSSBadge, calculatePREP2Score, PREP2Result } from '@/lib/clinical-presets';
 import { FieldRenderer } from './fill-form/field-renderer';
 import { ScaleBuilderDeck } from './fill-form/scale-builder-deck';
+import { MRCMuscleScaleSection, parseMRCTestsFromAnswers } from './fill-form/mrc-muscle-scale';
+import { TC6WalkTestSection } from './fill-form/tc6-walk-test';
+import { FPMDynamometrySection } from './fill-form/fpm-dynamometry';
+import { STS1MinTestSection } from './fill-form/sts-1min-test';
+import { MoCACognitiveScaleSection } from './fill-form/moca-cognitive-scale';
 import { PhotoAttachmentManager } from '@/components/photo-attachment-manager';
 import {
   EvaluationHistoryList,
@@ -205,6 +210,10 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
   const startEditEvaluation = (record: any, targetScale?: ScaleGroup) => {
     setEditingRecord(record);
     const recAnswers = parseAnswers(record.answers);
+    const parsedMrc = parseMRCTestsFromAnswers(recAnswers);
+    if (parsedMrc.length > 0 && !recAnswers.mrc_tests) {
+      recAnswers.mrc_tests = parsedMrc;
+    }
     setAnswers(recAnswers);
     setNotes(record.notes || '');
     setImages(
@@ -310,6 +319,57 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
     }
   };
 
+  const handleDuplicateRecord = async (sourceRecord: any) => {
+    if (!patient?.id) return;
+    try {
+      let fullRecord = sourceRecord;
+      if (!fullRecord.answers) {
+        const res = await api
+          .get(`/patients/${patient.id}/form-records/${sourceRecord.id}`)
+          .catch(() => api.get(`/form-records/${sourceRecord.id}`));
+        const data = res?.data || res;
+        if (data && data.id) fullRecord = data;
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const payload = {
+        templateId: fullRecord.templateId || fullRecord.template?.id || null,
+        recordDate: todayStr,
+        answers: fullRecord.answers || {},
+        notes: fullRecord.notes || null,
+        images: Array.isArray(fullRecord.images) ? fullRecord.images : [],
+      };
+
+      const res = await api.post(`/patients/${patient.id}/form-records`, payload);
+      const createdRecord = res?.data?.id ? res.data : res;
+
+      // 1. Recarregar lista do servidor garantindo sincronização idêntica ao F5
+      try {
+        const recRes = await api.get(`/patients/${patient.id}/form-records`);
+        const records = Array.isArray(recRes) ? recRes : recRes?.data || [];
+        setFormRecords(records);
+      } catch {
+        setFormRecords((prev) => [createdRecord, ...prev]);
+      }
+
+      toast({
+        title: 'Avaliação Duplicada! 📋',
+        description: 'Uma nova avaliação foi criada com sucesso com base neste registro.',
+        type: 'success',
+      });
+
+      onSuccess?.();
+      return createdRecord;
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao duplicar avaliação',
+        description: err?.response?.data?.error || 'Não foi possível duplicar a avaliação.',
+        type: 'error',
+      });
+      throw err;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (activeFields.length === 0) {
@@ -317,10 +377,71 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
       return;
     }
 
+    // Validação dos 3 selects obrigatórios + grau de força na Escala de Força Muscular (MRC)
+    const hasMRCGroup = groupedActiveScales.some(
+      (g) =>
+        (g.groupName || '').toLowerCase().includes('força muscular') ||
+        ((g.groupName || '').toLowerCase().includes('mrc') && !(g.groupName || '').toLowerCase().includes('dispne'))
+    );
+
+    if (hasMRCGroup) {
+      const mrcTests = parseMRCTestsFromAnswers(answers);
+      if (mrcTests.length === 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Adicione pelo menos um movimento na Escala de Força Muscular (MRC).',
+          type: 'warning',
+        });
+        return;
+      }
+
+      for (let i = 0; i < mrcTests.length; i++) {
+        const testItem = mrcTests[i];
+        const num = i + 1;
+        const movName =
+          testItem.movement === 'Outro Músculo / Movimento Específico'
+            ? testItem.customMovement?.trim()
+            : testItem.movement;
+
+        if (!movName) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione o Nome do Movimento no Teste #${num} da Escala de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+        if (!testItem.side) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione o Lado (Direito ou Esquerdo) no Teste #${num} da Escala de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+        if (!testItem.observation) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione a Observação (Sim ou Não) no Teste #${num} da Escala de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+        if (!testItem.score) {
+          toast({
+            title: 'Campo Obrigatório',
+            description: `Selecione o Grau de Força (0 a 5) no Teste #${num} da Escala de Força Muscular.`,
+            type: 'warning',
+          });
+          return;
+        }
+      }
+    }
+
     setSaving(true);
     const finalTitle = moduleTitle.trim() || loadedPresets.join(' + ') || `${moduleCategory} - ${patient?.fullName || patient?.name}`;
 
-    const normalizedAnswers: Record<string, any> = {};
+    const normalizedAnswers: Record<string, any> = { ...answers };
     activeFields.forEach((f) => {
       const val = getAnswerForField(f, answers);
       if (val !== undefined && val !== null && val !== '') {
@@ -440,32 +561,32 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.97, y: 15 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="relative bg-white rounded-none sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-screen sm:max-h-[94vh] h-full sm:h-[92vh] flex flex-col overflow-hidden border-0 sm:border border-slate-200/90 z-10"
+          className="relative bg-white dark:bg-slate-900 rounded-none sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-screen sm:max-h-[94vh] h-full sm:h-[92vh] flex flex-col overflow-hidden border-0 sm:border border-slate-200/90 dark:border-slate-800 z-10"
         >
           {/* Header Bar - Sticky & Mobile First com Botão Fechar Sempre Visível */}
-          <div className="px-3.5 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-2.5 sm:gap-4 bg-white shrink-0 shadow-xs sticky top-0 z-20">
+          <div className="px-3.5 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2.5 sm:gap-4 bg-white dark:bg-slate-900 shrink-0 shadow-xs sticky top-0 z-20">
             <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0 flex-1">
               <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-sm sm:text-lg shadow-md shadow-blue-500/20 shrink-0">
                 {(patient?.fullName || patient?.name || 'P').charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center space-x-1.5 sm:space-x-2">
-                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">
+                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
                     {viewMode === 'history'
-                      ? 'Histórico Clínico'
+                      ? 'Histórico de Avaliações'
                       : editingRecord
                       ? 'Editar Avaliação'
                       : 'Nova Avaliação'}
                   </h2>
                   {viewMode === 'history' && formRecords.length > 0 && (
-                    <span className="bg-blue-50 text-blue-700 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border border-blue-100 shrink-0">
+                    <span className="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-900 shrink-0">
                       {formRecords.length}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate mt-0.5">
-                  <strong className="text-slate-700">{patient?.fullName || patient?.name}</strong> • CPF:{' '}
-                  <span className="font-mono text-slate-600">{patient?.cpf || 'Não informado'}</span>
+                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                  <strong className="text-slate-700 dark:text-slate-200">{patient?.fullName || patient?.name}</strong> • CPF:{' '}
+                  <span className="font-mono text-slate-600 dark:text-slate-400">{patient?.cpf || 'Não informado'}</span>
                 </p>
               </div>
             </div>
@@ -479,14 +600,14 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                   className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-bold px-2.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm shadow-sm shadow-blue-500/20 transition-all cursor-pointer shrink-0"
                 >
                   <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">+ Nova Avaliação</span>
+                  <span className="hidden sm:inline">Nova Avaliação</span>
                   <span className="inline sm:hidden">Novo</span>
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => setViewMode('history')}
-                  className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 sm:px-3.5 py-2 rounded-xl text-xs border border-slate-200 transition-colors cursor-pointer shrink-0"
+                  className="inline-flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold px-2.5 sm:px-3.5 py-2 rounded-xl text-xs border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span className="hidden sm:inline">Ver Histórico</span>
@@ -498,31 +619,31 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
               <button
                 type="button"
                 onClick={onClose}
-                className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 transition-all cursor-pointer shrink-0 shadow-2xs group focus:ring-2 focus:ring-red-500/20"
+                className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/50 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shrink-0 shadow-2xs group focus:ring-2 focus:ring-red-500/20"
                 title="Fechar"
                 aria-label="Fechar"
               >
-                <X className="w-5 h-5 transition-transform group-hover:scale-110 text-slate-600 group-hover:text-red-600" />
+                <X className="w-5 h-5 transition-transform group-hover:scale-110 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
               </button>
             </div>
           </div>
 
           {/* VIEW MODE 1: HISTÓRICO DE AVALIAÇÕES */}
           {viewMode === 'history' && (
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50/60 space-y-5">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50/60 dark:bg-slate-950 space-y-5">
               {loading ? (
                 <div className="py-24 flex flex-col items-center justify-center text-slate-400 space-y-3">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                   <p className="text-xs font-semibold">Carregando histórico do paciente...</p>
                 </div>
               ) : formRecords.length === 0 ? (
-                <div className="py-20 bg-white rounded-3xl border border-slate-200 p-8 text-center space-y-4 max-w-lg mx-auto shadow-sm">
-                  <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <div className="py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 text-center space-y-4 max-w-lg mx-auto shadow-sm">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
                     <AlertCircle className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-slate-900 text-base">Nenhuma avaliação realizada ainda</h3>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                    <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">Nenhuma avaliação realizada ainda</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
                       Clique no botão abaixo para preencher a primeira avaliação clínica deste paciente.
                     </p>
                   </div>
@@ -559,6 +680,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                     onToggleExpand={toggleExpandRecord}
                     onStartEdit={startEditEvaluation}
                     onRequestDelete={(rec) => setRecordToDelete(rec)}
+                    onDuplicateRecord={handleDuplicateRecord}
                     onRecordUpdated={(recId, updatedAnswers) => {
                       setFormRecords((prev) =>
                         prev.map((r) => (r.id === recId ? { ...r, answers: updatedAnswers } : r))
@@ -573,7 +695,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
 
           {/* VIEW MODE 2: PREENCHIMENTO DE NOVA AVALIAÇÃO / REAVALIAÇÃO */}
           {viewMode === 'fill' && (
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-100/60 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-100/60 dark:bg-slate-950 space-y-6">
               {loading ? (
                 <div className="py-24 flex flex-col items-center justify-center text-slate-500 space-y-3">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -584,7 +706,9 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                   {/* Sequence indicator banner */}
                   <div
                     className={`rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border shadow-xs ${
-                      editingRecord ? 'bg-amber-500/10 border-amber-500/30' : 'bg-blue-600/10 border-blue-500/20'
+                      editingRecord
+                        ? 'bg-amber-500/10 dark:bg-amber-950/30 border-amber-500/30 dark:border-amber-800/60'
+                        : 'bg-blue-600/10 dark:bg-blue-950/30 border-blue-500/20 dark:border-blue-900/50'
                     }`}
                   >
                     <div className="flex items-center space-x-3.5">
@@ -596,26 +720,26 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                         {editingRecord ? <Edit3 className="w-5 h-5" /> : `#${formRecords.length + 1}`}
                       </div>
                       <div>
-                        <h4 className={`text-sm font-bold ${editingRecord ? 'text-amber-950' : 'text-blue-950'}`}>
+                        <h4 className={`text-sm font-bold ${editingRecord ? 'text-amber-950 dark:text-amber-200' : 'text-blue-950 dark:text-blue-200'}`}>
                           {editingRecord
                             ? `Editando Avaliação de ${formatDateSafe(recordDate)}`
                             : formRecords.length === 0
                             ? 'Primeira Avaliação Inicial'
                             : `${formRecords.length + 1}ª Reavaliação Clínica do Paciente`}
                         </h4>
-                        <p className={`text-xs ${editingRecord ? 'text-amber-800' : 'text-blue-700'} mt-0.5`}>
+                        <p className={`text-xs ${editingRecord ? 'text-amber-800 dark:text-amber-300' : 'text-blue-700 dark:text-blue-300'} mt-0.5`}>
                           Adicione as escalas desejadas, preencha os testes e clique em &quot;Salvar&quot;.
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold text-slate-500">Data da Avaliação:</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Data da Avaliação:</span>
                       <input
                         type="date"
                         value={recordDate}
                         onChange={(e) => setRecordDate(e.target.value)}
-                        className="bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                        className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"
                       />
                     </div>
                   </div>
@@ -634,11 +758,11 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
 
                   {/* QUESTIONNAIRE / TESTS FORM (GROUPED BY SCALE) */}
                   {groupedActiveScales.length === 0 ? (
-                    <div className="py-20 flex flex-col items-center justify-center text-slate-400 space-y-3 bg-white rounded-3xl border border-dashed border-slate-300 p-8 text-center">
-                      <AlertCircle className="w-10 h-10 text-slate-300" />
+                    <div className="py-20 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 space-y-3 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
+                      <AlertCircle className="w-10 h-10 text-slate-300 dark:text-slate-600" />
                       <div>
-                        <p className="text-sm font-bold text-slate-700">Nenhuma escala ou teste carregado ainda.</p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Nenhuma escala ou teste carregado ainda.</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                           Selecione uma categoria e uma escala pronta acima e clique em &quot;+ Adicionar Escala&quot;.
                         </p>
                       </div>
@@ -658,6 +782,42 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                           });
                         }
 
+                        const isNIHSS =
+                          (scaleGroup.groupName || '').toLowerCase().includes('nihss') ||
+                          ((scaleGroup.groupName || '').toLowerCase().includes('nih') &&
+                            (scaleGroup.groupName || '').toLowerCase().includes('avc'));
+
+                        let nihssCalc = { score: 0, answeredCount: 0 };
+                        if (isNIHSS) {
+                          nihssCalc = calculateNIHSSScore(answers);
+                        }
+
+                        const isPREP2 =
+                          (scaleGroup.groupName || '').toLowerCase().includes('prep 2') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('prep2') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('preditor pós avc') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('preditor pos avc');
+
+                        let prep2Calc: PREP2Result | null = null;
+                        if (isPREP2) {
+                          let patientAgeNum: number | undefined = undefined;
+                          if (patient?.birthDate) {
+                            const bDate = new Date(patient.birthDate);
+                            if (!isNaN(bDate.getTime())) {
+                              const today = new Date();
+                              let a = today.getFullYear() - bDate.getFullYear();
+                              const m = today.getMonth() - bDate.getMonth();
+                              if (m < 0 || (m === 0 && today.getDate() < bDate.getDate())) {
+                                a--;
+                              }
+                              patientAgeNum = a;
+                            }
+                          } else if (patient?.age) {
+                            patientAgeNum = parseInt(String(patient.age), 10);
+                          }
+                          prep2Calc = calculatePREP2Score(answers, patientAgeNum);
+                        }
+
                         const getBarthelBadge = (score: number) => {
                           if (score === 100) return { label: 'Totalmente Independente (100 pts)', bg: 'bg-emerald-600 text-white' };
                           if (score >= 76) return { label: 'Dependência Leve (76-99 pts)', bg: 'bg-blue-600 text-white' };
@@ -666,12 +826,109 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                           return { label: 'Dependência Total (0-25 pts)', bg: 'bg-red-600 text-white' };
                         };
 
+                        const isMRC =
+                          (scaleGroup.groupName || '').toLowerCase().includes('força muscular') ||
+                          ((scaleGroup.groupName || '').toLowerCase().includes('mrc') &&
+                            !(scaleGroup.groupName || '').toLowerCase().includes('dispne'));
+
+                        if (isMRC) {
+                          return (
+                            <MRCMuscleScaleSection
+                              key={scaleGroup.groupName || scaleIdx}
+                              answers={answers}
+                              onChange={setAnswers}
+                              scaleTitle={scaleGroup.groupName}
+                              scaleIndex={scaleIdx}
+                              onRemoveScale={() => handleRemovePreset(scaleGroup.groupName)}
+                            />
+                          );
+                        }
+
+                        const isTC6 =
+                          (scaleGroup.groupName || '').toLowerCase().includes('tc6') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('6 minutos') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('caminhada de 6');
+
+                        if (isTC6) {
+                          return (
+                            <TC6WalkTestSection
+                              key={scaleGroup.groupName || scaleIdx}
+                              answers={answers}
+                              onChange={setAnswers}
+                              scaleTitle={scaleGroup.groupName}
+                              scaleIndex={scaleIdx}
+                              patient={patient}
+                              onRemoveScale={() => handleRemovePreset(scaleGroup.groupName)}
+                            />
+                          );
+                        }
+
+                        const isFPM =
+                          (scaleGroup.groupName || '').toLowerCase().includes('preensão') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('preensao') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('dinamom') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('fpm') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('fpp');
+
+                        if (isFPM) {
+                          return (
+                            <FPMDynamometrySection
+                              key={scaleGroup.groupName || scaleIdx}
+                              answers={answers}
+                              onChange={setAnswers}
+                              scaleTitle={scaleGroup.groupName}
+                              scaleIndex={scaleIdx}
+                              patient={patient}
+                              onRemoveScale={() => handleRemovePreset(scaleGroup.groupName)}
+                            />
+                          );
+                        }
+
+                        const isSTS =
+                          (scaleGroup.groupName || '').toLowerCase().includes('sentar e levantar') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('tsl') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('sit-to-stand') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('sts');
+
+                        if (isSTS) {
+                          return (
+                            <STS1MinTestSection
+                              key={scaleGroup.groupName || scaleIdx}
+                              answers={answers}
+                              onChange={setAnswers}
+                              scaleTitle={scaleGroup.groupName}
+                              scaleIndex={scaleIdx}
+                              patient={patient}
+                              onRemoveScale={() => handleRemovePreset(scaleGroup.groupName)}
+                            />
+                          );
+                        }
+
+                        const isMoCA =
+                          (scaleGroup.groupName || '').toLowerCase().includes('moca') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('montreal') ||
+                          (scaleGroup.groupName || '').toLowerCase().includes('cognitiva montreal');
+
+                        if (isMoCA) {
+                          return (
+                            <MoCACognitiveScaleSection
+                              key={scaleGroup.groupName || scaleIdx}
+                              answers={answers}
+                              onChange={setAnswers}
+                              scaleTitle={scaleGroup.groupName}
+                              scaleIndex={scaleIdx}
+                              patient={patient}
+                              onRemoveScale={() => handleRemovePreset(scaleGroup.groupName)}
+                            />
+                          );
+                        }
+
                         return (
                         <div
                           key={scaleGroup.groupName || scaleIdx}
-                          className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
+                          className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
                         >
-                          <div className="bg-slate-900 text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="bg-slate-900 dark:bg-slate-950 text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800">
                             <div className="flex items-center space-x-3.5">
                               <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xs shadow-sm">
                                 {scaleIdx + 1}
@@ -688,13 +945,37 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
 
                             <div className="flex items-center space-x-3">
                               {isBarthel && (
-                                <div className="flex items-center space-x-2.5 bg-slate-800/90 px-3.5 py-1.5 rounded-xl border border-slate-700">
+                                <div className="flex items-center space-x-2.5 bg-slate-800/90 dark:bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-700">
                                   <div className="text-right">
                                     <p className="text-[10px] text-slate-400 uppercase font-bold">Total Barthel</p>
                                     <p className="text-sm font-black text-white">{barthelScore} / 100 pts</p>
                                   </div>
                                   <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg ${getBarthelBadge(barthelScore).bg}`}>
                                     {getBarthelBadge(barthelScore).label}
+                                  </span>
+                                </div>
+                              )}
+
+                              {isNIHSS && (
+                                <div className="flex items-center space-x-2.5 bg-slate-800/90 dark:bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-700">
+                                  <div className="text-right">
+                                    <p className="text-[10px] text-slate-400 uppercase font-bold">Total NIHSS</p>
+                                    <p className="text-sm font-black text-white">{nihssCalc.score} / 42 pts</p>
+                                  </div>
+                                  <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg ${getNIHSSBadge(nihssCalc.score).bg}`}>
+                                    {getNIHSSBadge(nihssCalc.score).label}
+                                  </span>
+                                </div>
+                              )}
+
+                              {isPREP2 && prep2Calc && (
+                                <div className="flex items-center space-x-2.5 bg-slate-800/90 dark:bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-700">
+                                  <div className="text-right">
+                                    <p className="text-[10px] text-slate-400 uppercase font-bold">Escore SAFE</p>
+                                    <p className="text-sm font-black text-white">{prep2Calc.safeScore} / 10 pts</p>
+                                  </div>
+                                  <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg ${prep2Calc.badgeBg}`}>
+                                    {prep2Calc.title}
                                   </span>
                                 </div>
                               )}
@@ -711,6 +992,55 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                           </div>
 
                           <div className="p-6 sm:p-7 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                            {isPREP2 && prep2Calc && (
+                              <div className="col-span-1 md:col-span-2 rounded-2xl bg-gradient-to-r from-blue-950/40 via-slate-900/60 to-indigo-950/40 border border-blue-500/30 p-4 sm:p-5 shadow-inner">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-blue-500/20">
+                                  <div>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-xs font-black tracking-wider uppercase bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-md border border-blue-400/30">
+                                        Algoritmo PREP2 (72 Horas)
+                                      </span>
+                                      <span className="text-xs text-slate-300 font-medium">
+                                        {prep2Calc.decisionPath}
+                                      </span>
+                                    </div>
+                                    <h5 className="text-sm sm:text-base font-bold text-white mt-1.5 flex items-center gap-2">
+                                      <span>Resultado:</span>
+                                      <span className={`px-2.5 py-0.5 rounded-lg text-xs font-black ${prep2Calc.badgeBg}`}>
+                                        {prep2Calc.title}
+                                      </span>
+                                    </h5>
+                                  </div>
+                                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                                    <div className="text-right bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
+                                      <span className="text-[10px] text-slate-400 block uppercase font-bold">SAFE (Ombro + Dedos)</span>
+                                      <span className="text-lg font-black text-blue-400">{prep2Calc.safeScore} <span className="text-xs text-slate-400 font-normal">/ 10</span></span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 pt-1">
+                                  <div className="bg-slate-900/80 rounded-xl p-3.5 border border-slate-800">
+                                    <p className="text-[11px] font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                      Prognóstico Esperado (3 Meses)
+                                    </p>
+                                    <p className="text-xs sm:text-sm text-slate-200 mt-1.5 font-medium leading-relaxed">
+                                      {prep2Calc.prognosisExpected}
+                                    </p>
+                                  </div>
+                                  <div className="bg-slate-900/80 rounded-xl p-3.5 border border-slate-800">
+                                    <p className="text-[11px] font-bold uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                      Foco Principal da Fisioterapia
+                                    </p>
+                                    <p className="text-xs sm:text-sm text-slate-200 mt-1.5 font-medium leading-relaxed">
+                                      {prep2Calc.therapyFocus}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                             {scaleGroup.fields
                               .filter((f: CustomField) => {
                                 const labelLower = (f.label || '').toLowerCase();
@@ -761,8 +1091,8 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                     })}
 
                       {/* Observations / Notes */}
-                      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-3">
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-3">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
                           Observações Clínicas & Condutas
                         </label>
                         <textarea
@@ -770,7 +1100,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
                           placeholder="Observações complementares, queixas do paciente e planejamento para os próximos atendimentos..."
-                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-medium text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none transition-all resize-none shadow-2xs"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all resize-none shadow-2xs"
                         />
                       </div>
 
@@ -790,11 +1120,11 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
 
           {/* Footer Bar */}
           {viewMode === 'fill' && (
-            <div className="px-6 py-4 bg-white border-t border-slate-200/80 flex items-center justify-between shrink-0 shadow-xs">
+            <div className="px-3.5 sm:px-6 py-3 sm:py-4 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between shrink-0 shadow-xs">
               <button
                 type="button"
                 onClick={() => setViewMode('history')}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Cancelar
               </button>
@@ -823,13 +1153,13 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
           {/* Delete Confirmation Modal */}
           {recordToDelete && (
             <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-              <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-slate-200 shadow-2xl">
-                <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
                   <Trash2 className="w-6 h-6" />
                 </div>
                 <div className="text-center space-y-1">
-                  <h4 className="font-extrabold text-slate-900 text-base">Excluir Registro de Avaliação</h4>
-                  <p className="text-xs text-slate-500">
+                  <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">Excluir Registro de Avaliação</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Tem certeza que deseja excluir esta avaliação de {formatDateSafe(recordToDelete.recordDate || recordToDelete.record_date || recordToDelete.createdAt)}? Esta ação não poderá ser desfeita.
                   </p>
                 </div>
@@ -837,7 +1167,7 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                   <button
                     type="button"
                     onClick={() => setRecordToDelete(null)}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
                     Cancelar
                   </button>

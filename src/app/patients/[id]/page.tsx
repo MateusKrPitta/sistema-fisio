@@ -119,7 +119,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
 
       <main className="flex-1 p-4 sm:p-6 md:p-8 pb-20 space-y-6 overflow-y-auto max-w-5xl max-w-full">
         <Link
-          href="/patients"
+          href="/pacientes"
           className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

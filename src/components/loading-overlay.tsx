@@ -23,10 +23,10 @@ export function LoadingOverlay({ isVisible, message = 'Carregando...' }: Loading
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center justify-center space-y-4 min-w-[240px]"
+            className="relative z-10 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-2xl p-8 flex flex-col items-center justify-center space-y-4 min-w-[240px]"
           >
-            <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-            <p className="text-sm font-bold text-slate-700 text-center">{message}</p>
+            <Loader2 className="w-10 h-10 animate-spin text-blue-600 dark:text-blue-400" />
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 text-center">{message}</p>
           </motion.div>
         </div>
       )}

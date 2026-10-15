@@ -167,7 +167,7 @@ export default function FormTemplateViewPage() {
 
       <main className="flex-1 p-4 sm:p-6 md:p-8 pb-20 space-y-6 overflow-y-auto max-w-full">
         <button
-          onClick={() => router.push('/custom-forms/templates')}
+          onClick={() => router.push('/avaliacoes/modelos')}
           className="inline-flex items-center space-x-2 text-slate-500 hover:text-blue-600 text-sm font-semibold transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
