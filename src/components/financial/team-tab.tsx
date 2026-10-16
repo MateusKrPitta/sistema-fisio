@@ -671,7 +671,7 @@ export function TeamTab({ companyIdFilter = null }: TeamTabProps) {
                             </p>
                           )}
                           {m.cpfCnpj ? (
-                            <p className="font-mono text-slate-500 dark:text-slate-400 text-[11px]">{m.cpfCnpj}</p>
+                            <p className="font-mono text-slate-500 dark:text-slate-400 text-[11px]">{maskCpfCnpj(m.cpfCnpj)}</p>
                           ) : (
                             !m.crefito && <span className="text-slate-400 italic">Não informado</span>
                           )}

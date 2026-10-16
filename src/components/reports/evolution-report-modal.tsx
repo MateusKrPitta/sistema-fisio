@@ -323,7 +323,7 @@ export function EvolutionReportModal({
                   options={patientsList.map((p) => ({
                     value: p.id,
                     label: p.name,
-                    sublabel: p.cpf ? `CPF: ${p.cpf}` : undefined,
+                    sublabel: p.phone ? `Tel: ${p.phone}` : undefined,
                     avatarLetter: p.name.charAt(0).toUpperCase(),
                   }))}
                   placeholder="Selecione um paciente..."
@@ -335,7 +335,9 @@ export function EvolutionReportModal({
                   <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
                     {selectedPatient?.name || 'Selecione um paciente'}
                   </p>
-                  <p className="text-[11px] text-slate-400 font-mono">CPF: {selectedPatient?.cpf || '-'}</p>
+                  {selectedPatient?.phone && (
+                    <p className="text-[11px] text-slate-400 font-mono">Tel: {selectedPatient.phone}</p>
+                  )}
                 </div>
               )}
             </div>

@@ -11,7 +11,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Calendar,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/toast-context';
@@ -696,6 +697,14 @@ export default function NewPatientPage() {
                 </div>
               );
             })()}
+          </div>
+
+          {/* LGPD Compliance Notice */}
+          <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 flex items-start space-x-3 text-xs text-slate-600">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong>Proteção de Dados (LGPD):</strong> Os dados cadastrais e clínicos registrados destinam-se exclusivamente à prestação de assistência fisioterapêutica e cumprimento de obrigação legal de guarda de prontuário (Resolução COFFITO nº 414/2012 e Lei nº 13.787/2018), com acesso restrito aos profissionais autorizados.
+            </p>
           </div>
 
           {/* Form Actions */}

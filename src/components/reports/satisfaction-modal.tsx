@@ -254,7 +254,6 @@ export const SatisfactionModal: React.FC<SatisfactionModalProps> = ({
                   </div>
                   <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
                     Paciente: <span className="font-bold text-slate-700 dark:text-slate-200">{patient.name}</span>
-                    {patient.cpf && <span className="font-mono text-slate-400 ml-1.5">({patient.cpf})</span>}
                   </p>
                 </div>
               </div>

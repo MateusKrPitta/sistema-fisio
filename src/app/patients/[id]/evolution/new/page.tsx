@@ -444,7 +444,7 @@ export default function NewEvolutionPage() {
                     {patient?.fullName || patient?.name}
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-slate-500">
-                    <span>CPF: {patient?.cpf || 'Não informado'}</span>
+                    {patient?.phone && <span>Tel: {patient.phone}</span>}
                     {patient?.sessionRate ? (
                       <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                         {formatCurrency(patient.sessionRate)}

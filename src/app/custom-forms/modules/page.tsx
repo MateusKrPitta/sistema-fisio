@@ -36,7 +36,7 @@ import { useToast } from '@/components/toast-context';
 import { CustomSelect } from '@/components/custom-select';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FillFormModal } from '@/components/fill-form-modal';
-import { getNIHSSFields } from '@/lib/clinical-presets';
+import { CLINICAL_PRESETS, CATEGORIES_LIST, ClinicalPreset, getNIHSSFields } from '@/lib/clinical-presets';
 
 export interface CustomField {
   id?: number | string;
@@ -395,7 +395,7 @@ export default function CustomModulesPage() {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [moduleTitle, setModuleTitle] = useState('');
   const [moduleDescription, setModuleDescription] = useState('');
-  const [moduleCategory, setModuleCategory] = useState('Controle de Tronco');
+  const [moduleCategory, setModuleCategory] = useState('Neurológica');
   const [fields, setFields] = useState<CustomField[]>([]);
 
   // New field temporary input state
@@ -1150,6 +1150,7 @@ export default function CustomModulesPage() {
     setEditingModule(null);
     setModuleTitle('');
     setModuleDescription('');
+    setModuleCategory('Neurológica');
     setFields([]);
     setLoadedPresets([]);
     setSelectedPresetToLoad('');
@@ -1521,7 +1522,7 @@ export default function CustomModulesPage() {
                           ...patients.map((p) => ({
                             value: p.id,
                             label: p.fullName || p.name,
-                            sublabel: p.cpf ? `CPF: ${p.cpf}` : undefined
+                            sublabel: p.phone ? `Tel: ${p.phone}` : undefined
                           }))
                         ]}
                       />
@@ -1535,18 +1536,9 @@ export default function CustomModulesPage() {
                         value={moduleCategory}
                         onChange={(val) => {
                           setModuleCategory(String(val));
+                          setSelectedPresetToLoad('');
                         }}
-                        options={[
-                          { value: 'Geral', label: 'Geral' },
-                          { value: 'Postura e Biomecânica', label: 'Postura e Biomecânica' },
-                          { value: 'Controle de Tronco', label: 'Controle de Tronco' },
-                          { value: 'Neurologia', label: 'Neurologia' },
-                          { value: 'Geriatria e Equilíbrio', label: 'Geriatria e Equilíbrio' },
-                          { value: 'Cardiorrespiratória', label: 'Cardiorrespiratória' },
-                          { value: 'Composição Corporal', label: 'Composição Corporal' },
-                          { value: 'Membros Superiores e Inferiores', label: 'Membros Superiores e Inferiores' },
-                          { value: 'Goniometria', label: 'Goniometria' }
-                        ]}
+                        options={CATEGORIES_LIST.map((c) => ({ value: c, label: c }))}
                       />
                     </div>
 
@@ -1566,49 +1558,7 @@ export default function CustomModulesPage() {
                     {/* Presets Dropdown */}
                     <div className="sm:col-span-3">
                       {(() => {
-                        const presetsByCategory: Record<string, { label: string, action: () => any }[]> = {
-                          'Geral': [
-                            { label: 'Anamnese Fisioterapêutica', action: loadAnamnesePreset },
-                            { label: 'Pontos e Mapeamento de Dor (Body Map)', action: loadPainMapPreset },
-                            { label: 'Escala Visual Analógica (EVA)', action: loadEVAPreset },
-                            { label: 'Qualidade de Vida (SF-36)', action: loadSF36Preset },
-                            { label: 'Qualidade do Sono (PSQI)', action: loadPSQIPreset }
-                          ],
-                          'Postura e Biomecânica': [
-                            { label: 'Avaliação Postural (Anterior, Posterior e Lateral)', action: loadPosturePreset }
-                          ],
-                          'Controle de Tronco': [
-                            { label: 'Módulo do Controle de Tronco', action: loadTrunkControlPreset }
-                          ],
-                          'Neurologia': [
-                            { label: 'Escala de AVC do NIH (NIHSS)', action: loadNIHSSPreset },
-                            { label: 'Escala de Glasgow', action: loadGlasgowScalePreset },
-                            { label: 'Escala de Ashworth', action: loadAshworthScalePreset }
-                          ],
-                          'Geriatria e Equilíbrio': [
-                            { label: 'Escala de Berg', action: loadBergScalePreset },
-                            { label: 'Teste TUG (Timed Up and Go)', action: loadTUGScalePreset },
-                            { label: 'Índice de Barthel', action: loadBarthelScalePreset }
-                          ],
-                          'Cardiorrespiratória': [
-                            { label: 'Teste TC6 (6 Minutos)', action: loadTC6Preset },
-                            { label: 'Manovacuometria (PImáx/PEmáx)', action: loadManovacuometriaPreset },
-                            { label: 'Peak Flow e PCF', action: loadPeakFlowPreset },
-                            { label: 'Escala de Dispnéia - MRC', action: loadMRCDyspneaPreset },
-                            { label: 'Classificação Funcional - NYHA', action: loadNYHAScalePreset }
-                          ],
-                          'Composição Corporal': [
-                            { label: 'Avaliação por Bioimpedância', action: loadBioimpedanciaPreset }
-                          ],
-                          'Membros Superiores e Inferiores': [
-                            { label: 'Escala de Força Muscular (MRC)', action: loadMRCScalePreset }
-                          ],
-                          'Goniometria': [
-                            'Cervical', 'Ombro', 'Cotovelo e Antebraço', 'Punho', 'Quadril', 'Joelho', 'Tornozelo'
-                          ].map(joint => ({ label: `Goniometria - ${joint}`, action: () => loadGoniometria(joint) }))
-                        };
-
-                        const availablePresets = presetsByCategory[moduleCategory] || [];
+                        const availablePresets = CLINICAL_PRESETS[moduleCategory] || [];
 
                         if (availablePresets.length === 0) return null;
 
@@ -1626,7 +1576,11 @@ export default function CustomModulesPage() {
                                 <CustomSelect
                                   value={selectedPresetToLoad}
                                   onChange={(val) => setSelectedPresetToLoad(String(val))}
-                                  options={availablePresets.map(p => ({ value: p.label, label: p.label }))}
+                                  options={availablePresets.map(p => ({
+                                    value: p.label,
+                                    label: p.label,
+                                    sublabel: p.description
+                                  }))}
                                   placeholder="Selecione uma escala pronta para gerar..."
                                 />
                               </div>
@@ -1640,12 +1594,19 @@ export default function CustomModulesPage() {
                                   }
                                   const preset = availablePresets.find(p => p.label === selectedPresetToLoad);
                                   if (preset) {
-                                    const newFields = (preset.action() as CustomField[]) || [];
-                                    const groupedFields = newFields.map(f => ({ ...f, group: preset.label }));
+                                    const newFields = (preset.getFields() as CustomField[]) || [];
+                                    const groupedFields = newFields.map((f, idx) => ({
+                                      ...f,
+                                      id: Date.now() + idx + Math.floor(Math.random() * 1000),
+                                      group: preset.label
+                                    }));
                                     setFields(prev => [...prev, ...groupedFields]);
                                     setLoadedPresets(prev => [...prev, selectedPresetToLoad]);
+                                    if (!moduleTitle) {
+                                      setModuleTitle(preset.label);
+                                    }
                                     setSelectedPresetToLoad('');
-                                    toast({ title: 'Sucesso', description: 'Escala carregada.', type: 'success' });
+                                    toast({ title: 'Sucesso', description: `Escala "${preset.label}" carregada com sucesso.`, type: 'success' });
                                   }
                                 }}
                                 disabled={!selectedPresetToLoad}

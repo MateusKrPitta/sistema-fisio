@@ -153,7 +153,7 @@ function PatientSelect({
     return {
       value: pName,
       label: pName,
-      sublabel: p.cpf ? `CPF: ${p.cpf}` : undefined,
+      sublabel: p.phone ? `Tel: ${p.phone}` : undefined,
       avatarLetter: pName.charAt(0).toUpperCase(),
     };
   });

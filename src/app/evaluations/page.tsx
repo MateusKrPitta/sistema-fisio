@@ -116,7 +116,7 @@ export default function AllEvaluationsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Buscar por paciente, CPF ou escala..."
+              placeholder="Buscar por paciente ou escala..."
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all"
             />
           </div>
@@ -168,7 +168,6 @@ export default function AllEvaluationsPage() {
                           </div>
                           <div>
                             <span>{item.patientName}</span>
-                            <span className="block text-[11px] font-normal text-slate-400">CPF: {item.patientCpf}</span>
                           </div>
                         </div>
                       </td>

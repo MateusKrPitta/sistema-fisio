@@ -1114,9 +1114,11 @@ export default function PatientsListPage() {
                           {detailedPatient.name || detailedPatient.fullName}
                         </h4>
                         <div className="flex flex-wrap items-center gap-2 mt-1.5 text-slate-300 text-xs">
-                          <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-700">
-                            CPF: {detailedPatient.cpf || 'Não informado'}
-                          </span>
+                          {detailedPatient.phone && (
+                            <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-700">
+                              Tel: {detailedPatient.phone}
+                            </span>
+                          )}
                           <span className="bg-emerald-950 text-emerald-300 px-2.5 py-0.5 rounded-md border border-emerald-800 font-bold flex items-center space-x-1">
                             <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
                             <span>Sessão: {formatCurrency(detailedPatient.sessionRate || detailedPatient.session_rate || 0)}</span>
@@ -2082,8 +2084,12 @@ export default function PatientsListPage() {
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Tem certeza que deseja excluir o cadastro do paciente{' '}
                 <strong className="text-slate-800 dark:text-slate-100 font-bold">{deletingPatient.name || deletingPatient.fullName}</strong>?
-                Esta ação removerá os dados do sistema e não poderá ser desfeita.
+                Esta ação removerá o paciente da listagem ativa.
               </p>
+
+              <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl p-3 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                <strong>Aviso Legal (LGPD & COFFITO):</strong> Em conformidade com a Resolução COFFITO nº 414/2012 e a Lei Federal nº 13.787/2018, registros de atendimentos e laudos clínicos já emitidos permanecem resguardados pelo prazo regulatório obrigatório de 20 anos para fins de histórico e defesa profissional (Art. 16, I da LGPD).
+              </div>
 
               <div className="pt-2 flex items-center justify-end space-x-3 text-xs">
                 <button

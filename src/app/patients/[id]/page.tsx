@@ -137,9 +137,15 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
                 {patient?.fullName || patient?.name}
               </h2>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-slate-500 font-medium">
-                <span className="font-mono bg-slate-100 px-2.5 py-1 rounded-md text-slate-700">
-                  CPF: {patient?.cpf || 'Não informado'}
-                </span>
+                {patient?.phone ? (
+                  <span className="font-mono bg-slate-100 px-2.5 py-1 rounded-md text-slate-700">
+                    Tel: {patient.phone}
+                  </span>
+                ) : (
+                  <span className="font-mono bg-slate-100 px-2.5 py-1 rounded-md text-slate-700">
+                    Prontuário #{patient?.id}
+                  </span>
+                )}
                 <span className="flex items-center space-x-1.5 bg-indigo-50 text-indigo-800 px-2.5 py-1 rounded-md border border-indigo-200 font-semibold">
                   <User className="w-3.5 h-3.5 text-indigo-600" />
                   <span>Fisioterapeuta: {patient?.user?.fullName || patient?.user?.name || 'Não vinculado'}</span>

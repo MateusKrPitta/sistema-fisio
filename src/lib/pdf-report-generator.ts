@@ -7,6 +7,7 @@ import {
   EvaluationSessionDetail,
   formatDateTime,
 } from './clinical-report-engine';
+import { maskCpf } from './masks';
 
 export interface AiToneReports {
   patient_friendly?: string;
@@ -85,7 +86,7 @@ export function generateClinicalReportPdf({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(71, 85, 105);
-  doc.text(`CPF: ${patient.cpf || 'Não informado'}`, margin + 4, currentY + 14);
+  doc.text(`CPF: ${patient.cpf ? maskCpf(patient.cpf) : 'Não informado'}`, margin + 4, currentY + 14);
   doc.text(`Telefone: ${patient.phone || 'Não informado'}`, margin + 65, currentY + 14);
   doc.text(`Total de Avaliações no Histórico: ${patientRecords.length}`, margin + 125, currentY + 14);
 
@@ -531,7 +532,7 @@ export function generateEvolutionReportPdf({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(71, 85, 105);
-  doc.text(`CPF: ${patient.cpf || 'Não informado'}`, margin + 4, currentY + 14);
+  doc.text(`CPF: ${patient.cpf ? maskCpf(patient.cpf) : 'Não informado'}`, margin + 4, currentY + 14);
   doc.text(`Telefone: ${patient.phone || 'Não informado'}`, margin + 65, currentY + 14);
   
   const periodText = startDate && endDate ? `${startDate} a ${endDate}` : periodLabel;

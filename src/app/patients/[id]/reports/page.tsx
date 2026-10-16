@@ -160,7 +160,7 @@ export default function PatientReportsPage() {
                   <div>
                     <h2 className="text-xl font-bold text-slate-900">{patient?.fullName || 'Paciente'}</h2>
                     <p className="text-xs text-slate-500">
-                      CPF: <span className="font-mono">{patient?.cpf || '---'}</span> | Fisioterapeuta Responsável: <span className="font-semibold text-slate-700">{user?.fullName || 'Fisioterapeuta Responsável'}</span>
+                      Fisioterapeuta Responsável: <span className="font-semibold text-slate-700">{user?.fullName || 'Fisioterapeuta Responsável'}</span>
                     </p>
                   </div>
                 </div>

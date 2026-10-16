@@ -23,6 +23,7 @@ import {
 import { motion } from 'framer-motion';
 import { getApiUrl } from '@/lib/api';
 import { ImageLightbox } from '@/components/image-lightbox';
+import { PrivacyPolicyModal } from '@/components/privacy-policy-modal';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -70,6 +71,7 @@ export default function SignEvaluationPublicPage() {
   const [submitting, setSubmitting] = useState(false);
   const [signedSuccess, setSignedSuccess] = useState(false);
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // Fetch evaluation data
   useEffect(() => {
@@ -88,9 +90,6 @@ export default function SignEvaluationPublicPage() {
         setEvaluation(data);
         if (data.patient?.name || data.patient?.fullName) {
           setSignerName(data.patient.fullName || data.patient.name);
-        }
-        if (data.patient?.cpf) {
-          setSignerCpf(data.patient.cpf);
         }
         if (data.signatureStatus === 'assinado') {
           setSignedSuccess(true);
@@ -363,8 +362,7 @@ export default function SignEvaluationPublicPage() {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paciente</span>
               <p className="text-base font-extrabold text-slate-900">{patient?.fullName || patient?.name || 'Não informado'}</p>
               <div className="flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
-                {patient?.cpf && <span>CPF: <strong>{patient.cpf}</strong></span>}
-                {patient?.gender && <span>• {patient.gender}</span>}
+                {patient?.gender && <span>{patient.gender}</span>}
               </div>
             </div>
 
@@ -639,17 +637,26 @@ export default function SignEvaluationPublicPage() {
               </div>
 
               {/* Declaration Checkbox */}
-              <label className="flex items-start space-x-2.5 cursor-pointer pt-2">
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-xs text-slate-600 leading-tight select-none">
-                  Declaro que revisei a avaliação clínica realizada pelo fisioterapeuta e concordo com os dados registrados.
-                </span>
-              </label>
+              <div className="pt-2 space-y-1.5">
+                <label className="flex items-start space-x-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-slate-600 leading-tight select-none">
+                    Declaro que revisei a avaliação clínica realizada pelo fisioterapeuta, autorizo o tratamento seguro dos meus dados de saúde para fins assistenciais e emissão de laudo conforme as diretrizes da LGPD (Lei nº 13.709/2018), e concordo com os dados registrados.
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPrivacyModal(true)}
+                  className="text-[11px] text-blue-600 hover:text-blue-700 underline font-semibold ml-6 block cursor-pointer"
+                >
+                  Consultar Política de Privacidade e Proteção de Dados (LGPD)
+                </button>
+              </div>
 
               {/* Submit Button */}
               <div className="pt-3">
@@ -698,6 +705,11 @@ export default function SignEvaluationPublicPage() {
           onNavigate={(newIdx) => setPreviewImageIndex(newIdx)}
         />
       )}
+
+      <PrivacyPolicyModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+      />
     </div>
   );
 }

@@ -24,6 +24,7 @@ import { useAuth } from '@/context/auth-context';
 import { useLayout } from './layout-shell';
 import { ThemeToggle } from './theme-toggle';
 import { APP_VERSION } from '@/lib/version';
+import { PrivacyPolicyModal } from './privacy-policy-modal';
 
 interface HeaderProps {
   title: string;
@@ -42,6 +43,7 @@ export function Header({
   const { toggleMobileMenu } = useLayout();
   const [todayBirthdayCount, setTodayBirthdayCount] = useState<number>(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isSuperadmin = user?.role === 'superadmin';
@@ -325,6 +327,22 @@ export function Header({
                     <span className="text-[10px] text-slate-400 font-medium">Suporte</span>
                   </Link>
 
+                  {/* Privacidade & LGPD */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      setShowPrivacyModal(true);
+                    }}
+                    className="w-full flex items-center justify-between py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60 text-left"
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>Privacidade & LGPD</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase">Segurança</span>
+                  </button>
+
                   {/* Logout Button Action */}
                   <button
                     onClick={() => {
@@ -342,6 +360,10 @@ export function Header({
           </AnimatePresence>
         </div>
       </div>
+      <PrivacyPolicyModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+      />
     </header>
   );
 }

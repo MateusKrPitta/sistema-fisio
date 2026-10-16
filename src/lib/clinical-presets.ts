@@ -1851,3 +1851,9 @@ export const CLINICAL_PRESETS: Record<string, ClinicalPreset[]> = {
 
 // Aliases for flexible category lookups
 CLINICAL_PRESETS['Neurologia'] = CLINICAL_PRESETS['Neurológica'];
+CLINICAL_PRESETS['Controle de Tronco'] = CLINICAL_PRESETS['Neurológica'];
+CLINICAL_PRESETS['Geriatria e Equilíbrio'] = CLINICAL_PRESETS['Equilíbrio'];
+CLINICAL_PRESETS['Membros Superiores e Inferiores'] = CLINICAL_PRESETS['Força Muscular'];
+CLINICAL_PRESETS['Postura e Biomecânica'] = CLINICAL_PRESETS['Postural'];
+CLINICAL_PRESETS['Composição Corporal'] = CLINICAL_PRESETS['Composição Corporal / Bioimpedância'];
+

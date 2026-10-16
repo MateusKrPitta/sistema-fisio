@@ -183,9 +183,8 @@ export function ClinicalReportModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-slate-300 text-xs text-slate-800 bg-slate-100 p-3 rounded-xl">
+              <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-300 text-xs text-slate-800 bg-slate-100 p-3 rounded-xl">
                 <div>Paciente: <strong className="text-slate-950 font-bold">{patient.name}</strong></div>
-                <div>CPF: <strong className="text-slate-950 font-bold">{patient.cpf || 'Não informado'}</strong></div>
                 <div>Telefone: <strong className="text-slate-950 font-bold">{patient.phone || 'Não informado'}</strong></div>
               </div>
             </div>
@@ -201,11 +200,7 @@ export function ClinicalReportModal({
                     {patient.name}
                   </h2>
                   <div className="flex items-center flex-wrap gap-x-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                    <span className="truncate">
-                      CPF: <strong className="text-slate-700 dark:text-slate-300">{patient.cpf}</strong>
-                    </span>
-                    <span className="hidden sm:inline">•</span>
-                    <span className="hidden sm:inline">
+                    <span>
                       Avaliações: <strong className="text-blue-700 dark:text-blue-500">{patientRecords.length}</strong>
                     </span>
                     {activeSession && (

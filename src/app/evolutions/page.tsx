@@ -535,7 +535,7 @@ function EvolutionsContent() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Buscar paciente por nome ou CPF..."
+              placeholder="Buscar paciente por nome..."
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-9 py-2.5 text-xs text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all"
             />
             {searchQuery && (
@@ -569,7 +569,7 @@ function EvolutionsContent() {
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
                     <th className="p-4 pl-6">Nome do Paciente</th>
-                    <th className="p-4">Contato / CPF</th>
+                    <th className="p-4">Contato</th>
                     <th className="p-4">Fisioterapeuta Responsável</th>
                     <th className="p-4 pr-6 text-right">Ações</th>
                   </tr>
@@ -599,9 +599,7 @@ function EvolutionsContent() {
                                 <span>{patient.phone}</span>
                               </p>
                             )}
-                            {patient.cpf && (
-                              <p className="text-[11px] text-slate-400 font-mono">CPF: {patient.cpf}</p>
-                            )}
+
                           </div>
                         </td>
 

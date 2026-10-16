@@ -585,8 +585,10 @@ export function FillFormModal({ isOpen, onClose, patient, onSuccess }: FillFormM
                   )}
                 </div>
                 <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
-                  <strong className="text-slate-700 dark:text-slate-200">{patient?.fullName || patient?.name}</strong> • CPF:{' '}
-                  <span className="font-mono text-slate-600 dark:text-slate-400">{patient?.cpf || 'Não informado'}</span>
+                  <strong className="text-slate-700 dark:text-slate-200">{patient?.fullName || patient?.name}</strong>
+                  {patient?.phone && (
+                    <span className="text-slate-500 dark:text-slate-400"> • {patient.phone}</span>
+                  )}
                 </p>
               </div>
             </div>

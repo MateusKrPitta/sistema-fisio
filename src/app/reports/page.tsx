@@ -162,7 +162,7 @@ export default function ReportsPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Buscar por nome ou CPF..."
+              placeholder="Buscar paciente por nome..."
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:outline-none transition-all shadow-2xs"
             />
             {searchQuery && (
@@ -203,7 +203,6 @@ export default function ReportsPage() {
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider">
                       <th className="py-3.5 px-6">Paciente</th>
-                      <th className="py-3.5 px-4">CPF</th>
                       <th className="py-3.5 px-4">Fisioterapeuta Responsável</th>
                       <th className="py-3.5 px-6 text-right">Ações</th>
                     </tr>
@@ -228,8 +227,6 @@ export default function ReportsPage() {
                             </div>
                           </td>
 
-                          {/* CPF */}
-                          <td className="py-4 px-4 font-mono text-slate-600 dark:text-slate-300 font-medium">{patient.cpf}</td>
 
                           {/* Evaluators */}
                           <td className="py-4 px-4">
@@ -300,7 +297,7 @@ export default function ReportsPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold text-slate-900 dark:text-slate-100 text-xs truncate">{patient.name}</p>
-                          <span className="text-[10px] text-slate-400 font-mono">CPF: {patient.cpf}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">ID: #{patient.id}</span>
                         </div>
                       </div>
 
