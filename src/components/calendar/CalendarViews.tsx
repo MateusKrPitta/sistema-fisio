@@ -54,28 +54,28 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
     if (hasEvolution) {
       return {
         label: 'Atendido (Evoluído)',
-        bg: 'bg-emerald-50 dark:bg-emerald-950/80',
-        text: 'text-emerald-950 dark:text-emerald-100',
-        border: 'border-emerald-300 dark:border-emerald-700',
-        cardClass: 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-100 border-emerald-300 dark:border-emerald-700/80 hover:border-emerald-400 dark:hover:border-emerald-500 hover:bg-emerald-100/90 dark:hover:bg-emerald-900/80 shadow-xs',
-        badgeClass: 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700',
+        bg: 'bg-emerald-50 dark:bg-emerald-950/40',
+        text: 'text-emerald-900 dark:text-emerald-100',
+        border: 'border-emerald-300 dark:border-emerald-700/60',
+        cardClass: 'bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 border-emerald-300 dark:border-emerald-700/60 hover:border-emerald-400 dark:hover:border-emerald-500 hover:bg-emerald-500/15 dark:hover:bg-emerald-900/40 shadow-xs',
+        badgeClass: 'bg-emerald-100 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700',
         dotClass: 'bg-emerald-500',
         barClass: 'border-l-4 border-l-emerald-500',
-        iconBg: 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300',
+        iconBg: 'bg-emerald-100 dark:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300',
       };
     }
 
     // Atendido mas com Evolução Pendente (Âmbar / Laranja)
     return {
       label: 'Evolução Pendente',
-      bg: 'bg-amber-50 dark:bg-amber-950/80',
-      text: 'text-amber-950 dark:text-amber-100',
-      border: 'border-amber-400 dark:border-amber-700',
-      cardClass: 'bg-amber-50 dark:bg-amber-950/80 text-amber-950 dark:text-amber-100 border-amber-300 dark:border-amber-700/80 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-100/90 dark:hover:bg-amber-900/80 shadow-xs',
-      badgeClass: 'bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-200 border-amber-400 dark:border-amber-700 font-bold',
+      bg: 'bg-amber-50 dark:bg-amber-950/40',
+      text: 'text-amber-900 dark:text-amber-100',
+      border: 'border-amber-400 dark:border-amber-700/60',
+      cardClass: 'bg-amber-500/10 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100 border-amber-300 dark:border-amber-700/60 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-500/15 dark:hover:bg-amber-900/40 shadow-xs',
+      badgeClass: 'bg-amber-100 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 border-amber-400 dark:border-amber-700 font-bold',
       dotClass: 'bg-amber-500',
       barClass: 'border-l-4 border-l-amber-500',
-      iconBg: 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
+      iconBg: 'bg-amber-100 dark:bg-amber-900/80 text-amber-700 dark:text-amber-300',
     };
   }
 
@@ -87,14 +87,14 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Presença Confirmada',
-      bg: 'bg-blue-50 dark:bg-blue-950/80',
-      text: 'text-blue-950 dark:text-blue-100',
-      border: 'border-blue-300 dark:border-blue-700',
-      cardClass: 'bg-blue-50 dark:bg-blue-950/80 text-blue-950 dark:text-blue-100 border-blue-300 dark:border-blue-700/80 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-100/90 dark:hover:bg-blue-900/80 shadow-xs',
-      badgeClass: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700',
+      bg: 'bg-blue-50 dark:bg-blue-950/40',
+      text: 'text-blue-900 dark:text-blue-100',
+      border: 'border-blue-300 dark:border-blue-700/60',
+      cardClass: 'bg-blue-500/10 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100 border-blue-300 dark:border-blue-700/60 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-500/15 dark:hover:bg-blue-900/40 shadow-xs',
+      badgeClass: 'bg-blue-100 dark:bg-blue-900/80 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700',
       dotClass: 'bg-blue-600',
       barClass: 'border-l-4 border-l-blue-600',
-      iconBg: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+      iconBg: 'bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-300',
     };
   }
 
@@ -108,14 +108,14 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Faltou (Ausente)',
-      bg: 'bg-rose-50 dark:bg-rose-950/80',
-      text: 'text-rose-950 dark:text-rose-100',
-      border: 'border-rose-300 dark:border-rose-700',
-      cardClass: 'bg-rose-50 dark:bg-rose-950/80 text-rose-950 dark:text-rose-100 border-rose-300 dark:border-rose-700/80 hover:border-rose-400 dark:hover:border-rose-500 hover:bg-rose-100/90 dark:hover:bg-rose-900/80 shadow-xs',
-      badgeClass: 'bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-700',
+      bg: 'bg-rose-50 dark:bg-rose-950/40',
+      text: 'text-rose-900 dark:text-rose-100',
+      border: 'border-rose-300 dark:border-rose-700/60',
+      cardClass: 'bg-rose-500/10 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 border-rose-300 dark:border-rose-700/60 hover:border-rose-400 dark:hover:border-rose-500 hover:bg-rose-500/15 dark:hover:bg-rose-900/40 shadow-xs',
+      badgeClass: 'bg-rose-100 dark:bg-rose-900/80 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-700',
       dotClass: 'bg-rose-500',
       barClass: 'border-l-4 border-l-rose-500',
-      iconBg: 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300',
+      iconBg: 'bg-rose-100 dark:bg-rose-900/80 text-rose-700 dark:text-rose-300',
     };
   }
 
@@ -129,11 +129,11 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Faltou c/ aviso / Remarcar',
-      bg: 'bg-orange-50 dark:bg-orange-950/80',
-      text: 'text-orange-950 dark:text-orange-100',
-      border: 'border-orange-300 dark:border-orange-700',
-      cardClass: 'bg-orange-50 dark:bg-orange-950/80 text-orange-950 dark:text-orange-100 border-orange-300 dark:border-orange-700/80 hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-100/90 dark:hover:bg-orange-900/80 shadow-xs',
-      badgeClass: 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-700',
+      bg: 'bg-orange-50 dark:bg-orange-950/40',
+      text: 'text-orange-900 dark:text-orange-100',
+      border: 'border-orange-300 dark:border-orange-700/60',
+      cardClass: 'bg-orange-500/10 dark:bg-orange-950/40 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700/60 hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-500/15 dark:hover:bg-orange-900/40 shadow-xs',
+      badgeClass: 'bg-orange-100 dark:bg-orange-900/80 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-700',
       dotClass: 'bg-orange-500',
       barClass: 'border-l-4 border-l-orange-500',
       iconBg: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
@@ -150,10 +150,10 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   ) {
     return {
       label: 'Cancelado / Não Atendido',
-      bg: 'bg-slate-100 dark:bg-slate-900/90',
+      bg: 'bg-slate-100 dark:bg-slate-900/80',
       text: 'text-slate-700 dark:text-slate-300',
-      border: 'border-slate-300 dark:border-slate-700',
-      cardClass: 'bg-slate-100 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400 hover:bg-slate-200/80 shadow-xs line-through opacity-85',
+      border: 'border-slate-300 dark:border-slate-700/60',
+      cardClass: 'bg-slate-500/10 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700/60 hover:border-slate-400 hover:bg-slate-500/15 shadow-xs line-through opacity-85',
       badgeClass: 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700',
       dotClass: 'bg-slate-500',
       barClass: 'border-l-4 border-l-slate-400',
@@ -164,14 +164,14 @@ export function getAppointmentStatusStyle(status?: string, hasEvolution?: boolea
   // 6. Default: Agendado / Pendente -> Ciano / Sky
   return {
     label: 'Agendado',
-    bg: 'bg-sky-50 dark:bg-sky-950/80',
-    text: 'text-sky-950 dark:text-sky-100',
-    border: 'border-sky-300 dark:border-sky-700',
-    cardClass: 'bg-sky-50 dark:bg-sky-950/80 text-sky-950 dark:text-sky-100 border-sky-300 dark:border-sky-700/80 hover:border-sky-400 dark:hover:border-sky-500 hover:bg-sky-100/90 dark:hover:bg-sky-900/80 shadow-xs',
-    badgeClass: 'bg-sky-100 dark:bg-sky-900 text-sky-800 dark:text-sky-200 border-sky-300 dark:border-sky-700',
+    bg: 'bg-sky-50 dark:bg-sky-950/40',
+    text: 'text-sky-900 dark:text-sky-100',
+    border: 'border-sky-300 dark:border-sky-700/60',
+    cardClass: 'bg-sky-500/10 dark:bg-sky-950/40 text-sky-900 dark:text-sky-100 border-sky-300 dark:border-sky-700/60 hover:border-sky-400 dark:hover:border-sky-500 hover:bg-sky-500/15 dark:hover:bg-sky-900/40 shadow-xs',
+    badgeClass: 'bg-sky-100 dark:bg-sky-900/80 text-sky-800 dark:text-sky-200 border-sky-300 dark:border-sky-700',
     dotClass: 'bg-sky-500',
     barClass: 'border-l-4 border-l-sky-400',
-    iconBg: 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300',
+    iconBg: 'bg-sky-100 dark:bg-sky-900/80 text-sky-700 dark:text-sky-300',
   };
 }
 

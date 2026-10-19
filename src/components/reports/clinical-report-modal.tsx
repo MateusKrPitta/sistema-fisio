@@ -125,6 +125,8 @@ export function ClinicalReportModal({
     return setOfTitles.size || mergedRecords.length;
   }, [currentScaleGroups, mergedRecords]);
 
+  const [downloadingSessionId, setDownloadingSessionId] = useState<number | null>(null);
+
   const handleDownloadPdf = () => {
     if (!patient) return;
     setIsGeneratingPdf(true);
@@ -142,6 +144,50 @@ export function ClinicalReportModal({
       console.error('Erro ao gerar PDF:', err);
     } finally {
       setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDownloadSessionPdf = async (session: EvaluationSessionDetail, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!patient) return;
+
+    setDownloadingSessionId(session.recordId);
+    try {
+      let recordsToUse = mergedRecords;
+      const existing = mergedRecords.find((r) => r.id === session.recordId);
+      if (!existing?.answers || (!existing.template?.modules?.length && !(existing as any).detailsLoaded)) {
+        try {
+          const res: any = await api.get(`/patients/${patient.id}/form-records/${session.recordId}`);
+          const fullRecord: EvaluationRecord = res?.data || res;
+          if (fullRecord && fullRecord.id) {
+            recordsToUse = patientRecords.map((r) => (r.id === fullRecord.id ? fullRecord : r));
+            setLoadedDetailsMap((prev) => ({
+              ...prev,
+              [fullRecord.id]: fullRecord,
+            }));
+          }
+        } catch (err) {
+          console.error('Erro ao buscar detalhes para PDF:', err);
+        }
+      }
+
+      const scaleGroups = parseScaleGroupsFromRecords(recordsToUse);
+      const allSessions = aggregateRecordsByEvaluationSession(recordsToUse, scaleGroups);
+      const targetSession = allSessions.find((s) => s.recordId === session.recordId) || session;
+
+      generateClinicalReportPdf({
+        patient,
+        patientRecords: recordsToUse,
+        selectedSession: targetSession,
+        parsedScaleGroups: scaleGroups,
+        aiReportText: currentAiReport?.text,
+        aiToneLabel: currentAiReport?.toneLabel,
+        aiToneReports: allAiToneReports,
+      });
+    } catch (err) {
+      console.error('Erro ao gerar PDF da avaliação:', err);
+    } finally {
+      setDownloadingSessionId(null);
     }
   };
 
@@ -214,22 +260,24 @@ export function ClinicalReportModal({
 
               {/* Botões de Ação com Botão Fechar Proeminente */}
               <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-                {/* PDF Download Button */}
-                <button
-                  type="button"
-                  onClick={handleDownloadPdf}
-                  disabled={isGeneratingPdf}
-                  className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold px-2.5 sm:px-4 py-2 rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50 shrink-0"
-                  title="Gerar e Baixar Arquivo PDF Oficial Completo"
-                >
-                  {isGeneratingPdf ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <FileDown className="w-4 h-4" />
-                  )}
-                  <span className="hidden md:inline">Baixar PDF Oficial</span>
-                  <span className="inline md:hidden">PDF</span>
-                </button>
+                {/* PDF Download Button - Apenas exibido quando uma avaliação específica está aberta */}
+                {activeSession && (
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
+                    disabled={isGeneratingPdf}
+                    className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold px-2.5 sm:px-4 py-2 rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                    title="Gerar e Baixar Arquivo PDF Oficial Desta Avaliação"
+                  >
+                    {isGeneratingPdf ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <FileDown className="w-4 h-4" />
+                    )}
+                    <span className="hidden md:inline">Baixar PDF Oficial</span>
+                    <span className="inline md:hidden">PDF</span>
+                  </button>
+                )}
 
                 {/* Botão Fechar - Somente o X */}
                 <button
@@ -925,27 +973,41 @@ export function ClinicalReportModal({
                               </span>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvaluation(sess.recordId);
-                              }}
-                              disabled={isLoadingThis}
-                              className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm transition-all cursor-pointer"
-                            >
-                              {isLoadingThis ? (
-                                <>
+                            <div className="grid grid-cols-2 gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={(e) => handleDownloadSessionPdf(sess, e)}
+                                disabled={downloadingSessionId === sess.recordId}
+                                className="flex items-center justify-center space-x-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-blue-600 font-bold py-2 px-3 rounded-xl text-xs shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                                title="Baixar PDF Oficial desta Avaliação"
+                              >
+                                {downloadingSessionId === sess.recordId ? (
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  <span>Abrindo Avaliação...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <span>Visualizar Avaliação Completa</span>
-                                  <ChevronRight className="w-3.5 h-3.5" />
-                                </>
-                              )}
-                            </button>
+                                ) : (
+                                  <FileDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                )}
+                                <span>Baixar PDF</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenEvaluation(sess.recordId);
+                                }}
+                                disabled={isLoadingThis}
+                                className="flex items-center justify-center space-x-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-2 px-3 rounded-xl text-xs shadow-xs transition-all cursor-pointer"
+                              >
+                                {isLoadingThis ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <>
+                                    <span>Abrir</span>
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                  </>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
@@ -1026,29 +1088,48 @@ export function ClinicalReportModal({
                                   </span>
                                 </td>
 
-                                {/* Action Button */}
+                                {/* Action Buttons */}
                                 <td className="py-4 px-4 text-right print:hidden">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenEvaluation(sess.recordId);
-                                    }}
-                                    disabled={isLoadingThis}
-                                    className="inline-flex items-center space-x-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
-                                  >
-                                    {isLoadingThis ? (
-                                      <>
+                                  <div className="inline-flex items-center space-x-1.5">
+                                    {/* Botão Baixar PDF desta Avaliação */}
+                                    <button
+                                      type="button"
+                                      onClick={(e) => handleDownloadSessionPdf(sess, e)}
+                                      disabled={downloadingSessionId === sess.recordId}
+                                      className="inline-flex items-center space-x-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 font-bold px-2.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+                                      title="Baixar PDF Oficial desta Avaliação"
+                                    >
+                                      {downloadingSessionId === sess.recordId ? (
                                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        <span>Carregando...</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span>Abrir Avaliação</span>
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                      </>
-                                    )}
-                                  </button>
+                                      ) : (
+                                        <FileDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                      )}
+                                      <span>PDF</span>
+                                    </button>
+
+                                    {/* Botão Abrir Avaliação */}
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenEvaluation(sess.recordId);
+                                      }}
+                                      disabled={isLoadingThis}
+                                      className="inline-flex items-center space-x-1 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
+                                    >
+                                      {isLoadingThis ? (
+                                        <>
+                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                          <span>Carregando...</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <span>Abrir Avaliação</span>
+                                          <ChevronRight className="w-3.5 h-3.5" />
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             );

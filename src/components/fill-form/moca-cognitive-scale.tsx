@@ -860,7 +860,7 @@ export function MoCACognitiveScaleSection({
                 <h5 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">
                   Nomeação de Animais
                 </h5>
-                <span className="text-[11px] text-slate-400">Instrução: Aponte cada animal da esquerda para a direita e pergunte: "Diga-me o nome deste animal".</span>
+                <span className="text-[11px] text-slate-400">Instrução: Aponte cada animal da esquerda para a direita e pergunte: &quot;Diga-me o nome deste animal&quot;.</span>
               </div>
             </div>
             <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-xl">

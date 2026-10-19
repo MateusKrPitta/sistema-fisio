@@ -844,10 +844,26 @@ export default function AppointmentsPage() {
 
   const handleDeleteAppointment = (id: number | string) => {
     const target = appointments.find((a) => a.id === id);
+    if (target && (target.status || '').toLowerCase() === 'finalizado') {
+      toast({
+        title: 'Ação Bloqueada',
+        description: 'Não é permitido excluir um atendimento que já foi marcado como realizado/atendido.',
+        type: 'warning',
+      });
+      return;
+    }
+
     setAppointments((prev) => prev.filter((a) => a.id !== id));
     setSelectedApp(null);
 
-    api.delete(`/appointments/${id}`).catch(() => {});
+    api.delete(`/appointments/${id}`).catch((err: any) => {
+      const errorMsg = err?.response?.data?.error || err?.message || 'Erro ao remover atendimento.';
+      toast({
+        title: 'Ação Bloqueada',
+        description: errorMsg,
+        type: 'error',
+      });
+    });
 
     toast({
       title: 'Atendimento Excluído',
@@ -863,6 +879,15 @@ export default function AppointmentsPage() {
 
     const targetDateNorm = normalizeDate(editDate);
     const targetTimeNorm = normalizeTime(editTime);
+
+    if (selectedApp.status && selectedApp.status.toLowerCase() === 'finalizado') {
+      const origDate = normalizeDate(selectedApp.date);
+      const origTime = normalizeTime(selectedApp.time);
+      if (origDate !== targetDateNorm || origTime !== targetTimeNorm) {
+        setEditError('Não é permitido alterar a data ou o horário de um atendimento já finalizado/realizado.');
+        return;
+      }
+    }
 
     // Collision check for other appointments
     const conflict = appointments.find((app) => {

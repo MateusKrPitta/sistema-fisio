@@ -18,6 +18,8 @@ import {
   RefreshCw,
   Copy,
   Check,
+  PenTool,
+  RotateCcw,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { PatientItem } from '@/lib/clinical-report-engine';
@@ -122,6 +124,168 @@ export function EvolutionReportModal({
   const [chartData, setChartData] = useState<EvolutionChartPoint[]>([]);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Digital Signature State
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [signatureImage, setSignatureImage] = useState<string | null>(null);
+  const [signatureDate, setSignatureDate] = useState<string | null>(null);
+  const [rememberSignature, setRememberSignature] = useState(true);
+
+  // Canvas Drawing State
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasDrawn, setHasDrawn] = useState(false);
+
+  // Load saved signature from localStorage on mount or when professional changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const cleanName = professionalName.trim().toLowerCase().replace(/\s+/g, '_');
+    const key = cleanName ? `fisiomovie_signature_${cleanName}` : 'fisiomovie_default_signature';
+    const saved = localStorage.getItem(key) || localStorage.getItem('fisiomovie_default_signature');
+    if (saved) {
+      setSignatureImage(saved);
+      const savedDate = localStorage.getItem(`${key}_date`) || localStorage.getItem('fisiomovie_default_signature_date');
+      setSignatureDate(savedDate || new Date().toLocaleString('pt-BR'));
+    }
+  }, [professionalName]);
+
+  // Canvas setup with retina/high-DPI crisp resolution
+  const setupCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    ctx.strokeStyle = '#1e3a8a'; // Ink dark blue
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    setHasDrawn(false);
+  };
+
+  useEffect(() => {
+    if (signatureModalOpen) {
+      const timer = setTimeout(() => {
+        setupCanvas();
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [signatureModalOpen]);
+
+  const getCanvasCoords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    if ('touches' in e) {
+      const touch = e.touches[0];
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+      };
+    } else {
+      return {
+        x: (e as React.MouseEvent).clientX - rect.left,
+        y: (e as React.MouseEvent).clientY - rect.top,
+      };
+    }
+  };
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const { x, y } = getCanvasCoords(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const { x, y } = getCanvasCoords(e);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    setHasDrawn(true);
+  };
+
+  const stopDrawing = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.closePath();
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setupCanvas();
+    setHasDrawn(false);
+  };
+
+  const executePdfExport = (sigImg?: string | null, sigDate?: string | null) => {
+    if (!selectedPatient) return;
+    generateEvolutionReportPdf({
+      patient: selectedPatient,
+      periodLabel: dateRange.label,
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      summary: aiSummary,
+      gains: aiGains,
+      alerts: aiAlerts,
+      nextSteps: aiNextSteps,
+      chartData,
+      sessions,
+      tone,
+      professionalName: professionalName.trim() || undefined,
+      professionalCrefito: professionalCrefito.trim() || undefined,
+      signatureImage: (sigImg !== undefined ? sigImg : signatureImage) || undefined,
+      signatureDate: (sigDate !== undefined ? sigDate : signatureDate) || undefined,
+    });
+  };
+
+  const handleSaveSignatureAndExport = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !hasDrawn) return;
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const nowStr = new Date().toLocaleString('pt-BR');
+    setSignatureImage(dataUrl);
+    setSignatureDate(nowStr);
+
+    if (rememberSignature) {
+      try {
+        const cleanName = professionalName.trim().toLowerCase().replace(/\s+/g, '_');
+        const key = cleanName ? `fisiomovie_signature_${cleanName}` : 'fisiomovie_default_signature';
+        localStorage.setItem(key, dataUrl);
+        localStorage.setItem(`${key}_date`, nowStr);
+        localStorage.setItem('fisiomovie_default_signature', dataUrl);
+        localStorage.setItem('fisiomovie_default_signature_date', nowStr);
+      } catch (err) {
+        console.warn('Não foi possível salvar assinatura no localStorage:', err);
+      }
+    }
+
+    setSignatureModalOpen(false);
+    executePdfExport(dataUrl, nowStr);
+  };
 
   // Sync initial patient & professional
   useEffect(() => {
@@ -299,21 +463,13 @@ export function EvolutionReportModal({
 
   const handleExportPdf = () => {
     if (!selectedPatient) return;
-    generateEvolutionReportPdf({
-      patient: selectedPatient,
-      periodLabel: dateRange.label,
-      startDate: dateRange.startDate,
-      endDate: dateRange.endDate,
-      summary: aiSummary,
-      gains: aiGains,
-      alerts: aiAlerts,
-      nextSteps: aiNextSteps,
-      chartData,
-      sessions,
-      tone,
-      professionalName: professionalName.trim() || undefined,
-      professionalCrefito: professionalCrefito.trim() || undefined,
-    });
+    // Se ainda não assinou, abre o quadro de assinatura antes de gerar o PDF
+    if (!signatureImage) {
+      setSignatureModalOpen(true);
+      return;
+    }
+    // Se já assinou, gera o PDF com a assinatura
+    executePdfExport();
   };
 
   if (!isOpen) return null;
@@ -753,17 +909,169 @@ export function EvolutionReportModal({
           </button>
 
           {hasGenerated && (
-            <button
-              type="button"
-              onClick={handleExportPdf}
-              className="inline-flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer hover:shadow-md"
-            >
-              <Download className="w-4 h-4" />
-              <span>Exportar PDF Oficial (A4)</span>
-            </button>
+            <div className="flex items-center space-x-2.5 sm:space-x-3">
+              {/* Status da Assinatura do Fisioterapeuta */}
+              {signatureImage ? (
+                <div className="flex items-center space-x-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-3 py-1.5 rounded-xl text-xs">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <div className="hidden sm:block text-left leading-tight">
+                    <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase block">Assinatura Pronta</span>
+                    <span className="text-[11px] text-emerald-950 dark:text-emerald-200 truncate max-w-[140px] block font-medium">
+                      {professionalName || 'Fisioterapeuta'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSignatureModalOpen(true)}
+                    className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline font-bold pl-1 cursor-pointer"
+                    title="Alterar ou desenhar nova assinatura"
+                  >
+                    Alterar
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSignatureModalOpen(true)}
+                  className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs transition-colors cursor-pointer"
+                >
+                  <PenTool className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Assinar Antes</span>
+                </button>
+              )}
+
+              {/* Botão Principal de Exportação */}
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                className="inline-flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-5 sm:px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer hover:shadow-md"
+              >
+                <Download className="w-4 h-4" />
+                <span>Exportar PDF Oficial (A4)</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* MODAL DE ASSINATURA DIGITAL DO FISIOTERAPEUTA */}
+      {signatureModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col space-y-4 p-5 sm:p-6 animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shrink-0">
+                  <PenTool className="w-4.5 h-4.5" />
+                </div>
+                <div>
+                  <h4 className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-white">
+                    Assinatura do Fisioterapeuta
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Rubrique ou assine para autenticar o relatório antes de exportar
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSignatureModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Identificação do Profissional Responsável */}
+            <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Profissional Responsável</span>
+                <strong className="text-slate-800 dark:text-slate-100 text-xs sm:text-sm">{professionalName || 'Fisioterapeuta'}</strong>
+              </div>
+              {professionalCrefito && (
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Registro Profissional</span>
+                  <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs">
+                    {professionalCrefito.toUpperCase().startsWith('CREFITO') ? professionalCrefito : `CREFITO: ${professionalCrefito}`}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Quadro de Assinatura Interativo (Canvas) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                  Desenhe sua assinatura ou rubrica abaixo *
+                </label>
+                <button
+                  type="button"
+                  onClick={clearCanvas}
+                  className="text-[11px] text-slate-500 hover:text-red-600 dark:hover:text-red-400 flex items-center space-x-1 cursor-pointer font-bold"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Limpar</span>
+                </button>
+              </div>
+
+              <div className="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-white overflow-hidden touch-none shadow-inner h-44 sm:h-48 flex items-center justify-center">
+                <canvas
+                  ref={canvasRef}
+                  onMouseDown={startDrawing}
+                  onMouseMove={draw}
+                  onMouseUp={stopDrawing}
+                  onMouseLeave={stopDrawing}
+                  onTouchStart={startDrawing}
+                  onTouchMove={draw}
+                  onTouchEnd={stopDrawing}
+                  className="w-full h-full cursor-crosshair block"
+                />
+                {!hasDrawn && (
+                  <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-slate-400 space-y-1 select-none">
+                    <PenTool className="w-6 h-6 opacity-40 animate-bounce" />
+                    <span className="text-xs font-semibold text-slate-400">Assine aqui com o mouse, caneta ou dedo</span>
+                  </div>
+                )}
+                {/* Linha guia de assinatura */}
+                <div className="absolute bottom-6 left-8 right-8 border-b border-slate-200 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Checkbox de Lembrar Assinatura */}
+            <label className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-300 select-none cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rememberSignature}
+                onChange={(e) => setRememberSignature(e.target.checked)}
+                className="w-4 h-4 rounded text-blue-600 border-slate-300 dark:border-slate-700 cursor-pointer"
+              />
+              <span>Lembrar esta assinatura para futuros relatórios neste computador</span>
+            </label>
+
+            {/* Ações do Modal */}
+            <div className="flex items-center justify-end space-x-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setSignatureModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={!hasDrawn}
+                onClick={handleSaveSignatureAndExport}
+                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:hover:bg-blue-600 text-white text-xs font-bold shadow-md transition-all flex items-center space-x-2 cursor-pointer disabled:cursor-not-allowed"
+              >
+                <Check className="w-4 h-4" />
+                <span>Salvar e Gerar PDF Oficial (A4)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

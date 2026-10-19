@@ -472,6 +472,8 @@ export interface GenerateEvolutionPdfOptions {
   clinicName?: string;
   professionalName?: string;
   professionalCrefito?: string;
+  signatureImage?: string;
+  signatureDate?: string;
 }
 
 export function generateEvolutionReportPdf({
@@ -489,6 +491,8 @@ export function generateEvolutionReportPdf({
   clinicName = 'FISIOMOVIE • CLÍNICA DE FISIOTERAPIA',
   professionalName,
   professionalCrefito,
+  signatureImage,
+  signatureDate,
 }: GenerateEvolutionPdfOptions) {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -879,21 +883,39 @@ export function generateEvolutionReportPdf({
   }
 
   // 7. Signature Block with Attending Physiotherapist Name and CREFITO
-  if (currentY > pageHeight - 35) {
+  const signatureHeightNeeded = signatureImage ? 46 : 32;
+  if (currentY > pageHeight - signatureHeightNeeded) {
     doc.addPage();
     currentY = margin + 15;
   }
 
   const signLineWidth = 85;
   const signX = (pageWidth - signLineWidth) / 2;
+
+  // Render digital signature if available
+  if (signatureImage) {
+    try {
+      const sigImgWidth = 46;
+      const sigImgHeight = 16;
+      const sigImgX = (pageWidth - sigImgWidth) / 2;
+      doc.addImage(signatureImage, 'PNG', sigImgX, currentY + 2, sigImgWidth, sigImgHeight);
+      currentY += 19;
+    } catch (e) {
+      console.error('Erro ao renderizar imagem da assinatura no PDF:', e);
+      currentY += 10;
+    }
+  } else {
+    currentY += 10;
+  }
+
   doc.setDrawColor(148, 163, 184);
   doc.setLineWidth(0.4);
-  doc.line(signX, currentY + 10, signX + signLineWidth, currentY + 10);
+  doc.line(signX, currentY, signX + signLineWidth, currentY);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(30, 41, 59);
-  doc.text(resolvedProfessionalName, pageWidth / 2, currentY + 15, { align: 'center' });
+  doc.text(resolvedProfessionalName, pageWidth / 2, currentY + 5, { align: 'center' });
 
   let displayCrefito = 'CREFITO / Registro Profissional';
   if (resolvedProfessionalCrefito && resolvedProfessionalCrefito.trim()) {
@@ -904,7 +926,14 @@ export function generateEvolutionReportPdf({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
-  doc.text(displayCrefito, pageWidth / 2, currentY + 19.5, { align: 'center' });
+  doc.text(displayCrefito, pageWidth / 2, currentY + 9.5, { align: 'center' });
+
+  if (signatureImage) {
+    const signDateText = signatureDate || new Date().toLocaleString('pt-BR');
+    doc.setFontSize(6.5);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Documento autenticado e assinado digitalmente em ${signDateText}`, pageWidth / 2, currentY + 13.5, { align: 'center' });
+  }
 
   // 8. Footer on all pages
   const totalPages = doc.getNumberOfPages();
