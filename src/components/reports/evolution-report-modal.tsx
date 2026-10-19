@@ -27,6 +27,7 @@ import {
   EvolutionSessionItem,
 } from '@/lib/pdf-report-generator';
 import { CustomSelect } from '@/components/custom-select';
+import { useAuth } from '@/context/auth-context';
 
 interface EvolutionReportModalProps {
   isOpen: boolean;
@@ -75,6 +76,8 @@ export function EvolutionReportModal({
   patient: initialPatient,
   patientsList = [],
 }: EvolutionReportModalProps) {
+  const { user: authUser } = useAuth();
+
   // State for selected patient
   const [selectedPatient, setSelectedPatient] = useState<PatientItem | null>(initialPatient || null);
 
@@ -93,6 +96,10 @@ export function EvolutionReportModal({
 
   // AI tone
   const [tone, setTone] = useState<AiTone>('clinical');
+
+  // Professional Identification (Physiotherapist name and CREFITO)
+  const [professionalName, setProfessionalName] = useState('');
+  const [professionalCrefito, setProfessionalCrefito] = useState('');
 
   // Data fetching & AI state
   const [loadingData, setLoadingData] = useState(false);
@@ -116,7 +123,7 @@ export function EvolutionReportModal({
   const [hasGenerated, setHasGenerated] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Sync initial patient
+  // Sync initial patient & professional
   useEffect(() => {
     if (initialPatient) {
       setSelectedPatient(initialPatient);
@@ -124,6 +131,26 @@ export function EvolutionReportModal({
       setSelectedPatient(patientsList[0]);
     }
   }, [initialPatient, patientsList]);
+
+  // Sync physiotherapist information
+  useEffect(() => {
+    const patientUser = selectedPatient?.user;
+    const initialName =
+      selectedPatient?.professionalName ||
+      patientUser?.fullName ||
+      (patientUser as any)?.name ||
+      authUser?.fullName ||
+      authUser?.name ||
+      '';
+    const initialCrefito =
+      selectedPatient?.professionalCrefito ||
+      patientUser?.crefito ||
+      authUser?.crefito ||
+      '';
+
+    if (initialName) setProfessionalName(initialName);
+    if (initialCrefito) setProfessionalCrefito(initialCrefito);
+  }, [selectedPatient, authUser]);
 
   // Compute period label
   const dateRange = useMemo(() => {
@@ -158,6 +185,15 @@ export function EvolutionReportModal({
 
       const rawEvolutions = evolutionsRes?.data?.data || evolutionsRes?.data || [];
       const rawFormRecords = formRecordsRes?.data?.data || formRecordsRes?.data || [];
+      const patientData = evolutionsRes?.data?.patient || evolutionsRes?.patient;
+
+      // Automatically capture assigned professional from patient response if available
+      if (patientData?.professionalName) {
+        setProfessionalName(patientData.professionalName);
+      }
+      if (patientData?.professionalCrefito) {
+        setProfessionalCrefito(patientData.professionalCrefito);
+      }
 
       // Combine and filter within date range
       const collectedSessions: EvolutionSessionItem[] = [];
@@ -176,6 +212,8 @@ export function EvolutionReportModal({
           notes: stripHtml(ev.notes || ''),
           painScale: ev.painScale ?? undefined,
           specialty: ev.specialty || 'Fisioterapia',
+          professionalName: ev.professionalName || ev.user?.fullName || ev.user?.full_name,
+          professionalCrefito: ev.professionalCrefito || ev.user?.crefito,
         });
       });
 
@@ -196,6 +234,8 @@ export function EvolutionReportModal({
           notes: stripHtml(fr.notes || fr.template?.title || 'Avaliação Clínica'),
           painScale,
           specialty: 'Avaliação',
+          professionalName: fr.user?.fullName || fr.user?.full_name,
+          professionalCrefito: fr.user?.crefito,
         });
       });
 
@@ -209,6 +249,15 @@ export function EvolutionReportModal({
 
       setSessions(uniqueSessions);
       setSessionsPage(1);
+
+      // Check if any session has professional name/crefito to fallback
+      const foundSessionWithProf = uniqueSessions.find((s) => s.professionalName);
+      if (foundSessionWithProf) {
+        setProfessionalName((prev) => prev || foundSessionWithProf.professionalName || '');
+        if (foundSessionWithProf.professionalCrefito) {
+          setProfessionalCrefito((prev) => prev || foundSessionWithProf.professionalCrefito || '');
+        }
+      }
 
       // 3. Request AI Evolution Analysis with token-optimized payload
       const aiRes = await api.post(`/patients/${selectedPatient.id}/evolution-ai-report`, {
@@ -262,6 +311,8 @@ export function EvolutionReportModal({
       chartData,
       sessions,
       tone,
+      professionalName: professionalName.trim() || undefined,
+      professionalCrefito: professionalCrefito.trim() || undefined,
     });
   };
 
@@ -374,7 +425,37 @@ export function EvolutionReportModal({
             </div>
           </div>
 
-          {/* 2. TOM DA IA E BOTÃO DE GERAÇÃO */}
+          {/* 2. IDENTIFICAÇÃO DA FISIOTERAPEUTA RESPONSÁVEL E CREFITO */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-950 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Fisioterapeuta Responsável</span>
+              </label>
+              <input
+                type="text"
+                value={professionalName}
+                onChange={(e) => setProfessionalName(e.target.value)}
+                placeholder="Ex: Dra. Milene Salmazo"
+                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-2xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Nº CREFITO / Registro Profissional</span>
+              </label>
+              <input
+                type="text"
+                value={professionalCrefito}
+                onChange={(e) => setProfessionalCrefito(e.target.value)}
+                placeholder="Ex: 123456-F"
+                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-2xs"
+              />
+            </div>
+          </div>
+
+          {/* 3. TOM DA IA E BOTÃO DE GERAÇÃO */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40">
             <div className="flex items-center space-x-2">
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Foco do Laudo:</span>

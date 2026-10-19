@@ -454,6 +454,7 @@ export interface EvolutionSessionItem {
   painScale?: number;
   specialty?: string;
   professionalName?: string;
+  professionalCrefito?: string;
 }
 
 export interface GenerateEvolutionPdfOptions {
@@ -470,6 +471,7 @@ export interface GenerateEvolutionPdfOptions {
   tone?: string;
   clinicName?: string;
   professionalName?: string;
+  professionalCrefito?: string;
 }
 
 export function generateEvolutionReportPdf({
@@ -486,6 +488,7 @@ export function generateEvolutionReportPdf({
   tone = 'clinical',
   clinicName = 'FISIOMOVIE • CLÍNICA DE FISIOTERAPIA',
   professionalName,
+  professionalCrefito,
 }: GenerateEvolutionPdfOptions) {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -497,6 +500,22 @@ export function generateEvolutionReportPdf({
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
   let currentY = margin;
+
+  // Resolve professional name and CREFITO
+  const resolvedProfessionalName =
+    professionalName?.trim() ||
+    sessions.find((s) => s.professionalName)?.professionalName ||
+    patient.professionalName ||
+    patient.user?.fullName ||
+    (patient as any).user?.name ||
+    'Fisioterapeuta Responsável';
+
+  const resolvedProfessionalCrefito =
+    professionalCrefito?.trim() ||
+    sessions.find((s) => s.professionalCrefito)?.professionalCrefito ||
+    patient.professionalCrefito ||
+    patient.user?.crefito ||
+    '';
 
   // 1. Top Header Banner
   doc.setFillColor(15, 23, 42); // Slate 900
@@ -539,6 +558,16 @@ export function generateEvolutionReportPdf({
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30, 64, 175);
   doc.text(`Período Analisado: ${periodText} (${sessions.length} sessões)`, margin + 4, currentY + 20);
+
+  if (resolvedProfessionalName && resolvedProfessionalName !== 'Fisioterapeuta Responsável') {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    const crefitoTag = resolvedProfessionalCrefito
+      ? ` (${resolvedProfessionalCrefito.toUpperCase().startsWith('CREFITO') ? resolvedProfessionalCrefito : `CREFITO: ${resolvedProfessionalCrefito}`})`
+      : '';
+    doc.text(`Fisioterapeuta: ${resolvedProfessionalName}${crefitoTag}`, margin + 100, currentY + 20);
+  }
 
   currentY += 30;
 
@@ -658,15 +687,25 @@ export function generateEvolutionReportPdf({
     currentY += chartH + 6;
   }
 
-  // 4. AI CLINICAL SUMMARY BOX
+  // 4. AI CLINICAL SUMMARY BOX (Font size set before measurement to guarantee text stays strictly inside column)
   if (summary && summary.trim()) {
-    const summaryLines = doc.splitTextToSize(summary.trim(), pageWidth - margin * 2 - 12);
-    const boxHeight = Math.max(22, summaryLines.length * 4.2 + 14);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+
+    const summaryBoxW = pageWidth - margin * 2;
+    const summaryTextW = summaryBoxW - 14;
+    const summaryLines = doc.splitTextToSize(summary.trim(), summaryTextW);
+    const boxHeight = Math.max(22, summaryLines.length * 4.3 + 14);
+
+    if (currentY + boxHeight > pageHeight - 30) {
+      doc.addPage();
+      currentY = margin + 5;
+    }
 
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(margin, currentY, pageWidth - margin * 2, boxHeight, 2, 2, 'F');
+    doc.roundedRect(margin, currentY, summaryBoxW, boxHeight, 2, 2, 'F');
     doc.setDrawColor(199, 210, 254); // Indigo border
-    doc.roundedRect(margin, currentY, pageWidth - margin * 2, boxHeight, 2, 2, 'S');
+    doc.roundedRect(margin, currentY, summaryBoxW, boxHeight, 2, 2, 'S');
 
     // Left accent bar
     doc.setFillColor(79, 70, 229); // Indigo 600
@@ -688,7 +727,22 @@ export function generateEvolutionReportPdf({
   // 5. FUNCTIONAL GAINS & NEXT STEPS 2-COLUMN BOX
   if ((gains.length > 0 || nextSteps.length > 0) && currentY < 230) {
     const colW = (pageWidth - margin * 2 - 4) / 2;
-    const colHeight = 32;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    const itemMaxW = colW - 8;
+
+    const gainLinesArr = gains.slice(0, 3).map((g) => doc.splitTextToSize(`• ${g}`, itemMaxW));
+    const nextLinesArr = nextSteps.slice(0, 3).map((n) => doc.splitTextToSize(`• ${n}`, itemMaxW));
+
+    const totalGainLines = gainLinesArr.reduce((acc, l) => acc + l.length, 0);
+    const totalNextLines = nextLinesArr.reduce((acc, l) => acc + l.length, 0);
+    const colHeight = Math.max(32, Math.max(totalGainLines, totalNextLines) * 3.6 + 12);
+
+    if (currentY + colHeight > pageHeight - 30) {
+      doc.addPage();
+      currentY = margin + 5;
+    }
 
     // Column A: Ganhos
     doc.setFillColor(240, 253, 244); // Green 50
@@ -705,8 +759,7 @@ export function generateEvolutionReportPdf({
     doc.setFontSize(7.5);
     doc.setTextColor(51, 65, 85);
     let gy = currentY + 10;
-    (gains.slice(0, 3)).forEach((g) => {
-      const gLines = doc.splitTextToSize(`• ${g}`, colW - 6);
+    gainLinesArr.forEach((gLines) => {
       doc.text(gLines, margin + 3, gy);
       gy += gLines.length * 3.5;
     });
@@ -727,8 +780,7 @@ export function generateEvolutionReportPdf({
     doc.setFontSize(7.5);
     doc.setTextColor(51, 65, 85);
     let ny = currentY + 10;
-    (nextSteps.slice(0, 3)).forEach((n) => {
-      const nLines = doc.splitTextToSize(`• ${n}`, colW - 6);
+    nextLinesArr.forEach((nLines) => {
       doc.text(nLines, colBX + 3, ny);
       ny += nLines.length * 3.5;
     });
@@ -736,9 +788,9 @@ export function generateEvolutionReportPdf({
     currentY += colHeight + 6;
   }
 
-  // 6. CHRONOLOGICAL SESSIONS TABLE
+  // 6. CHRONOLOGICAL SESSIONS TABLE (Strict column widths and word breaking to never pass column)
   if (sessions && sessions.length > 0) {
-    if (currentY > 220) {
+    if (currentY > 215) {
       doc.addPage();
       currentY = margin;
     }
@@ -749,6 +801,31 @@ export function generateEvolutionReportPdf({
     doc.text('HISTÓRICO CRONOLÓGICO DAS SESSÕES DO PERÍODO', margin, currentY + 3);
     currentY += 6;
 
+    const sanitizeNotes = (rawNotes?: string) => {
+      if (!rawNotes) return 'Atendimento realizado conforme plano terapêutico.';
+      let text = rawNotes
+        .replace(/<br\s*[\/]?>/gi, ' ')
+        .replace(/<\/p>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/[\u00A0\u1680\u2000-\u200B\u2028\u2029\u202F\u205F\u3000\uFEFF]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (!text) return 'Atendimento realizado conforme plano terapêutico.';
+
+      // Safely break any long unbroken word sequences to prevent escaping cell bounds
+      return text
+        .split(' ')
+        .map((w) => (w.length > 28 ? (w.match(/.{1,26}/g)?.join(' ') || w) : w))
+        .join(' ');
+    };
+
     const tableRows = sessions.map((s, idx) => {
       const formattedDate = s.date
         ? s.date.includes('-')
@@ -756,25 +833,20 @@ export function generateEvolutionReportPdf({
           : s.date
         : `Sessão ${idx + 1}`;
       const painText = s.painScale !== undefined && s.painScale !== null ? `EVA ${s.painScale}/10` : '-';
-      const rawNotes = s.notes || '';
-      const notesClean = rawNotes
-        .replace(/<br\s*[\/]?>/gi, ' ')
-        .replace(/<\/p>/gi, ' ')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&nbsp;/gi, ' ')
-        .replace(/&amp;/gi, '&')
-        .replace(/&lt;/gi, '<')
-        .replace(/&gt;/gi, '>')
-        .replace(/\s+/g, ' ')
-        .trim() || 'Atendimento realizado conforme plano terapêutico.';
-      return [formattedDate, painText, notesClean];
+      return [formattedDate, painText, sanitizeNotes(s.notes)];
     });
+
+    const totalTableWidth = pageWidth - margin * 2;
+    const colDateWidth = 24;
+    const colPainWidth = 20;
+    const colNotesWidth = totalTableWidth - colDateWidth - colPainWidth; // Exactly 138mm on A4
 
     autoTable(doc, {
       startY: currentY,
       head: [['Data', 'Dor (EVA)', 'Anotações e Condutas da Sessão']],
       body: tableRows,
       theme: 'grid',
+      tableWidth: totalTableWidth,
       headStyles: {
         fillColor: [30, 41, 59],
         textColor: [255, 255, 255],
@@ -783,17 +855,21 @@ export function generateEvolutionReportPdf({
         halign: 'left',
       },
       styles: {
+        font: 'helvetica',
+        fontStyle: 'normal',
         fontSize: 7.5,
         cellPadding: 2.5,
         textColor: [51, 65, 85],
         overflow: 'linebreak',
+        valign: 'top',
+        halign: 'left',
       },
       columnStyles: {
-        0: { cellWidth: 26, fontStyle: 'bold' },
-        1: { cellWidth: 22, halign: 'center' },
-        2: { cellWidth: 'auto' },
+        0: { cellWidth: colDateWidth, fontStyle: 'bold', halign: 'left' },
+        1: { cellWidth: colPainWidth, halign: 'center' },
+        2: { cellWidth: colNotesWidth, halign: 'left', overflow: 'linebreak' },
       },
-      margin: { left: margin, right: margin },
+      margin: { left: margin, right: margin, top: margin, bottom: 15 },
       didDrawPage: (data) => {
         currentY = data.cursor ? data.cursor.y + 10 : currentY;
       },
@@ -802,26 +878,33 @@ export function generateEvolutionReportPdf({
     currentY = (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 12 : currentY + 12;
   }
 
-  // 7. Signature Block
+  // 7. Signature Block with Attending Physiotherapist Name and CREFITO
   if (currentY > pageHeight - 35) {
     doc.addPage();
     currentY = margin + 15;
   }
 
-  const signX = pageWidth / 2 - 40;
+  const signLineWidth = 85;
+  const signX = (pageWidth - signLineWidth) / 2;
   doc.setDrawColor(148, 163, 184);
   doc.setLineWidth(0.4);
-  doc.line(signX, currentY + 10, signX + 80, currentY + 10);
+  doc.line(signX, currentY + 10, signX + signLineWidth, currentY + 10);
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
+  doc.setFontSize(9);
   doc.setTextColor(30, 41, 59);
-  doc.text(professionalName || 'Fisioterapeuta Responsável', pageWidth / 2, currentY + 14, { align: 'center' });
+  doc.text(resolvedProfessionalName, pageWidth / 2, currentY + 15, { align: 'center' });
+
+  let displayCrefito = 'CREFITO / Registro Profissional';
+  if (resolvedProfessionalCrefito && resolvedProfessionalCrefito.trim()) {
+    const rawCrefito = resolvedProfessionalCrefito.trim();
+    displayCrefito = rawCrefito.toUpperCase().startsWith('CREFITO') ? rawCrefito : `CREFITO: ${rawCrefito}`;
+  }
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
+  doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
-  doc.text('CREFITO / Registro Profissional', pageWidth / 2, currentY + 18, { align: 'center' });
+  doc.text(displayCrefito, pageWidth / 2, currentY + 19.5, { align: 'center' });
 
   // 8. Footer on all pages
   const totalPages = doc.getNumberOfPages();

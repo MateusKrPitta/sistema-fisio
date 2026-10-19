@@ -8,8 +8,10 @@ export interface PatientItem {
   phone?: string;
   email?: string;
   template?: { id: number; title: string };
-  user?: { id: number; fullName?: string; email?: string };
+  user?: { id: number; fullName?: string; email?: string; crefito?: string; name?: string };
   evaluators?: string[];
+  professionalName?: string;
+  professionalCrefito?: string;
 }
 
 export interface EvaluationRecord {
