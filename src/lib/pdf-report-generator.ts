@@ -9,6 +9,97 @@ import {
 } from './clinical-report-engine';
 import { maskCpf } from './masks';
 
+/**
+ * Sanitizes and normalizes text for jsPDF with standard 8-bit fonts (e.g. Helvetica).
+ * Translates subscripts, superscripts, mathematical/medical symbols, curly quotes,
+ * and dashes to safe ASCII / Latin-1 equivalents.
+ * CRITICAL: If any character has a code point > 255 (e.g. SpO₂), jsPDF triggers UTF-16BE mode,
+ * which outputs null bytes (\x00) for every ASCII character and causes severe
+ * character spacing distortions (text overflowing table margins).
+ */
+export function sanitizeForPdf(raw?: string | null, maxWordLength = 32): string {
+  if (!raw) return '';
+  let str = String(raw);
+
+  // 1. Strip HTML tags and normalize common HTML entities
+  str = str
+    .replace(/<br\s*[\/]?>/gi, ' ')
+    .replace(/<\/p>/gi, ' ')
+    .replace(/<\/div>/gi, ' ')
+    .replace(/<\/li>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+
+  // 2. Map Unicode Subscripts & Superscripts to standard ASCII digits
+  const subSuperMap: Record<string, string> = {
+    '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    '₊': '+', '₋': '-', '₌': '=', '₍': '(', '₎': ')',
+    'ᵃ': 'a', 'ᵇ': 'b', 'ᶜ': 'c', 'ᵈ': 'd', 'ᵉ': 'e', 'ᵒ': 'o',
+  };
+  str = str.replace(/[₀-₉⁰-⁹₊₋₌₍₎ᵃᵇᶜᵈᵉᵒ]/g, (m) => subSuperMap[m] || m);
+
+  // 3. Normalize typographical punctuation, dashes, arrows, and medical symbols
+  const symbolMap: Record<string, string> = {
+    '“': '"', '”': '"', '„': '"', '«': '"', '»': '"',
+    '‘': "'", '’': "'", '‚': "'", '`': "'",
+    '–': '-', '—': '-', '−': '-', '‐': '-', '‑': '-',
+    '…': '...',
+    '•': '-', '·': '-', '‣': '-', '⁃': '-',
+    '×': 'x', '÷': '/',
+    '≤': '<=', '≥': '>=', '≠': '!=', '≈': '~',
+    '→': '->', '←': '<-', '↔': '<->',
+    '✓': '(ok)', '✔': '(ok)', '✗': '(x)', '✘': '(x)',
+    'μ': 'u', 'µ': 'u', 'α': 'alfa', 'β': 'beta', 'Δ': 'delta', 'δ': 'delta',
+  };
+  str = str.replace(/[“”„«»‘’‚`–—−‐‑…•·‣⁃×÷≤≥≠≈→←↔✓✔✗✘μμαβΔδ]/g, (m) => symbolMap[m] || m);
+
+  // 4. Unicode whitespace variations -> regular space
+  str = str.replace(/[\u00A0\u1680\u2000-\u200B\u2028\u2029\u202F\u205F\u3000\uFEFF]/g, ' ');
+
+  // 5. Remove control characters (except newline \n)
+  str = str.replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/g, '');
+
+  // 6. Transliterate or filter any remaining character with charCode > 255
+  // (Prevents jsPDF from switching to UTF-16BE null-byte mode)
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code <= 255) {
+      result += str[i];
+    } else {
+      // Attempt NFD decomposition for accented Latin characters
+      const decomp = str[i].normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (decomp && decomp.charCodeAt(0) <= 255) {
+        result += decomp;
+      } else {
+        result += ' ';
+      }
+    }
+  }
+
+  // 7. Collapse consecutive spaces and trim
+  result = result.replace(/[ \t]+/g, ' ').replace(/\n\s+/g, '\n').trim();
+
+  if (!result) return '';
+
+  // 8. Safely break any long unbroken word sequences (> maxWordLength) to prevent escaping table cell boundaries
+  if (maxWordLength > 0) {
+    const regex = new RegExp(`.{1,${maxWordLength - 2}}`, 'g');
+    return result
+      .split(' ')
+      .map((w) => (w.length > maxWordLength ? (w.match(regex)?.join(' ') || w) : w))
+      .join(' ');
+  }
+
+  return result;
+}
+
 export interface AiToneReports {
   patient_friendly?: string;
   clinical?: string;
@@ -342,7 +433,8 @@ export function generateClinicalReportPdf({
 
   // 6. ✨ FINAL SECTION: PARECER CLÍNICO (INCLUI OS 3 TONS SE DISPONÍVEIS OU O ATIVO)
   const renderOpinionBox = (title: string, text: string, barColor: [number, number, number]) => {
-    if (!text || !text.trim()) return;
+    const cleanText = sanitizeForPdf(text, 0);
+    if (!cleanText || !cleanText.trim()) return;
 
     if (currentY > pageHeight - 45) {
       doc.addPage();
@@ -353,10 +445,10 @@ export function generateClinicalReportPdf({
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9.5);
     doc.setTextColor(barColor[0], barColor[1], barColor[2]);
-    doc.text(title, margin, currentY);
+    doc.text(sanitizeForPdf(title, 0), margin, currentY);
     currentY += 4;
 
-    const splitText = doc.splitTextToSize(text.trim(), pageWidth - margin * 2 - 10);
+    const splitText = doc.splitTextToSize(cleanText.trim(), pageWidth - margin * 2 - 10);
     const boxHeight = splitText.length * 4.5 + 8;
 
     if (currentY + boxHeight > pageHeight - 25) {
@@ -692,13 +784,14 @@ export function generateEvolutionReportPdf({
   }
 
   // 4. AI CLINICAL SUMMARY BOX (Font size set before measurement to guarantee text stays strictly inside column)
-  if (summary && summary.trim()) {
+  const cleanSummary = sanitizeForPdf(summary, 0);
+  if (cleanSummary && cleanSummary.trim()) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
 
     const summaryBoxW = pageWidth - margin * 2;
     const summaryTextW = summaryBoxW - 14;
-    const summaryLines = doc.splitTextToSize(summary.trim(), summaryTextW);
+    const summaryLines = doc.splitTextToSize(cleanSummary.trim(), summaryTextW);
     const boxHeight = Math.max(22, summaryLines.length * 4.3 + 14);
 
     if (currentY + boxHeight > pageHeight - 30) {
@@ -729,15 +822,17 @@ export function generateEvolutionReportPdf({
   }
 
   // 5. FUNCTIONAL GAINS & NEXT STEPS 2-COLUMN BOX
-  if ((gains.length > 0 || nextSteps.length > 0) && currentY < 230) {
+  const cleanGains = gains.map((g) => sanitizeForPdf(g, 0)).filter(Boolean);
+  const cleanNextSteps = nextSteps.map((n) => sanitizeForPdf(n, 0)).filter(Boolean);
+  if ((cleanGains.length > 0 || cleanNextSteps.length > 0) && currentY < 230) {
     const colW = (pageWidth - margin * 2 - 4) / 2;
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     const itemMaxW = colW - 8;
 
-    const gainLinesArr = gains.slice(0, 3).map((g) => doc.splitTextToSize(`• ${g}`, itemMaxW));
-    const nextLinesArr = nextSteps.slice(0, 3).map((n) => doc.splitTextToSize(`• ${n}`, itemMaxW));
+    const gainLinesArr = cleanGains.slice(0, 3).map((g) => doc.splitTextToSize(`• ${g}`, itemMaxW));
+    const nextLinesArr = cleanNextSteps.slice(0, 3).map((n) => doc.splitTextToSize(`• ${n}`, itemMaxW));
 
     const totalGainLines = gainLinesArr.reduce((acc, l) => acc + l.length, 0);
     const totalNextLines = nextLinesArr.reduce((acc, l) => acc + l.length, 0);
@@ -805,31 +900,6 @@ export function generateEvolutionReportPdf({
     doc.text('HISTÓRICO CRONOLÓGICO DAS SESSÕES DO PERÍODO', margin, currentY + 3);
     currentY += 6;
 
-    const sanitizeNotes = (rawNotes?: string) => {
-      if (!rawNotes) return 'Atendimento realizado conforme plano terapêutico.';
-      let text = rawNotes
-        .replace(/<br\s*[\/]?>/gi, ' ')
-        .replace(/<\/p>/gi, ' ')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/&nbsp;/gi, ' ')
-        .replace(/&amp;/gi, '&')
-        .replace(/&lt;/gi, '<')
-        .replace(/&gt;/gi, '>')
-        .replace(/&quot;/gi, '"')
-        .replace(/&#39;/gi, "'")
-        .replace(/[\u00A0\u1680\u2000-\u200B\u2028\u2029\u202F\u205F\u3000\uFEFF]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      if (!text) return 'Atendimento realizado conforme plano terapêutico.';
-
-      // Safely break any long unbroken word sequences to prevent escaping cell bounds
-      return text
-        .split(' ')
-        .map((w) => (w.length > 28 ? (w.match(/.{1,26}/g)?.join(' ') || w) : w))
-        .join(' ');
-    };
-
     const tableRows = sessions.map((s, idx) => {
       const formattedDate = s.date
         ? s.date.includes('-')
@@ -837,7 +907,8 @@ export function generateEvolutionReportPdf({
           : s.date
         : `Sessão ${idx + 1}`;
       const painText = s.painScale !== undefined && s.painScale !== null ? `EVA ${s.painScale}/10` : '-';
-      return [formattedDate, painText, sanitizeNotes(s.notes)];
+      const cleanNotes = sanitizeForPdf(s.notes, 28) || 'Atendimento realizado conforme plano terapêutico.';
+      return [formattedDate, painText, cleanNotes];
     });
 
     const totalTableWidth = pageWidth - margin * 2;

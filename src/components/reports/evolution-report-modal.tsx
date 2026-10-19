@@ -25,6 +25,7 @@ import { api } from '@/lib/api';
 import { PatientItem } from '@/lib/clinical-report-engine';
 import {
   generateEvolutionReportPdf,
+  sanitizeForPdf,
   EvolutionChartPoint,
   EvolutionSessionItem,
 } from '@/lib/pdf-report-generator';
@@ -42,34 +43,7 @@ type PeriodOption = '7d' | '15d' | '30d' | '60d' | '90d' | 'all' | 'custom';
 type AiTone = 'clinical' | 'patient_friendly' | 'goals';
 
 export function stripHtml(html?: string | null): string {
-  if (!html || typeof html !== 'string') return '';
-  let text = html;
-
-  // Replace br/p/div/li with spaces/newlines before stripping
-  text = text
-    .replace(/<br\s*[\/]?>/gi, ' ')
-    .replace(/<\/p>/gi, ' ')
-    .replace(/<\/div>/gi, ' ')
-    .replace(/<\/li>/gi, ' ')
-    .replace(/<p[^>]*>/gi, '')
-    .replace(/<div[^>]*>/gi, '');
-
-  // Strip all HTML tags
-  text = text.replace(/<[^>]*>/g, '');
-
-  // Decode standard HTML entities
-  text = text
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&');
-
-  // Strip any leftover encoded tags
-  text = text.replace(/<[^>]*>/g, '');
-
-  return text.replace(/\s+/g, ' ').trim();
+  return sanitizeForPdf(html, 0);
 }
 
 export function EvolutionReportModal({
